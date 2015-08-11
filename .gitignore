@@ -1,0 +1,9 @@
+.*
+~*
+*.swp
+*.log
+*~
+config
+*.bak
+xlsx/*
+tmp/*
