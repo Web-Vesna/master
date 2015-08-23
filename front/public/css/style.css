@@ -497,6 +497,7 @@ header .data-box b{
 }
 .report-request-form .row-button{
 	margin-top: 1.46em;
+	margin-bottom: 1.46em;
 }
 .report-request-form .report-map{
 	width: 900px;
@@ -2165,7 +2166,7 @@ y-axis
 .mCustomScrollBox{	
 	border-top: 1px solid #89c211;
 	border-left: 1px solid #89c211;
-	border-bottom: 1px solid #89c211
+	border-bottom: 1px solid #89c211;
 	padding:1px 1px 1px 1px
 }
 .box-vert-scroll li{	
@@ -2219,4 +2220,39 @@ y-axis
 
 .address-meta{
     color: #888888;
+}
+
+.addr-name{
+    width: 500px;
+    padding-left: 10px!important;
+}
+.addr-type{
+       width: 70px;  
+       text-align: center!important;
+}
+.addr-heat_load{
+       width: 90px;    
+       text-align: center!important;       
+}
+.addr-cost{
+       width: 90px;    
+       text-align: center!important;       
+}
+.addr-build_date{
+       width: 90px;  
+       text-align: center!important;       
+}    
+.addr-reconstr{
+       width: 90px; 
+       text-align: center!important;       
+}
+table.address-table tr td:nth-child(2),
+table.address-table tr td:nth-child(5),
+table.address-table tr td:nth-child(6){
+     text-align: center!important;   
+}
+table.address-table tr td:nth-child(3),
+table.address-table tr td:nth-child(4){
+    text-align: right!important;   
+    padding-right: 10px;
 }
