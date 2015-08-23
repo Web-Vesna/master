@@ -26,7 +26,7 @@
   <!--===============================content===============================-->
   <section class="intro-sign-in">
      <article>
-            <h6>АВТОРИЗИРУЙТЕСЬ ПОЖАЛУЙТА</h6>
+            <h6>ПОЖАЛУЙCТА, АВТОРИЗУЙТЕСЬ</h6>
             <form id="frm-login" onkeypress="usl(event)">
                 <div class="row-input">
                     <div class="col-left">
