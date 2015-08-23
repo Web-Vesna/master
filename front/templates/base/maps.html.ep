@@ -87,6 +87,11 @@ function change_baloon(id) {
     });
 }
 
+function open_in_new_tab(url) {
+    var win = window.open(url, '_blank');
+    win.focus();
+}
+
 var last_baloon;
 function on_baloon_open(baloon_id, need_change_pos) {
     if (last_baloon == baloon_id)
@@ -169,8 +174,16 @@ function on_baloon_open(baloon_id, need_change_pos) {
         for (var i = 0; i < files.count; ++i) {
             var container_li = $("<li>");
             $("<a>", {
-                href: files.files[i].url,
-            }).text(files.files[i].name + " (" + (files.files[i].size / 1024 / 1024).toFixed(2) + " Мб)").appendTo(container_li);
+                href: '#',
+            }).text(files.files[i].name + " (" + (files.files[i].size / 1024 / 1024).toFixed(2) + " Мб)")
+            .click((function(url) {
+                return function() {
+                    // TODO: move into iframe ?
+                    open_in_new_tab(url);
+                    return false;
+                };
+            })(files.files[i].url))
+            .appendTo(container_li);
             container_li.appendTo(container);
         }
         container.appendTo(container_wrapper);
