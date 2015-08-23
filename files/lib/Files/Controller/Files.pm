@@ -143,7 +143,7 @@ sub get {
         return $self->redirect_to(URL_404);
     }
 
-    $self->render_file(filepath => $path, filename => $files[$index], format => 'pdf');
+    $self->render_file(filepath => $path, filename => $files[$index], format => 'pdf', 'content_disposition' => 'inline',);
     return $self->rendered(200);
 }
 

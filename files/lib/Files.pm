@@ -1,6 +1,8 @@
 package Files;
 use Mojo::Base 'Mojolicious';
 
+use MainConfig qw( URL_404 );
+
 # This method will run once at server start
 sub startup {
     my $self = shift;
@@ -16,6 +18,11 @@ sub startup {
     # Normal route to controller
     $r->get('files')->to('files#list');
     $r->get('file')->to('files#get');
+
+    $r->any('/*any' => { any => '' } => sub {
+        my $self = shift;
+       $self->redirect_to(URL_404);
+    });
 }
 
 1;
