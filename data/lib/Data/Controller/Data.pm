@@ -169,7 +169,8 @@ sub filter_objects {
                     SELECT company_id
                     FROM buildings
                     JOIN buildings_meta bm ON bm.building_id = id
-                    WHERE reconstruction_date IS NOT NULL AND reconstruction_date BETWEEN ? AND ? OR build_date BETWEEN ? AND ?
+                    WHERE (reconstruction_date IS NOT NULL AND reconstruction_date BETWEEN ? AND ?)
+                       OR (reconstruction_date IS NULL AND build_date BETWEEN ? AND ?)
                     GROUP BY company_id
                 )
             /,
