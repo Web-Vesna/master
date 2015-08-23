@@ -1794,12 +1794,12 @@ footer a:hover img{
 }
 .tab-content .box ul li span{
 	display: inline-block;
-	width: 42px;
-	height: 12px;
+	width: 24px;
+	height: 36px;
 	font-size: 0;
 	line-height: 0;
 	position: relative;
-	top: 6px;
+	top: -7px;
 	margin-right: 5px;
 }
 

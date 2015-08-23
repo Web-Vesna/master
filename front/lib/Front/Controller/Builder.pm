@@ -97,32 +97,30 @@ sub maps {
     );
     return $self->render(template => 'base/internal_err') unless $r;
 
-    # Following crazy code is really needed because buildings characteristics in DB
-    # have cyrillic characters, which are different from perl utf-8 cyrillic chars =(
-    # Just close your eyes and cry...
     my %characteristics;
-    my @_colors = qw( #33CCCC #66CC66 #9933CC #FF9999 #FFCC33 #CC6699 #9999FF #CC99FF );
     for (@$r) {
-        next unless $_->{characteristic};
+        $_->{characteristic} ||= "unknown";
         $characteristics{$_->{characteristic}} = 1;
     }
 
-    my %colors;
+    my %placemarks_indexes;
     my $i = 0;
     for (sort keys %characteristics) {
-        $colors{$_} = $_colors[$i++] || '#000000';
+        next if $_ eq 'unknown';
+        $placemarks_indexes{$_} = $i++;
     }
-    $colors{unknown} = '#336600';
+
+    $placemarks_indexes{unknown} = $placemarks_indexes{ТВ}; # TODO: remove 'unknown' placemarks
 
     $self->stash(geoobjects => [ map {
         my $o = $_;
         $o ? {
             (map { $_ => $o->{$_} } qw( name coordinates id company_id district )),
-            color => $colors{$o->{characteristic} || 'unknown'},
+            placemark_id => $placemarks_indexes{$o->{characteristic}},
         } : {}
     } @$r ]);
     $self->stash(objects_types => [ sort keys %characteristics ]);
-    $self->stash(colors_list => [ map {{ t => $_, c => $colors{$_} }} sort keys %colors ]);
+    $self->stash(placemarks_indexes => [ map {{ i => $placemarks_indexes{$_}, t => $_ }} sort keys %placemarks_indexes ]);
 
     return $self->render(template => 'base/maps');
 }
