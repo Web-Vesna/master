@@ -53,7 +53,7 @@ sub list {
     $self->add_headers;
     my $ret = check_session $self;
 
-    _session($self, { expires => 1 }) if $ret->{error};
+    _session($self, { expired => 1 }) if $ret->{error};
     return $self->redirect_to(URL_401) if $ret->{error} && $ret->{error} eq 'unauthorized';
 
     $self->load_paths;
@@ -107,7 +107,7 @@ sub get {
 
     my $ret = check_session $self;
 
-    _session($self, { expires => 1 }) if $ret->{error};
+    _session($self, { expired => 1 }) if $ret->{error};
     return $self->redirect_to(URL_401) if $ret->{error} && $ret->{error} eq 'unauthorized';
 
     my $f_info = $self->param('f');

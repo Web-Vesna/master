@@ -158,7 +158,7 @@ sub _session {
     if (not defined $val) {
         return $self->signed_cookie('session');
     } elsif (ref $val eq 'HASH' && $val->{expired}) {
-        $self->signed_cookie(session => '', { expires => 1 });
+        $self->signed_cookie(session => '', { expires => 0 });
     } else {
         $self->signed_cookie(session => $val, { expires => time + EXP_TIME, domain => '.dev.web-vesna.ru', path => '/' });
     }
@@ -214,7 +214,7 @@ sub check_access {
 
     my $ret = {};
     $ret = check_session($inst);
-    _session($inst, { expires => 1 }) if $ret->{error};
+    _session($inst, { expired => 1 }) if $ret->{error};
     return $ret if $ret->{error} && $ret->{error} ne 'unauthorized';
 
     $ret->{granted} = 1;

@@ -88,7 +88,7 @@ sub startup {
                 session_id => _session($self),
             });
 
-        _session($self, { expires => 1 });
+        _session($self, { expired => 1 });
         return $self->render(json => { ok => 1 }) if $r && not $r->{error};
         return $self->_i_err unless $r;
         return $self->render(status => 400, json => { error => "invalid", description => $r->{error} });
