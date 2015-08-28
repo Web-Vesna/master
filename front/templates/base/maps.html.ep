@@ -1,0 +1,382 @@
+% layout 'index';
+
+% my @icon_size = (24, 36);
+
+%= javascript begin
+ymaps.ready(init);
+var map, objects_manager, companies;
+
+function init() {
+    var json = {
+        type: 'FeatureCollection',
+        features: [
+% my %companies;
+% for my $item (@$geoobjects) {
+%   next unless $item->{coordinates};
+%   my @coords = split /\s+/, $item->{coordinates};
+%   my $content = $item->{name};
+%   my $clip_rect = '[[' . ($item->{placemark_id} * $icon_size[0]) . ",0],[" .
+%       (($item->{placemark_id} + 1) * $icon_size[0]) . "," . $icon_size[1] . "]]";
+%   $companies{$item->{id}} = "[$item->{company_id},$item->{district}]";
+        {id:'<%= $item->{id} %>',geometry:{coordinates:[<%= join ',', reverse @coords %>]},properties:{balloonContent:'<%= $content %>'},options:{iconImageClipRect:<%= $clip_rect %>}},
+% }
+        ],
+    };
+
+    companies = {<%= join ',', map { "$_:$companies{$_}" } keys %companies %>};
+
+    json.features.forEach(function (f) { // to reduce transfered data size
+        f.type = 'Feature';
+        f.geometry.type = 'Point';
+        $.extend(f.options, {
+            iconLayout: 'default#image',
+            iconImageHref: '<%= $general_url %>/images/map_bull.png',
+            iconImageSize: [<%= join ',', @icon_size %>],
+            hasBalloon: true,
+        });
+    });
+
+    objects_manager = new ymaps.ObjectManager({
+        clusterize: true,
+        viewportMargin: 30,
+        preset: 'islands#invertedVioletClusterIcons',
+        gridSize: 50,
+        groupByCoordinates: false,
+        clusterDisableClickZoom: false,
+        clusterHideIconOnBalloonOpen: false,
+        geoObjectHideIconOnBalloonOpen: false
+    });
+
+    objects_manager.add(json);
+
+    map = new ymaps.Map("map", {
+        center: [55.7500, 37.6167],
+        zoom: 9,
+        behaviors: ['default', 'scrollZoom'],
+        controls: ["zoomControl"],
+    });
+
+    map.geoObjects.add(objects_manager);
+    objects_manager.objects.events.add('click', function (e) {
+        var objectId = e.get('objectId'),
+            object = objects_manager.objects.getById(objectId);
+        on_balloon_open(objectId);
+    });
+
+    set_placemarks();
+}
+
+function set_placemarks(placemarks_list) {
+    objects_manager.setFilter(function (obj) {
+        return !placemarks_list || !!placemarks_list[obj.id];
+    });
+
+    map.setBounds(objects_manager.getBounds(), {
+        checkZoomRange: false,
+        zoomMargin: 30,
+        preciseZoom: true,
+        options: {
+            duration: 200,
+        },
+    });
+}
+
+function open_in_new_tab(url) {
+    var win = window.open(url, '_blank');
+    win.focus();
+}
+
+var last_balloon;
+function on_balloon_open(balloon_id, need_change_pos) {
+    if (last_balloon == balloon_id)
+        return;
+
+    last_balloon = balloon_id;
+
+    var $loading_container = $("#loading-container-1");
+    $loading_container.show();
+
+    var district_id = $("#regions :selected").attr('district_id'),
+        company_id = $("#companies").val();
+    $.when(
+        $.get('<%= $general_url %>/cgi-bin/company?obj_id=' + balloon_id),
+        $.ajax({
+            url: 'http://<%= $files_url %>/files', // FIXME: remove hardcoded 'http'
+            data: {
+                company: companies[balloon_id][0],
+                district: companies[balloon_id][1],
+            },
+            xhrFields: {
+                withCredentials: true,
+            },
+        })
+    ).done(function (data, files) {
+        if (!data)
+            return;
+
+        if (!files)
+            files = {};
+        else
+            files = files[0];
+        data = data[0];
+
+        var $balloon_info = $("#balloon-info"),
+            $addr = $balloon_info.find("#balloon-addr"),
+            $info = $balloon_info.find("#balloon-info-parts"),
+            pos_changed = false;
+
+        $info.html('');
+        $addr.text(data.company);
+
+        var $tbl = $("<table>",{
+            class: 'address-table',
+        }).append(
+            $("<thead>").append(
+                $("<tr>").append($("<th>", { class: 'addr-name', }).text('Адрес'))
+                .append($("<th>", { class: 'addr-type', }).text('Тип'))
+                .append($("<th>", { class: 'addr-heat_load', }).text('Нагрузка,').append("<br>кВт"))
+                .append($("<th>", { class: 'addr-cost', }).text('Стоимость,').append("<br>руб"))
+                .append($("<th>", { class: 'addr-build_date', }).text("Дата ввода в эксплуатацию"))
+                .append($("<th>", { class: 'addr-reconstr', }).text("Дата кап. ремонта"))
+            )
+        );
+
+        for (var i = 0; i < data.count; ++i) {
+            var b = data.buildings[i];
+
+            $tbl.append(
+                $("<tr>", {
+                    class: i ? "" : "head-class",
+                })
+                .append($("<td>").text(b.addr))
+                .append($("<td>").text(b.type))
+                .append($("<td>").text(b.heat_load))
+                .append($("<td>").text(b.cost.replace(/(\d)(?=(\d\d\d)+([^\d]|$))/g, '$1 ')))
+                .append($("<td>").text(b.build_date || ""))
+                .append($("<td>").text(b.reconstruction_date || ""))
+            );
+        }
+
+        $info.append($tbl).append("<br>").append($("<h3>", { class: 'title-center' }).text("Документация"));
+
+        // generating files list
+        var container_wrapper = $("<div>", {
+            id: 'content-l',
+            class: 'content-scroll',
+        });
+        var container = $("<ul>", {
+            class: 'box-vert-scroll',
+        });
+
+        for (var i = 0; i < files.count; ++i) {
+            var container_li = $("<li>");
+            $("<a>", {
+                href: '#',
+            }).text(files.files[i].name + " (" + (files.files[i].size / 1024 / 1024).toFixed(2) + " Мб)")
+            .click((function(url) {
+                return function() {
+                    // TODO: move into iframe ?
+                    open_in_new_tab(url);
+                    return false;
+                };
+            })(files.files[i].url))
+            .appendTo(container_li);
+            container_li.appendTo(container);
+        }
+        container.appendTo(container_wrapper);
+        container_wrapper.appendTo($info);
+        $balloon_info.show();
+        $("#content-l").mCustomScrollbar();
+    }).fail(function () {
+        // TODO: add a message
+    }).always(function () { $loading_container.hide(); });
+
+    $('html, body').animate({ scrollTop: $('#balloon-addr').offset().top }, 500);
+
+}
+
+function on_filter_type_changed(e) {
+    ['cost', 'type', 'repair'].map(function (t) {
+        $("#filter-" + t + "-container").hide();
+    });
+
+    if (e.target.value == 'none') {
+        if ($("#companies").val() == -1)
+            set_placemarks();
+        return;
+    }
+
+    var $container = $("#filter-" + e.target.value + "-container");
+    $container.show();
+}
+
+function do_filter(type, args) {
+    var $loading_container = $("#loading-container-1");
+    $loading_container.show();
+    $.get("<%= $general_url %>/cgi-bin/objects/filter?type=" + type + "&" + $.param(args), function (data) {
+        if (!data || data.error) {
+            if (data)
+                console.log("ERROR: " + data.error);
+            return;
+        }
+
+        if (data.count == 0)
+            return;
+
+        var placemarks_list = {};
+        data.data.forEach(function (d) {
+            placemarks_list[d.id] = 1;
+        });
+
+        set_placemarks(placemarks_list);
+
+        $("#balloon-addr").html('');
+        $("#balloon-info-parts").html('');
+        if (type != 'company')
+            $("#companies").val('-1').trigger('refresh');
+    }).always(function () { $loading_container.hide(); });
+}
+
+function on_company_changed(e) {
+    if (e.target.value == -1) {
+        set_placemarks();
+        return;
+    }
+
+    do_filter("company", { company: e.target.value });
+}
+
+function do_filter_cost() {
+    var start = $("#filter-cost-start").val(),
+        end = $("#filter-cost-end").val(),
+        args = {
+            start: start,
+            end: end,
+        };
+
+    if (start == "" && end == "")
+        set_placemarks();
+    else
+        do_filter("cost", args);
+}
+
+function do_filter_type() {
+    var to_request = [];
+
+    $('#filter-type-container input:checkbox').map(function () {
+        if (this.checked)
+            to_request.push(this.value);
+    });
+
+    if (to_request.length == 0)
+        set_placemarks();
+    else
+        do_filter("type", { types: to_request.join(',') });
+}
+
+function do_filter_repair() {
+    var start = $("#filter-repair-start").val(),
+        end = $("#filter-repair-end").val(),
+        args = {
+            start: start,
+            end: end,
+        };
+
+    if (start == "" && end == "")
+        set_placemarks();
+    else
+        do_filter("repair", args);
+}
+% end
+
+<!-- report-request-form -->
+<div class="report-request-form">
+    <h3>Организации на карте</h3>
+    <form>
+      <!--  -->
+      <label for="region">Регион</label>
+      <div>
+% my $i = 0; my $current = "Москва";
+% my %regions = map { $_->{region} => $_->{id} } @{$districts->{districts}};
+        <select name="region" id="regions">
+          <option>Выберете регион</option>
+% for (sort keys %regions) {
+          <option value="<%= $_ %>" district_id="<%= $regions{$_} %>" <%= $_ eq $current ? "selected" : "" %>><%= $_ %></option>
+% }
+        </select>
+      </div>
+      <!-- / -->
+      <!--  -->
+      <label for="organization">Организация</label>
+      <div>
+        <select name="organization" id="companies">
+          <option value="-1" selected>Выберете организацию</option>
+% for my $company (@$companies) {
+          <option value="<%= $company->{id} %>"><%= $company->{name} %></option>
+% }
+        </select>
+      </div>
+      <!-- / -->
+    </form>
+    <div id="map" class="report-map"></div>
+    <div class="tab-content"> 
+    <!--<h2 class="title-center1">Фильтр</h2>-->
+    <form>
+      <!--  -->
+      <div>
+        <select name="filter-type" id="filter-types">
+          <option value="none" selected>Без фильтрации</option>
+          <option value="cost">Фильтр по стоимости</option>
+          <option value="type">Фильтр по типу присоединения</option>
+          <option value="repair">Фильтр по году кап ремонта</option>
+        </select>
+      </div>
+      <!-- / -->
+
+      <div id="filter-cost-container" style="display: none;" class="box ">
+          <label for="inp-filter-cost-start">От</label><input type="text" name="inp-filter-cost-start" id="filter-cost-start">
+          <label for="inp-filter-cost-end">До</label><input type="text" name="inp-filter-cost-end" id="filter-cost-end"><br>
+          <input type="button" name="do-filter-cost" value="Фильтровать" onclick="do_filter_cost()">
+      </div>
+
+      <div id="filter-type-container" style="display: none;" class="box ">
+          <ul>
+% for my $c (@$placemarks_indexes) {
+%     next if $c->{t} eq 'unknown';
+              <li>
+                  <span style="background: url('<%= $general_url %>/images/map_bull.png'); background-position: -<%= $c->{i} * $icon_size[0] %>px 0px;"></span>
+                  <input type="checkbox" name="filter-type" value="<%= $c->{t} %>">
+                  <label for="checkbox"><%= $c->{t} %></label>
+              </li>
+% }
+          </ul>
+
+          <input type="button" name="do-filter-type" value="Фильтровать" onclick="do_filter_type()">
+      </div>
+
+      <div id="filter-repair-container" style="display: none;" class="box ">
+          <label for="inp-filter-repair-start">От</label><input type="text" name="inp-filter-repair-start" id="filter-repair-start" placeholder="1972">
+          <label for="inp-filter-repair-end">До</label><input type="text" name="inp-filter-repair-end" id="filter-repair-end" placeholder="2000"><br>
+          <input type="button" name="do-filter-repair" value="Фильтровать" onclick="do_filter_repair()">
+      </div>
+    </form>
+    </div>
+</div>
+
+<div class="table-1" id="balloon-info" style="display: none;">
+    <p id="balloon-addr"></p>
+    <div id="balloon-info-parts"></div>
+</div>
+
+<div id="loading-container-1" class="loading-containter" style="display: none;"></div>
+
+<script src="<%= $general_url %>/js/functions.js"></script>
+<script src="<%= $general_url %>/js/jquery.mCustomScrollbar.concat.min.js"></script>
+%= javascript begin
+    var elements = ['regions', 'companies'];
+    select_change_controller(elements, '<%= $general_url %>', undefined, function (args) { args.heads_only = 1; return args; });
+
+    $("#companies").on('change', on_company_changed);
+    $("#filter-types").on('change', on_filter_type_changed);
+% end
+

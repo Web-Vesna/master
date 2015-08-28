@@ -14,6 +14,19 @@ my %PARAMS = (
     DATA_PORT       => 6001,
     SESSION_PORT    => 6002,
     LOGIC_PORT      => 6003,
+    FILES_PORT      => 6004,
+
+    FRONT_HOST      => 'localhost',
+    DATA_HOST       => 'localhost',
+    SESSION_HOST    => 'localhost',
+    LOGIC_HOST      => 'localhost',
+    FILES_HOST      => 'localhost',
+
+    FILES_URL       => 'unknown',
+
+    ROOT_FILES_PATH => '.',
+    URL_404         => '/404.html',
+    URL_401         => '/login.html',
 
     DB_HOST         => 'localhost',
     DB_PORT         => 3306,
@@ -25,6 +38,9 @@ my %PARAMS = (
     MEMC_PORT       => 11211,
 
     GENERAL_URL     => '',
+    COOKIE_PATH     => '/',
+    COOKIE_DOMAIN   => undef,
+    COOKIE_SECRET   => '',
 
     EXP_TIME        => 60 * 60 * 24,
 );

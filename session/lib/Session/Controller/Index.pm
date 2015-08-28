@@ -8,6 +8,8 @@ use Digest::MD5 qw( md5_hex );
 use Data::Dumper::OneLine;
 use Cache::Memcached;
 
+sub _memc_key() { "apek_energo_" }
+
 sub open_memc {
     my $self = shift;
     $self->{memc} = Cache::Memcached->new({
@@ -25,10 +27,11 @@ sub check_session {
     return $self->render(json => { error => 'session_id not specified' }) unless $self->param('session_id');
     return $self->render(json => { error => 'user_agent not specified' }) unless $self->param('user_agent');
 
-    my $r = $self->{memc}->get('session_' . $self->param('session_id'));
+    my $r = $self->{memc}->get(_memc_key . $self->param('session_id'));
     return $self->render(json => { error => 'unauthorized' })
         unless $r and $r->{user_id} and ($r->{user_agent} eq md5_hex($self->param('user_agent')));
 
+    $self->_restore_session($self->param('session_id'), $r);
     return $self->render(json => { ok => 1, uid => $r->{user_id}, role => $r->{role}, name => $r->{name}, lastname => $r->{lastname} });
 }
 
@@ -39,10 +42,11 @@ sub about {
     return $self->render(json => { error => 'session_id not specified' }) unless $self->param('session_id');
     return $self->render(json => { error => 'user_agent not specified' }) unless $self->param('user_agent');
 
-    my $r = $self->{memc}->get('session_' . $self->param('session_id'));
+    my $r = $self->{memc}->get(_memc_key . $self->param('session_id'));
     return $self->render(json => { error => 'unauthorized' })
         unless $r and $r->{user_id} and ($r->{user_agent} eq md5_hex($self->param('user_agent')));
 
+    $self->_restore_session($self->param('session_id'), $r);
     $r = select_row($self, 'select u.id as uid, u.name as name, u.lastname as lastname, u.login as login, u.email as email, ' .
         'r.name as role from users u join roles r on r.id = u.role where u.id = ?', $r->{user_id});
 
@@ -51,6 +55,11 @@ sub about {
 
     return $self->render(json => { status => 500, error => 'db' }) unless $r;
     return $self->render(json => $r);
+}
+
+sub _restore_session {
+    my ($self, $id, $data) = @_;
+    $self->{memc}->set(_memc_key . "$id", $data, EXP_TIME);
 }
 
 sub login {
@@ -68,8 +77,8 @@ sub login {
 
     my $sum = md5_hex("$r->{id}" . time . rand(100500) . "$ua");
 
-    $self->{memc}->set("session_$sum", {
-            user_id => $r->{id}, user_agent => md5_hex($ua), role => $r->{role}, name => $r->{name}, lastname => $r->{lastname} }, EXP_TIME);
+    $self->_restore_session($sum, {
+            user_id => $r->{id}, user_agent => md5_hex($ua), role => $r->{role}, name => $r->{name}, lastname => $r->{lastname} });
 
     return $self->render(json => { session_id => $sum });
 }
@@ -81,7 +90,7 @@ sub logout {
     my $came = $self->req->params->to_hash;
     return $self->render(json => { error => 'session_id not specified' }) unless $came->{session_id};
 
-    $self->{memc}->delete("session_$came->{session_id}");
+    $self->{memc}->delete(_memc_key . "$came->{session_id}");
 
     return $self->render(json => { ok => 1 });
 }

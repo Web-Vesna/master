@@ -2,12 +2,13 @@ package Logic;
 use Mojo::Base 'Mojolicious';
 
 use MainConfig qw( :all );
-use AccessDispatcher qw( check_access send_request );
+use AccessDispatcher qw( check_access send_request _session );
 
 use File::Temp;
 use Data::Dumper;
 
 use Mojo::JSON qw(decode_json encode_json);
+use MainConfig qw( COOKIE_SECRET );
 
 sub check_params {
     my $self = shift;
@@ -29,7 +30,7 @@ sub startup {
     # Documentation browser under "/perldoc"
     $self->plugin('PODRenderer');
     $self->plugin('RenderFile');
-    $self->secrets([qw( 0i+hE8eWI0pG4DOH55Kt2TSV/CJnXD+gF90wy6O0U0k= )]);
+    $self->secrets([ COOKIE_SECRET ]);
 
     $self->app->types->type(xlsx => 'application/vnd.ms-excel');
 
@@ -52,7 +53,7 @@ sub startup {
         return _i_err $self unless $r;
         return $self->render(status => 401, json => { error => "internal", description => $r->{error} }) if !$r or $r->{error};
 
-        $self->session(session => $r->{session_id}, expiration => EXP_TIME);
+        _session($self, $r->{session_id});
         return $self->render(json => { ok => 1 });
     });
 
@@ -85,10 +86,10 @@ sub startup {
             port => SESSION_PORT,
             args => {
                 user_agent => $self->req->headers->user_agent,
-                session_id => $self->session('session'),
+                session_id => _session($self),
             });
 
-        $self->session(expires => 1);
+        _session($self, { expired => 1 });
         return $self->render(json => { ok => 1 }) if $r && not $r->{error};
         return $self->_i_err unless $r;
         return $self->render(status => 400, json => { error => "invalid", description => $r->{error} });

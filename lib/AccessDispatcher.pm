@@ -8,6 +8,8 @@ use Mojo::UserAgent;
 use Mojo::Util qw( url_escape );
 use Data::Dumper::OneLine;
 
+use Mojo::URL;
+
 use MainConfig qw( :all );
 
 use base qw(Exporter);
@@ -17,6 +19,8 @@ our @EXPORT_OK = qw(
     send_request
     check_session
     role_less_then
+    _session
+    redirect_to_login
 );
 
 our %EXPORT_TAGS = (
@@ -66,6 +70,12 @@ my %access_control = (
         roles  => 'user',
     },
 
+    'company'   => {
+        method => 'get',
+        access => 'Authorized',
+        roles  => 'user',
+    },
+
     'buildings' => {
         method => 'get',
         access => 'Authorized',
@@ -73,6 +83,12 @@ my %access_control = (
     },
 
     'objects' => {
+        method => 'get',
+        access => 'Authorized',
+        roles => 'user',
+    },
+
+    'objects/filter' => {
         method => 'get',
         access => 'Authorized',
         roles => 'user',
@@ -108,6 +124,18 @@ my %access_control = (
         roles => 'manager',
     },
 
+    'geolocation/status' => {
+        method => 'get',
+        access => 'Authorized',
+        roles  => 'admin',
+    },
+
+    'geolocation/save' => {
+        method => 'post',
+        access => 'Authorized',
+        roles  => 'admin',
+    },
+
     'session' => {
         method => 'any',
         access => 'full',
@@ -127,10 +155,37 @@ my %access_control = (
     },
 );
 
+sub redirect_to_login {
+    my $self = shift;
+
+    my $url = URL_401;
+    my $base_url = GENERAL_URL;
+    if ($url =~ /^http/) {
+        $base_url = $self->url_for->base . GENERAL_URL;
+    } else {
+        $url = GENERAL_URL . URL_401;
+    }
+
+    return $self->redirect_to(Mojo::URL->new($url)->query(return_url => $base_url . $self->url_with->query([])));
+}
+
+sub _session {
+    my ($self, $val) = @_;
+
+    if (not defined $val) {
+        return $self->signed_cookie('session');
+    } elsif (ref $val eq 'HASH' && $val->{expired}) {
+        $self->signed_cookie(session => '', { expires => 0 });
+    } else {
+        $self->signed_cookie(session => $val, { expires => time + (30 * 24 * 60 * 60), domain => COOKIE_DOMAIN, path => COOKIE_PATH });
+    }
+    return $self;
+}
+
 sub check_session {
     my $inst = shift;
 
-    my $sid = $inst->session('session');
+    my $sid = _session $inst;
     return { logged => 0, error => 'unauthorized' } unless $sid;
 
     my $ua = $inst->req->headers->user_agent;
@@ -176,7 +231,7 @@ sub check_access {
 
     my $ret = {};
     $ret = check_session($inst);
-    $inst->session(expires => 1) if $ret->{error};
+    _session($inst, { expired => 1 }) if $ret->{error};
     return $ret if $ret->{error} && $ret->{error} ne 'unauthorized';
 
     $ret->{granted} = 1;
@@ -212,7 +267,15 @@ sub send_request {
 
     my $url = $args{url};
 
-    $args{url} = "http://localhost/$args{url}" if defined $args{url};
+    our %hosts = (
+        SESSION_PORT()  => SESSION_HOST,
+        FRONT_PORT()    => FRONT_HOST,
+        LOGIC_PORT()    => LOGIC_HOST,
+        DATA_PORT()     => DATA_HOST,
+        FILES_PORT()    => FILES_HOST,
+    );
+
+    $args{url} = "http://$hosts{$args{port}}/$args{url}" if defined $args{url};
 
     croak 'url not specified' unless $args{url};
 
@@ -251,7 +314,7 @@ sub send_request {
         $inst->app->log->warn("Response is undefined");
         $resp = { status => $r->code, error => 'response is unknown', description => $r->message };
     } else {
-        $inst->app->log->debug("Response: " . Dumper($resp));
+        $inst->app->log->debug("Response: " . substr(Dumper($resp), 0, 512));
     }
 
     return wantarray ? ($resp, $args{args}->{uid}) : $resp;

@@ -1,7 +1,7 @@
-package Session;
+package Files;
 use Mojo::Base 'Mojolicious';
 
-use MainConfig qw( COOKIE_SECRET );
+use MainConfig qw( URL_404 COOKIE_SECRET );
 
 # This method will run once at server start
 sub startup {
@@ -9,16 +9,20 @@ sub startup {
 
     # Documentation browser under "/perldoc"
     $self->plugin('PODRenderer');
+    $self->plugin('RenderFile');
     $self->secrets([ COOKIE_SECRET ]);
 
     # Router
     my $r = $self->routes;
 
     # Normal route to controller
-    $r->get('/session')->to('index#check_session');
-    $r->get('/login')->to('index#login');
-    $r->get('/logout')->to('index#logout');
-    $r->get('/about')->to('index#about');
+    $r->get('files')->to('files#list');
+    $r->get('file')->to('files#get');
+
+    $r->any('/*any' => { any => '' } => sub {
+        my $self = shift;
+       $self->redirect_to(URL_404);
+    });
 }
 
 1;

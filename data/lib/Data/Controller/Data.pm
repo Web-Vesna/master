@@ -33,12 +33,14 @@ sub companies {
     my $q = defined $args && $args->{q} || undef;
     my $d = defined $args && $args->{district} || undef;
     my $region = defined $args && $args->{region} || undef;
+    my $filter_heads = defined $args && $args->{heads_only} || undef;
     $q = "%$q%" if $q;
 
     return $self->render(json => { status => 400, error => "invalid district" }) if defined $d && $d !~ /^\d+$/;
 
-    my @args = ($self, "select c.id as id, c.name as name, d.name as district from companies c join districts d " . 
-        "on d.id = c.district_id " . (defined $q ? "where c.name like ? " : "") .
+    my @args = ($self, "select c.id as id, c.name as name, d.name as district from companies c join districts d on d.id = c.district_id " .
+        ($filter_heads ? "inner join buildings b on c.id = b.company_id and b.status = 'Голова' " : "") .
+        (defined $q ? "where c.name like ? " : "") .
         (defined $d ? (defined $q ? "and" : "where") . " c.district_id=? " : "") .
         (defined $region ? (defined $q || defined $d ? "and" : "where") . " d.region=? " : "") . "order by c.name");
 
@@ -109,12 +111,143 @@ sub objects {
     return $self->render(json => { ok => 1, count => scalar @$r, objects => $r });
 }
 
+sub filter_objects {
+    my $self = shift;
+
+    my $bounds = sub {
+        my $a = $self->param('start');
+        my $b = $self->param('end');
+
+        die "invalid bounds\n" unless defined($a) && defined($b);
+
+        $a ||= 0;
+        $b ||= 0;
+
+        if ($a > $b) {
+            ($a, $b) = ($b, $a);
+        }
+
+        ($a, $b);
+    };
+
+    my $types_param = sub {
+        my $arg = $self->param('types');
+        die "types are required\n" unless defined $arg;
+        split ',', $arg;
+    };
+
+    my %cases = (
+        company => {
+            req => "select id from buildings where company_id = ?",
+            args => sub {
+                my $arg = $self->param("company");
+                die "company id is required\n" unless defined $arg;
+                $arg;
+            },
+        },
+        cost => {
+            req => q/
+                SELECT building_id as id
+                FROM buildings_meta
+                JOIN buildings b ON building_id = b.id
+                WHERE b.company_id IN (
+                    SELECT company_id
+                    FROM buildings
+                    JOIN buildings_meta bm ON bm.building_id = id
+                    GROUP BY company_id
+                    HAVING SUM(bm.cost) BETWEEN ? AND ?
+                )
+            /,
+            args => $bounds,
+        },
+        repair => {
+            req => q/
+                SELECT building_id as id
+                FROM buildings_meta bm
+                JOIN buildings b ON b.id = building_id
+                WHERE b.company_id in (
+                    SELECT company_id
+                    FROM buildings
+                    JOIN buildings_meta bm ON bm.building_id = id
+                    WHERE (reconstruction_date IS NOT NULL AND reconstruction_date BETWEEN ? AND ?)
+                       OR (reconstruction_date IS NULL AND build_date BETWEEN ? AND ?)
+                    GROUP BY company_id
+                )
+            /,
+            args => sub { $bounds->(), $bounds->() },
+        },
+        type => {
+            req => q/
+                SELECT building_id as id
+                FROM buildings_meta bm
+                JOIN buildings b on b.id = building_id
+                WHERE b.company_id IN (
+                    SELECT company_id
+                    FROM buildings
+                    JOIN buildings_meta bm ON bm.building_id = id
+                    WHERE bm.characteristic IN (%s) GROUP BY company_id
+                );
+            /,
+            post => sub {
+                join ',', map { '?' } (1 .. (scalar $types_param->()))
+            },
+            args => $types_param,
+        },
+    );
+
+    my ($req, @args);
+    eval {
+        for my $type (keys %cases) {
+            if ($self->param('type') eq $type) {
+                $req = sprintf $cases{$type}->{req}, ($cases{$type}->{post} || sub {})->();
+                @args = $cases{$type}->{args}->();
+            }
+        }
+    };
+
+    return $self->render(json => { status => 400, error => "$@" }) if $@;
+
+    my $r = select_all($self, $req, @args);
+    return $self->render(json => { status => 500, error => "db_error" }) unless defined $r;
+
+    return $self->render(json => { status => 200, count => scalar(@$r), data => $r });
+}
+
 sub calc_types {
     my $self = shift;
 
     my $r = select_all $self, "select id, name from calc_types order by order_index";
     return $self->render(json => { ok => 1, count => scalar @$r, types => $r });
+}
 
+sub company_info {
+    my $self = shift;
+
+    my $obj_id = $self->param('obj_id');
+    return $self->render(json => { status => 400, error => 'obj_id is undefined' }) unless defined $obj_id;
+
+    my $r = select_all $self, "select c.id as company_id, c.name as company_name, b.name as addr " .
+        "from buildings b join companies c on c.id = b.company_id where b.id = ?", $obj_id;
+
+    return $self->render(json => { status => 500, error => 'db error' }) unless defined $r;
+    return $self->render(json => { status => 200, error => 'object not found' }) unless @$r;
+
+    $r = $r->[0];
+    my $c_id = $r->{company_id};
+    my %to_return = (
+        company => $r->{company_name},
+        addr => $r->{addr},
+    );
+
+    $r = select_all $self, "select status, name as addr, corpus, id, status = 'Голова' as is_primary, bm.characteristic as type, " .
+        "bm.reconstruction_date as reconstruction_date, bm.build_date as build_date, " .
+        "cast(bm.cost as signed) as cost, bm.heat_load as heat_load from buildings join buildings_meta bm on bm.building_id = id " .
+        "where company_id = ? order by addr", $c_id;
+    return $self->render(json => { status => 500, error => 'db_error' }) unless defined $r;
+
+    $to_return{buildings} = $r;
+    $to_return{count} = scalar @$r;
+    return $self->render(json => \%to_return);
 }
 
 1;
