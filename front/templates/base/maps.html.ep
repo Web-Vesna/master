@@ -187,12 +187,11 @@ function on_balloon_open(balloon_id, need_change_pos) {
         container_wrapper.appendTo($info);
         $balloon_info.show();
         $("#content-l").mCustomScrollbar();
+
+        $('html, body').animate({ scrollTop: $('#balloon-addr').offset().top }, 500);
     }).fail(function () {
         // TODO: add a message
     }).always(function () { $loading_container.hide(); });
-
-    $('html, body').animate({ scrollTop: $('#balloon-addr').offset().top }, 500);
-
 }
 
 function on_filter_type_changed(e) {
