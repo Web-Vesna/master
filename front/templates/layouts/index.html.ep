@@ -74,10 +74,12 @@
                   <em id="em_maps"></em>
                   <span>На карте</span>
                 </a></li>
+                
                 <li><a href="#">
                   <em id="em_catalogue"></em>
                   <span>Справочники</span>
                 </a></li>
+                 
                 <li><a href="#">
                   <em id="em_estimate"></em>
                   <span>Таблицы смет</span>

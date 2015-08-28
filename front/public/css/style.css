@@ -200,7 +200,7 @@ header .data-box b{
 /* Content ============================================================= */
 .content{
 	position:relative;
-	padding:0 0 106px 0;
+	padding:0 0 146px 0;
 }
 
 
@@ -500,7 +500,7 @@ header .data-box b{
 	margin-bottom: 1.46em;
 }
 .report-request-form .report-map{
-	width: 900px;
+	width: 1000px;
 	height: 400px;
 	display: block;
 	margin-left: auto;
@@ -2027,13 +2027,13 @@ y-axis
 	.mCSB_scrollTools .mCSB_dragger{ /* the draggable element */
 		cursor: pointer;
 		width: 36px;
-		height: 144px; /* minimum dragger height */
+	/*	height: 144px;*/ /* minimum dragger height */
 		z-index: 1;
-		background: #89c211 url(../images/bg-scrollbar-thumb-y.png) 0 0 no-repeat;
+		background: #89c211 url(../images/bg-scrollbar-thumb-y.png) 0 center no-repeat;
 	}
 	.mCSB_scrollTools .mCSB_dragger:hover{
 		background-color: #414a2e;
-		background-position: -36px top;
+		background-position: -36px center;
 	}
 
 	
@@ -2176,7 +2176,7 @@ y-axis
 .box-vert-scroll li a{
 	background-color: #fff;
 	display: block;
-	padding:5px 0 5px 19px;
+	padding:5px 55px 5px 19px;
 
 	   -moz-transition: all 0.5s ease-out;
   -o-transition: all 0.5s ease-out;
@@ -2255,4 +2255,49 @@ table.address-table tr td:nth-child(3),
 table.address-table tr td:nth-child(4){
     text-align: right!important;   
     padding-right: 10px;
+}
+
+#loading-container-1{
+        /* background: rgba(200, 200, 200, 0.6) url("../images/loading.gif") no-repeat scroll center center; */
+        background: transparent url("../images/loading.gif") no-repeat scroll center center;
+        height: 100%;
+        left: 0;
+        overflow: hidden;
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 1042;
+        /*
+        -moz-transition: all 0.5s ease-out;
+        -o-transition: all 0.5s ease-out;
+        -webkit-transition: all 0.5s ease-out;
+        */
+}
+#filter-cost-container label,
+#filter-repair-container label{
+    display: inline;
+    margin: 0px 10px;
+    line-height: 2.15em;
+}
+
+#filter-cost-container input[type="text"],
+#filter-repair-container input[type="text"]{
+    height: 2.15em;
+    padding: 0 0.63em 0 0.63em;
+    border: 1px solid #89c211;
+    -webkit-border-radius: 0px;
+    -moz-border-radius: 0px;
+    border-radius: 0px;
+    background-color: #fff;
+    color: #93978c;
+    font: 1.2em/2.1em Tahoma, Arial, sans-serif;
+}
+#filter-cost-container input[type="text"]{
+    width: 5em;
+}
+#filter-repair-container input[type="text"]{
+    width: 3em;
+}
+#filter-types-styler{
+     margin-top: 1.83em;
 }
