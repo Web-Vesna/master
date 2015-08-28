@@ -8,6 +8,7 @@ use File::Temp;
 use Data::Dumper;
 
 use Mojo::JSON qw(decode_json encode_json);
+use MainConfig qw( COOKIE_SECRET );
 
 sub check_params {
     my $self = shift;
@@ -29,7 +30,7 @@ sub startup {
     # Documentation browser under "/perldoc"
     $self->plugin('PODRenderer');
     $self->plugin('RenderFile');
-    $self->secrets([qw( 0i+hE8eWI0pG4DOH55Kt2TSV/CJnXD+gF90wy6O0U0k= )]);
+    $self->secrets([ COOKIE_SECRET ]);
 
     $self->app->types->type(xlsx => 'application/vnd.ms-excel');
 

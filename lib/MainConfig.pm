@@ -38,6 +38,9 @@ my %PARAMS = (
     MEMC_PORT       => 11211,
 
     GENERAL_URL     => '',
+    COOKIE_PATH     => '/',
+    COOKIE_DOMAIN   => undef,
+    COOKIE_SECRET   => '',
 
     EXP_TIME        => 60 * 60 * 24,
 );

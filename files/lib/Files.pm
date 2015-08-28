@@ -1,7 +1,7 @@
 package Files;
 use Mojo::Base 'Mojolicious';
 
-use MainConfig qw( URL_404 );
+use MainConfig qw( URL_404 COOKIE_SECRET );
 
 # This method will run once at server start
 sub startup {
@@ -10,7 +10,7 @@ sub startup {
     # Documentation browser under "/perldoc"
     $self->plugin('PODRenderer');
     $self->plugin('RenderFile');
-    $self->secrets([qw( 0i+hE8eWI0pG4DOH55Kt2TSV/CJnXD+gF90wy6O0U0k= )]);
+    $self->secrets([ COOKIE_SECRET ]);
 
     # Router
     my $r = $self->routes;

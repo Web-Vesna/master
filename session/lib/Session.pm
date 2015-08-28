@@ -1,13 +1,15 @@
 package Session;
 use Mojo::Base 'Mojolicious';
 
+use MainConfig qw( COOKIE_SECRET );
+
 # This method will run once at server start
 sub startup {
     my $self = shift;
 
     # Documentation browser under "/perldoc"
     $self->plugin('PODRenderer');
-    $self->secrets([qw( UpkOxuFW3x )]);
+    $self->secrets([ COOKIE_SECRET ]);
 
     # Router
     my $r = $self->routes;

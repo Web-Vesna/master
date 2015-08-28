@@ -2,7 +2,7 @@ package Front;
 use Mojo::Base 'Mojolicious';
 
 use AccessDispatcher qw( send_request role_less_then redirect_to_login );
-use MainConfig qw( FILES_HOST GENERAL_URL SESSION_PORT );
+use MainConfig qw( FILES_HOST GENERAL_URL SESSION_PORT COOKIE_SECRET );
 
 my %access_rules = (
     '/'          => 'user',
@@ -22,7 +22,7 @@ sub startup {
 
     # Documentation browser under "/perldoc"
     $self->plugin('PODRenderer');
-    $self->secrets([qw( 0i+hE8eWI0pG4DOH55Kt2TSV/CJnXD+gF90wy6O0U0k= )]);
+    $self->secrets([ COOKIE_SECRET ]);
 
     $self->routes->get('/login')->to(cb => sub {
         my $self = shift;
