@@ -8,6 +8,8 @@ use Mojo::UserAgent;
 use Mojo::Util qw( url_escape );
 use Data::Dumper::OneLine;
 
+use Mojo::URL;
+
 use MainConfig qw( :all );
 
 use base qw(Exporter);
@@ -157,12 +159,14 @@ sub redirect_to_login {
     my $self = shift;
 
     my $url = URL_401;
-    unless ($url =~ /^http/) {
+    my $base_url = GENERAL_URL;
+    if ($url =~ /^http/) {
+        $base_url = $self->url_for->base . GENERAL_URL;
+    } else {
         $url = GENERAL_URL . URL_401;
     }
 
-    return $self->redirect_to(GENERAL_URL . $self->url_for('login')->query(
-            return_url => $self->url_for->base . GENERAL_URL . $self->url_with->query([])));
+    return $self->redirect_to(Mojo::URL->new($url)->query(return_url => $base_url . $self->url_with->query([])));
 }
 
 sub _session {
