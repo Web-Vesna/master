@@ -1,7 +1,7 @@
 package Front;
 use Mojo::Base 'Mojolicious';
 
-use AccessDispatcher qw( send_request role_less_then );
+use AccessDispatcher qw( send_request role_less_then redirect_to_login );
 use MainConfig qw( FILES_HOST GENERAL_URL SESSION_PORT );
 
 my %access_rules = (
@@ -26,6 +26,7 @@ sub startup {
 
     $self->routes->get('/login')->to(cb => sub {
         my $self = shift;
+        $self->stash(return_url => ($self->param('return_url') // GENERAL_URL));
         $self->stash(general_url => GENERAL_URL);
         $self->render(template => 'base/login');
     });
@@ -45,15 +46,14 @@ sub startup {
         );
         return $self->render(status => 500) unless $res;
 
-        my $url = $r->url;
-        $url =~ s#^(/[^?]*)#$1#;
+        my $url = $self->url_for('current');
 
         if (defined $res->{status}) {
             return $self->render(template => 'base/login') && undef if $res->{status} == 401;
             return $self->render(status => $res->{status}) && undef;
         }
 
-        return $self->redirect_to(GENERAL_URL . '/login') && undef if $res->{error};
+        return redirect_to_login($self) && undef if $res->{error};
 
         $self->stash(general_url => GENERAL_URL, url => $url);
         $self->stash(files_url => FILES_HOST);

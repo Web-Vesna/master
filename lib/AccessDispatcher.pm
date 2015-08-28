@@ -18,6 +18,7 @@ our @EXPORT_OK = qw(
     check_session
     role_less_then
     _session
+    redirect_to_login
 );
 
 our %EXPORT_TAGS = (
@@ -151,6 +152,18 @@ my %access_control = (
         roles => 'manager',
     },
 );
+
+sub redirect_to_login {
+    my $self = shift;
+
+    my $url = URL_401;
+    unless ($url =~ /^http/) {
+        $url = GENERAL_URL . URL_401;
+    }
+
+    return $self->redirect_to(GENERAL_URL . $self->url_for('login')->query(
+            return_url => $self->url_for->base . GENERAL_URL . $self->url_with->query([])));
+}
 
 sub _session {
     my ($self, $val) = @_;

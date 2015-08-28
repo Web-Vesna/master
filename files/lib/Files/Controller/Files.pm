@@ -10,7 +10,7 @@ use Encode qw( decode );
 use File::stat;
 
 use DB qw( :all );
-use AccessDispatcher qw( check_session _session );
+use AccessDispatcher qw( check_session _session redirect_to_login );
 use MainConfig qw( :all );
 
 sub open_memc {
@@ -54,7 +54,7 @@ sub list {
     my $ret = check_session $self;
 
     _session($self, { expired => 1 }) if $ret->{error};
-    return $self->redirect_to(URL_401) if $ret->{error} && $ret->{error} eq 'unauthorized';
+    return redirect_to_login($self) if $ret->{error} && $ret->{error} eq 'unauthorized';
 
     $self->load_paths;
 
@@ -108,7 +108,7 @@ sub get {
     my $ret = check_session $self;
 
     _session($self, { expired => 1 }) if $ret->{error};
-    return $self->redirect_to(URL_401) if $ret->{error} && $ret->{error} eq 'unauthorized';
+    return redirect_to_login($self) if $ret->{error} && $ret->{error} eq 'unauthorized';
 
     my $f_info = $self->param('f');
     return $self->redirect_to(URL_404) unless $f_info;
