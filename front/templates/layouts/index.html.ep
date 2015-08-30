@@ -63,7 +63,7 @@
 % if ($role ne 'user') {
        <!-- edit-data -->
         <div class="edit-data">
-            <h2><a href="#"><span></span></a>Редактировать данные</h2>
+            <h2><a href="#"><span></span></a>&nbsp;<!--Редактировать данные--></h2>
             <nav>
               <ul>
                 <li><a href="<%= $general_url %>/" <%= stash('url') eq '/' ? "class=active" : '' %>>
@@ -107,8 +107,22 @@
 </div>
 <!--===============================/footer==============================-->
 <footer>
-    <p>&copy;2015 &laquo;Аудит Предприятий Энергетического Комплекса&raquo;</p>
+% my @time = localtime(time);
+    <p>&copy;&nbsp;<%= $time[5] + 1900 %> &laquo;Аудит Предприятий Энергетического Комплекса&raquo;</p>
     <a title="ВЕСНА" href="#"><img src="<%= $general_url %>/images/springtime.png" alt=""></a>
 </footer>
+<!--=============================== /Modal ==============================-->
+<!--========== modal-enter ==========-->
+<div id="modal-enter" class="reveal-modal modal-enter">
+ <div class="modal-center">
+    <h6>К сожалению по вашему запросу ничего не найдено</h6>
+    <p>Измените критерий поиска<br  />и попробуйте снова</p>
+    <div>
+      <a class="close-reveal-modal"  href="#">ХОРОШО</a>
+    </div>
+ </div>
+</div>
+<!--========== /modal-enter ==========-->
+<!--=============================== /Modal ==============================-->
 </body>
 </html>

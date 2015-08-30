@@ -72,7 +72,7 @@ function set_placemarks(placemarks_list) {
     });
 
     map.setBounds(objects_manager.getBounds(), {
-        checkZoomRange: false,
+        checkZoomRange: true,
         zoomMargin: 30,
         preciseZoom: true,
         options: {
@@ -219,8 +219,10 @@ function do_filter(type, args) {
             return;
         }
 
-        if (data.count == 0)
+        if (data.count == 0) {
+            $("#modal-enter").reveal();
             return;
+        }
 
         var placemarks_list = {};
         data.data.forEach(function (d) {
