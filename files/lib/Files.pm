@@ -10,7 +10,7 @@ sub startup {
     # Documentation browser under "/perldoc"
     $self->plugin('PODRenderer');
     $self->plugin('RenderFile');
-    $self->secrets([ COOKIE_SECRET ]);
+    $self->secrets(COOKIE_SECRET);
 
     # Router
     my $r = $self->routes;

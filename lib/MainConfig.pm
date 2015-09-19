@@ -41,6 +41,7 @@ my %PARAMS = (
     COOKIE_PATH     => '/',
     COOKIE_DOMAIN   => undef,
     COOKIE_SECRET   => '',
+    MEMC_KEY        => '',
 
     EXP_TIME        => 60 * 60 * 24,
 );
@@ -56,8 +57,15 @@ my %CFG;
 
 open my $f, '<', $path or croak "Can't open $path: $!\n";
 while (<$f>) {
-    $CFG{$1} = $2 if /(\w*)\s*=\s*(.*)/;
+    my ($name, $val) = /(\w*)\s*=\s*(.*)/;
+    next unless $name;
+    if ($val =~ /,/) {
+        $val = [split ',', $val];
+    }
+    $CFG{$name} = $val;
 }
+
+$CFG{COOKIE_SECRET} = [$CFG{COOKIE_SECRET}] if ref($CFG{COOKIE_SECRET}) ne "ARRAY";
 
 close $f;
 

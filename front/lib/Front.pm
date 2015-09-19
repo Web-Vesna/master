@@ -22,7 +22,7 @@ sub startup {
 
     # Documentation browser under "/perldoc"
     $self->plugin('PODRenderer');
-    $self->secrets([ COOKIE_SECRET ]);
+    $self->secrets(COOKIE_SECRET);
 
     $self->routes->get('/login')->to(cb => sub {
         my $self = shift;
