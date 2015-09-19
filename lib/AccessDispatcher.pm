@@ -166,7 +166,11 @@ sub redirect_to_login {
         $url = GENERAL_URL . URL_401;
     }
 
-    return $self->redirect_to(Mojo::URL->new($url)->query(return_url => $base_url . $self->url_with->query([])));
+    my $to_redirect = $url;
+    if ($self->url_with->query([]) ne '/') {
+        $to_redirect = Mojo::URL->new($url)->query(return_url => $base_url . $self->url_with->query([]));
+    }
+    return $self->redirect_to($to_redirect);
 }
 
 sub _session {

@@ -1,7 +1,7 @@
 package Front;
 use Mojo::Base 'Mojolicious';
 
-use AccessDispatcher qw( send_request role_less_then redirect_to_login );
+use AccessDispatcher qw( send_request role_less_then redirect_to_login _session );
 use MainConfig qw( FILES_HOST GENERAL_URL SESSION_PORT COOKIE_SECRET );
 
 my %access_rules = (
@@ -26,8 +26,28 @@ sub startup {
 
     $self->routes->get('/login')->to(cb => sub {
         my $self = shift;
+
         $self->stash(return_url => ($self->param('return_url') // GENERAL_URL));
         $self->stash(general_url => GENERAL_URL);
+
+        if (my $sid = $self->signed_cookie('session')) {
+            my $res = send_request($self,
+                method => 'get',
+                url => 'about',
+                port => SESSION_PORT,
+                args => {
+                    user_agent => $self->req->headers->user_agent,
+                    session_id => $sid,
+                },
+            );
+            return $self->render(status => 500) && undef unless $res;
+
+            if ($res && !$res->{error}) {
+                return $self->redirect_to($self->param('return_url') // GENERAL_URL) && undef;
+            }
+        }
+
+        _session($self, { expired => 1 });
         $self->render(template => 'base/login');
     });
 
@@ -44,7 +64,7 @@ sub startup {
                 session_id => $self->signed_cookie('session'),
             },
         );
-        return $self->render(status => 500) unless $res;
+        return $self->render(status => 500) && undef unless $res;
 
         my $url = $self->url_for('current');
 
@@ -53,7 +73,10 @@ sub startup {
             return $self->render(status => $res->{status}) && undef;
         }
 
-        return redirect_to_login($self) && undef if $res->{error};
+        if ($res->{error}) {
+            _session($self, { expired => 1 });
+            return redirect_to_login($self) && undef;
+        }
 
         $self->stash(general_url => GENERAL_URL, url => $url);
         $self->stash(files_url => FILES_HOST);
