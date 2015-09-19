@@ -43,6 +43,8 @@ my %PARAMS = (
     COOKIE_SECRET   => '',
     MEMC_KEY        => '',
 
+    ALLOW_ORIGIN    => '',
+
     EXP_TIME        => 60 * 60 * 24,
 );
 
