@@ -8,7 +8,7 @@ use Digest::MD5 qw( md5_hex );
 use Data::Dumper::OneLine;
 use Cache::Memcached;
 
-sub _memc_key() { "apek_energo_" }
+sub _memc_key() { MEMC_KEY }
 
 sub open_memc {
     my $self = shift;

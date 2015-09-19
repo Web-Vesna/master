@@ -30,7 +30,7 @@ sub startup {
     # Documentation browser under "/perldoc"
     $self->plugin('PODRenderer');
     $self->plugin('RenderFile');
-    $self->secrets([ COOKIE_SECRET ]);
+    $self->secrets(COOKIE_SECRET);
 
     $self->app->types->type(xlsx => 'application/vnd.ms-excel');
 
