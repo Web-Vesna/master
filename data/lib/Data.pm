@@ -29,6 +29,7 @@ sub startup {
     $r->get('/objects')->to('data#objects');
     $r->get('/objects/filter')->to('data#filter_objects');
     $r->get('/calc_types')->to('data#calc_types');
+    $r->get('/conn_types')->to('data#conn_types');
 
     $r->get('/build')->to('results#build');
     $r->get('/rebuild_cache')->to('results#rebuild_cache');

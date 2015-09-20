@@ -26,6 +26,14 @@ sub districts {
     return $self->render(json => { ok => 1, count => scalar @$r, districts => $r });
 }
 
+sub conn_types {
+    my $self = shift;
+
+    my $r = select_all($self, 'select distinct(characteristic) from buildings_meta where characteristic != "" order by characteristic');
+    return return_500 $self unless $r;
+    return $self->render(json => { ok => 1, count => scalar @$r, conn_types => $r });
+}
+
 sub companies {
     my $self = shift;
 

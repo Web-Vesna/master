@@ -5,19 +5,19 @@
         <div class="ui centered grid">
             <div class="sixteen wide column">
                 <div class="ui three steps">
-                    <a class="active step">
+                    <a class="active step" id="step-1-nav">
                         <i class="sitemap icon"></i>
                         <div class="content">
                             <div class="title">Организация</div>
                         </div>
                     </a>
-                        <a class="disabled step">
+                        <a class="disabled step" id="step-2-nav">
                         <i class="building icon"></i>
                         <div class="content">
                             <div class="title">Адрес</div>
                         </div>
                     </a>
-                    <a class="disabled step">
+                    <a class="disabled step" id="step-3-nav">
                         <i class="exchange icon"></i>
                         <div class="content">
                             <div class="title">Объекты</div>
@@ -59,48 +59,426 @@
 
             <!-- STEP 2 -->
             <div class="step-2 twelve wide center aligned column">
-                <h3 class="ui header" id="ttl-company"></h3>
-                <h4 class="ui header" id="ttl-address"></h4>
+                <h3 class="ui header ttl-company"></h3>
+                <h4 class="ui header ttl-address"></h4>
             </div>
             <div class="step-2 five wide column">
                 <form class="ui form">
                     <div class="field required">
                         <label>Тип присоединения:</label>
-                        <div id="type" class="ui fluid selection dropdown">
+                        <div class="ui fluid selection dropdown" id="conn_type_sel">
                             <input type="hidden" name="connection-type">
                             <i class="dropdown icon"></i>
                             <div class="default text">---</div>
                                 <div class="menu">
-                                    <div class="item" data-value="0">ТВ</div>
-                                    <div class="item" data-value="1">ТВО</div>
-                                    <div class="item" data-value="2">ТП</div>
-                                    <div class="item" data-value="3">ТПЭ</div>
+                                    % for my $c (@$conn_types) {
+                                        <div class="item" data-value="<%= $c->{characteristic} %>"><%= $c->{characteristic} %></div>
+                                    % }
                                 </div>
                         </div>
                     </div>
                     <div class="field required">
                         <label>Нагрузка, кВт:</label>
-                        <input type="text" placeholder="кВт">
+                        <input type="text" placeholder="кВт" id="edt-heat_load" key="heat_load">
                     </div>
                     <div class="field">
                         <label>Дата ввода в экплуатацию:</label>
-                        <input type="text">
+                        <input type="text" id="edt-expl" key="build_date">
                     </div>
                     <div class="field">
                         <label>Дата капитального ремонта:</label>
-                        <input type="text">
+                        <input type="text" id="edt-repair" key="reconstruction_date">
                     </div>
                     <div class="ui checkbox">
-                        <input type="checkbox" name="example">
+                        <input type="checkbox" name="example" id="chb-no_edit">
                         <label>Закрыть редактирование</label>
                     </div>
                 </form>
             </div>
             <!-- END OF STEP 2 -->
 
+            <!-- STEP 3 -->
+            <div class="step-3 sixteen wide column">
+                <h3 class="ui header ttl-company"></h3>
+                <h4 class="ui header ttl-address"></h4>
+            </div>
+            <div id="ab_row" class="step-3 sixteen wide right aligned column">
+                <div class="ui small basic icon buttons">
+                    <button id="create_button" class="ui button"><i class="file outline icon"></i></button>
+                    <button id="edit_button" class="ui button"><i class="write icon"></i></button>
+                    <button id="delete_button" class="ui button"><i class="remove icon"></i></button>
+                </div>
+            </div>
+            <div id="table" class="step-3 sixteen wide column">
+                <table class="ui selectable celled very compact small table">
+                    <thead>
+                        <tr>
+                            <th class="center aligned">Наименование объекта</th>
+                            <th class="center aligned">Характеристика/ Материал</th>
+                            <th class="center aligned">Количество,<br/>п.м./шт</th>
+                            <th class="center aligned">Диаметр, мм</th>
+                            <th class="center aligned">Тип изоляции</th>
+                            <th class="center aligned">Способ прокладки</th>
+                            <th class="center aligned">Год ввода в экспл</th>
+                            <th class="center aligned">Год посл. реконс.</th>
+                            <th class="center aligned">Износ, %</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <div id="popup" class="ui flowing popup top left transition">TEST</div>
+                        <tr id="marked" class="positive">
+                            <td class="single line">
+                                Трубопровод отопления (удлинение)
+                            </td>
+                            <td>
+                                сталь
+                            </td>
+                            <td>
+                                3
+                            </td>
+                            <td>
+                                200
+                            </td>
+                            <td>
+                                Минеральная вата
+                            </td>
+                            <td>
+                                Внутри помещений
+                            </td>
+                            <td>
+                                2001
+                            </td>
+                            <td>
+
+                            </td>
+                            <td>
+                                50
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="single line">
+                                Трубопровод отопления (удлинение)
+                            </td>
+                            <td>
+                                сталь
+                            </td>
+                            <td>
+                                3
+                            </td>
+                            <td>
+                                200
+                            </td>
+                            <td>
+                                Минеральная вата
+                            </td>
+                            <td>
+                                Внутри помещений
+                            </td>
+                            <td>
+                                2001
+                            </td>
+                            <td>
+
+                            </td>
+                            <td>
+                                50
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="single line">
+                                Трубопровод отопления (удлинение)
+                            </td>
+                            <td>
+                                сталь
+                            </td>
+                            <td>
+                                3
+                            </td>
+                            <td>
+                                200
+                            </td>
+                            <td>
+                                Минеральная вата
+                            </td>
+                            <td>
+                                Внутри помещений
+                            </td>
+                            <td>
+
+                            </td>
+                            <td>
+                                2008
+                            </td>
+                            <td>
+                                50
+                            </td>
+                        </tr>
+                        <tr id="marked" class="positive">
+                            <td class="single line">
+                                Трубопровод отопления (удлинение)
+                            </td>
+                            <td>
+                                сталь
+                            </td>
+                            <td>
+                                3
+                            </td>
+                            <td>
+                                200
+                            </td>
+                            <td>
+                                Минеральная вата
+                            </td>
+                            <td>
+                                Внутри помещений
+                            </td>
+                            <td>
+                                2001
+                            </td>
+                            <td>
+
+                            </td>
+                            <td>
+                                50
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="single line">
+                                Трубопровод отопления (удлинение)
+                            </td>
+                            <td>
+                                сталь
+                            </td>
+                            <td>
+                                3
+                            </td>
+                            <td>
+                                200
+                            </td>
+                            <td>
+                                Минеральная вата
+                            </td>
+                            <td>
+                                Внутри помещений
+                            </td>
+                            <td>
+                                2001
+                            </td>
+                            <td>
+
+                            </td>
+                            <td>
+                                50
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="single line">
+                                Трубопровод отопления (удлинение)
+                            </td>
+                            <td>
+                                сталь
+                            </td>
+                            <td>
+                                3
+                            </td>
+                            <td>
+                                200
+                            </td>
+                            <td>
+                                Минеральная вата
+                            </td>
+                            <td>
+                                Внутри помещений
+                            </td>
+                            <td>
+                                2001
+                            </td>
+                            <td>
+
+                            </td>
+                            <td>
+                                50
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="single line">
+                                Трубопровод отопления (удлинение)
+                            </td>
+                            <td>
+                                сталь
+                            </td>
+                            <td>
+                                3
+                            </td>
+                            <td>
+                                200
+                            </td>
+                            <td>
+                                Минеральная вата
+                            </td>
+                            <td>
+                                Внутри помещений
+                            </td>
+                            <td>
+                                2001
+                            </td>
+                            <td>
+
+                            </td>
+                            <td>
+                                50
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="single line">
+                                Трубопровод отопления (удлинение)
+                            </td>
+                            <td>
+                                сталь
+                            </td>
+                            <td>
+                                3
+                            </td>
+                            <td>
+                                200
+                            </td>
+                            <td>
+                                Минеральная вата
+                            </td>
+                            <td>
+                                Внутри помещений
+                            </td>
+                            <td>
+                                2001
+                            </td>
+                            <td>
+
+                            </td>
+                            <td>
+                                50
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div id="edit_modal" class="ui small modal step-3">
+                <i class="close icon"></i>
+                <div class="header">
+                    Форма редактирования
+                </div>
+                <div class="content">
+                    <div class="description ui centered grid">
+                        <div class="twelve wide column">
+                            <form class="ui form">
+                                <div class="required field">
+                                    <label>Наименование объекта:</label>
+                                    <div class="ui fluid selection dropdown">
+                                        <input type="hidden" name="gender">
+                                        <i class="dropdown icon"></i>
+                                        <div class="default text">---</div>
+                                        <div class="menu">
+                                            <div class="item" data-value="3">Трубопровод котельной</div>
+                                            <div class="item" data-value="2">Запорная арматура</div>
+                                            <div class="item" data-value="1">Дутьевой вентилятор</div>
+                                            <div class="item" data-value="0">Дымосос</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="two fields">
+                                    <div class="field">
+                                        <label>Характеристика/материал:</label>
+                                        <input type="text">
+                                    </div>
+                                    <div class="field">
+                                        <label>Количество, п.м./шт:</label>
+                                        <input type="text">
+                                    </div>
+                                </div>
+                                <div class="two fields">
+                                    <div class="field">
+                                        <label>Диаметр, мм:</label>
+                                        <input type="text">
+                                    </div>
+                                    <div class="field">
+                                        <label>Тип изоляции:</label>
+                                        <div id="type" class="ui fluid selection dropdown">
+                                            <input type="hidden" name="gender">
+                                            <i class="dropdown icon"></i>
+                                            <div class="default text">---</div>
+                                            <div class="menu">
+                                                <div class="item" data-value="3">Минеральная вата</div>
+                                                <div class="item" data-value="2">Металлический кожух</div>
+                                                <div class="item" data-value="1">Маты минераловатные</div>
+                                                <div class="item" data-value="0">Бетонная изоляция</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="two fields">
+                                    <div class="field">
+                                        <label>Способ прокладки тепловых сетей:</label>
+                                        <div id="type" class="ui fluid selection dropdown">
+                                            <input type="hidden" name="gender">
+                                            <i class="dropdown icon"></i>
+                                            <div class="default text">---</div>
+                                            <div class="menu">
+                                                <div class="item" data-value="1">Внутри помещений</div>
+                                                <div class="item" data-value="0">В непроходных каналах</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="field">
+                                        <label>Инструментальный износ:</label>
+                                        <input type="text">
+                                    </div>
+                                </div>
+                                <div class="two fields">
+                                    <div class="field">
+                                        <label>Год ввода в эксплуатацию:</label>
+                                        <input type="text">
+                                    </div>
+                                    <div class="field">
+                                        <label>Год последней реконструкции:</label>
+                                        <input type="text">
+                                    </div>
+                                </div>
+
+                            </form>
+                        </div>
+                        <div class="sixteen wide column">
+                            <div class="right floated ui deny button">
+                                Отмена
+                            </div>
+                            <div class="right floated ui positive button">
+                                Сохранить
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="delete_modal" class="ui small modal step-3">
+                <div class="header">
+                    Удаление объекта
+                </div>
+                <div class="content">
+                    <p>Вы уверены, что хотите удалить выбранный объект?</p>
+                </div>
+                <div class="actions">
+                    <div class="ui negative button">
+                        Отмена
+                    </div>
+                    <div class="ui positive right labeled icon button">
+                        Удалить
+                        <i class="checkmark icon"></i>
+                    </div>
+                </div>
+            </div>
+            <!-- END OF STEP 3 -->
+
             <div class="sixteen wide column">
                 <a href="#" class="step-2 step-3 ui basic button left floated" onclick="prev_step(); return false;">Назад</a>
                 <a href="#" class="step-1 step-2 ui basic button right floated disabled" id="btn_next" onclick="next_step(); return false;">Далее</a>
+                <a href="<%= $general_url %>/catalogues" class="step-3 ui basic button right floated">Готово</a>
                 <a href="#" class="ui basic button right floated" onclick="print(); return false;">Печать</a>
             </div>
         </div>
@@ -166,7 +544,7 @@
         function on_radio_click($o) {
             selected_object = { building: $o.attr('name') };
             current_object.building = $o.attr('name');
-            $("#ttl-address").text($o.parent().children('label').text());
+            $(".ttl-address").text($o.parent().children('label').text());
         }
         function update_addresses(org) {
             var arr = downloaded_addresses[org];
@@ -189,7 +567,7 @@
             onChange: function (value, name) {
                 if (value == "")
                     return;
-                $("#ttl-company").text(name);
+                $(".ttl-company").text(name);
                 if (downloaded_addresses[value]) {
                     update_addresses(value);
                 } else {
@@ -213,12 +591,50 @@
                 }
             },
         });
+        function toggle_next_btn() {
+            if (current_object.conn_type && current_object.heat_load
+                    && (current_object.reconstruction_date || current_object.build_date)) {
+                $("#btn_next").removeClass('disabled');
+            } else {
+                $("#btn_next").addClass('disabled');
+            }
+        }
+        $("#conn_type_sel").dropdown({
+            'custom change': 'activate',
+            onChange: function (value, name) {
+                current_object.conn_type = value;
+                toggle_next_btn();
+            },
+        });
         $addr_sel.on('click', '.field input', function () {
             // dirty hack =( Can't trigger 'refresh' for semantic-ui radio button
             var $this = $(this);
             $this.parent().parent().parent().find('input').prop('checked', false);
             $this.prop('checked', true);
             on_radio_click($this);
+        });
+        $("#edt-heat_load,#edt-expl,#edt-repair").on('change', function () {
+            var $this = $(this);
+            current_object[$this.attr('key')] = $this.val();
+            toggle_next_btn();
+        }).on('keydown', function (e) {
+            // Allow: backspace, delete, tab, escape, enter and .
+            if ($.inArray(e.keyCode, [9, 46, 8, 27, 13, 110]) !== -1 ||
+                (e.keyCode == 65 && ( e.ctrlKey === true || e.metaKey === true ) ) ||
+                (e.keyCode >= 35 && e.keyCode <= 40)) {
+                     return;
+            }
+            // decimal point processing
+            if (!e.shiftKey && e.keyCode == 190
+                    && $(this).attr('key') == 'heat_load'
+                    && $(this).val().indexOf(".") == -1
+                    && $(this).val().length > 0) {
+                return;
+            }
+            // Ensure that it is a number and stop the keypress
+            if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+                e.preventDefault();
+            }
         });
     });
 
@@ -234,8 +650,15 @@
             current_step = 1;
         }
 
+        if (current_step == 1) {
+            $("#btn_next").addClass('disabled');
+        }
+
         $('.step-' + current_step).hide();
+        $('#step-' + current_step + '-nav').addClass('disabled').removeClass('active');
         $('.step-' + ++current_step).show();
+        $('#step-' + current_step + '-nav').addClass('active').removeClass('disabled');
+        $('.modal').hide();
     }
 
     function prev_step() {
@@ -246,8 +669,18 @@
             current_step = 3;
         }
 
+        if (current_step == 2) {
+            $("#conn_type_sel").dropdown('clear');
+            $("#edt-heat_load,#edt-expl,#edt-repair").val('');
+            $("#chb-no_edit").prop('checked', false);
+
+            current_object = { region: current_object.region, building: current_object.building };
+        }
+
         $('.step-' + current_step).hide();
+        $('#step-' + current_step + '-nav').addClass('disabled').removeClass('active');
         $('.step-' + --current_step).show();
+        $('#step-' + current_step + '-nav').addClass('active').removeClass('disabled');
     }
 % end
     </div>
