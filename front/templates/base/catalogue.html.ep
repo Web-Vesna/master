@@ -25,7 +25,9 @@
                     </a>
                 </div>
             </div>
-            <div class="ten wide column">
+
+            <!-- STEP 1 -->
+            <div class="step-1 ten wide column">
                 <div id="region_sel" class="ui fluid selection dropdown mrg">
                     <input type="hidden" name="gender">
                     <i class="dropdown icon"></i>
@@ -38,7 +40,7 @@
                     </div>
                 </div>
             </div>
-            <div class="ten wide column">
+            <div class="step-1 ten wide column">
                 <div id="org_sel" class="ui fluid selection dropdown">
                     <input type="hidden" name="gender">
                     <i class="dropdown icon"></i>
@@ -46,21 +48,67 @@
                     <div class="menu items-list"></div>
                 </div>
             </div>
-            <div id="address_sel" class="ten wide column" style="display:none">
+            <div id="address_sel" class="step-1 ten wide column" style="display:none">
                 <div class="ui form">
                     <div class="grouped fields">
                         <label>Выберите адрес:</label>
                     </div>
                 </div>
             </div>
+            <!-- END OF STEP 1 -->
+
+            <!-- STEP 2 -->
+            <div class="step-2 twelve wide center aligned column">
+                <h3 class="ui header" id="ttl-company"></h3>
+                <h4 class="ui header" id="ttl-address"></h4>
+            </div>
+            <div class="step-2 five wide column">
+                <form class="ui form">
+                    <div class="field required">
+                        <label>Тип присоединения:</label>
+                        <div id="type" class="ui fluid selection dropdown">
+                            <input type="hidden" name="connection-type">
+                            <i class="dropdown icon"></i>
+                            <div class="default text">---</div>
+                                <div class="menu">
+                                    <div class="item" data-value="0">ТВ</div>
+                                    <div class="item" data-value="1">ТВО</div>
+                                    <div class="item" data-value="2">ТП</div>
+                                    <div class="item" data-value="3">ТПЭ</div>
+                                </div>
+                        </div>
+                    </div>
+                    <div class="field required">
+                        <label>Нагрузка, кВт:</label>
+                        <input type="text" placeholder="кВт">
+                    </div>
+                    <div class="field">
+                        <label>Дата ввода в экплуатацию:</label>
+                        <input type="text">
+                    </div>
+                    <div class="field">
+                        <label>Дата капитального ремонта:</label>
+                        <input type="text">
+                    </div>
+                    <div class="ui checkbox">
+                        <input type="checkbox" name="example">
+                        <label>Закрыть редактирование</label>
+                    </div>
+                </form>
+            </div>
+            <!-- END OF STEP 2 -->
+
             <div class="sixteen wide column">
-                <a href="step2.html" class="ui basic button right floated disabled" id="btn_next">Далее</a>
+                <a href="#" class="step-2 step-3 ui basic button left floated" onclick="prev_step(); return false;">Назад</a>
+                <a href="#" class="step-1 step-2 ui basic button right floated disabled" id="btn_next" onclick="next_step(); return false;">Далее</a>
                 <a href="#" class="ui basic button right floated" onclick="print(); return false;">Печать</a>
             </div>
         </div>
 %= javascript begin
-    var selected_object;
+    var selected_object, current_step = 1, current_object;
     $(function () {
+        $(".step-2,.step-3").hide();
+        $(".step-1").show();
         var currently_downloaded = '',
             $addr_sel = $("#address_sel"),
             downloaded_companies = {
@@ -88,7 +136,8 @@
         $("#region_sel").dropdown({
             'custom change': 'activate',
             onChange: function (value, text, $selectedItem) {
-            selected_object = { region: value };
+                selected_object = { region: value };
+                current_object = { region: value };
                 if (downloaded_companies[value]) {
                     update_companies(value);
                 } else if (currently_downloaded != value) {
@@ -114,6 +163,11 @@
             },
         }).dropdown('set selected', 'Москва');
 
+        function on_radio_click($o) {
+            selected_object = { building: $o.attr('name') };
+            current_object.building = $o.attr('name');
+            $("#ttl-address").text($o.parent().children('label').text());
+        }
         function update_addresses(org) {
             var arr = downloaded_addresses[org];
             if (!arr)
@@ -126,16 +180,16 @@
                     .append($("<div>", { 'class': 'ui radio checkbox', })
                     .append($("<input>", { 'type': 'radio', 'name': val[0], }).prop('checked', index == 0))
                     .append($("<label>").text(val[1]))));
-                if (index == 0)
-                    selected_object = { building: val[0] };
             });
+            on_radio_click($items_container.find('input').first());
             $addr_sel.show();
         }
         $("#org_sel").dropdown({
             'custom change': 'activate',
-            onChange: function (value) {
+            onChange: function (value, name) {
                 if (value == "")
                     return;
+                $("#ttl-company").text(name);
                 if (downloaded_addresses[value]) {
                     update_addresses(value);
                 } else {
@@ -164,12 +218,36 @@
             var $this = $(this);
             $this.parent().parent().parent().find('input').prop('checked', false);
             $this.prop('checked', true);
-            selected_object = { building: $this.attr('name') };
+            on_radio_click($this);
         });
     });
 
     function print() {
         window.open(window.location.origin + '<%= $general_url %>/cgi-bin/build?' + $.param(selected_object), '_blank');
+    }
+
+    function next_step() {
+        if (current_step > 3) {
+            current_step = 3;
+            return;
+        } else if (current_step < 1) {
+            current_step = 1;
+        }
+
+        $('.step-' + current_step).hide();
+        $('.step-' + ++current_step).show();
+    }
+
+    function prev_step() {
+        if (current_step <= 1) {
+            current_step = 1;
+            return;
+        } else if (current_step > 3) {
+            current_step = 3;
+        }
+
+        $('.step-' + current_step).hide();
+        $('.step-' + --current_step).show();
     }
 % end
     </div>
