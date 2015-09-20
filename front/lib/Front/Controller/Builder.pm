@@ -81,6 +81,17 @@ sub catalogue {
 
     $self->stash(districts => $r);
 
+    $r = send_request($self,
+        url => 'companies',
+        port => DATA_PORT,
+        args => {
+            region => 'Москва',
+            heads_only => 1,
+        }
+    );
+    return $self->render(template => 'base/internal_err') unless $r && $r->{companies};
+    $self->stash(companies => $r->{companies});
+
     return $self->render(template => 'base/catalogue');
 }
 

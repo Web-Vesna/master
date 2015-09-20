@@ -57,7 +57,7 @@ function select_change_controller(elements, base_url, content_filter, args_proce
                     $.ajax({
                         method: 'get',
                         url: base_url + '/cgi-bin/' + $next_elem.attr('id'),
-                        data: args_processor ? args_processor(choosen_object) : args_processor,
+                        data: args_processor ? args_processor(choosen_object) : choosen_object,
                         success: function (data) {
                             var key = $next_elem.attr('id');
                             if (data[key]) {

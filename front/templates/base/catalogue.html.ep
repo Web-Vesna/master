@@ -30,12 +30,11 @@
                     <input type="hidden" name="gender">
                     <i class="dropdown icon"></i>
                     <div class="default text">Регион</div>
-                    <div class="menu">
-% my $current = 'Москва';
-% my %regions = map { $_->{region} => $_->{id} } @{$districts->{districts}};
-% for (sort keys %regions) {
-                        <div class="item" data-value="<%= $_ %>" district_id="<%= $regions{$_} %>"><%= $_ %></div>
-% }
+                    <div class="menu items-list">
+                        % my %regions = map { $_->{region} => $_->{id} } @{$districts->{districts}};
+                        % for (sort keys %regions) {
+                            <div class="item" data-value="<%= $_ %>" district_id="<%= $regions{$_} %>"><%= $_ %></div>
+                        % }
                     </div>
                 </div>
             </div>
@@ -44,34 +43,13 @@
                     <input type="hidden" name="gender">
                     <i class="dropdown icon"></i>
                     <div class="default text">Организация</div>
-                    <div class="menu">
-                        <div class="item" data-value="1">ГБУЗ "Московский научно-практический центр наркологии Департамента здравоохранения города Москвы"</div>
-                        <div class="item" data-value="0">ГАУЗ "Московский научно-практический центр медицинской реабилитации, восстановительной и спортивной медицины Департамента здравоохранения города Москвы"</div>
-                    </div>
+                    <div class="menu items-list"></div>
                 </div>
             </div>
-            <div id="address_sel" class="ten wide column">
+            <div id="address_sel" class="ten wide column" style="display:none">
                 <div class="ui form">
                     <div class="grouped fields">
-                    <label>Выберите адрес:</label>
-                        <div class="field">
-                            <div class="ui radio checkbox">
-                                <input type="radio" name="example2" checked="checked">
-                                <label>ИНО 2035: Зеленоград, Каштановая аллея ул., д.8, стр.1 (Филиал №10, НД №10) </label>
-                            </div>
-                        </div>
-                        <div class="field">
-                            <div class="ui radio checkbox">
-                                <input type="radio" name="example2" >
-                                <label>ИНО 2036: Панфиловский пр-кт, д.16А, корп. 1</label>
-                            </div>
-                        </div>
-                        <div class="field">
-                            <div class="ui radio checkbox">
-                                <input type="radio" name="example2" >
-                                <label>ИНО 2068: Панфиловский пр-кт, д.16А, корп. 2</label>
-                            </div>
-                        </div>
+                        <label>Выберите адрес:</label>
                     </div>
                 </div>
             </div>
@@ -80,5 +58,98 @@
                 <a href="#" class="ui basic button right floated">Печать</a>
             </div>
         </div>
+%= javascript begin
+    $(function () {
+        var currently_downloaded = '',
+            $addr_sel = $("#address_sel"),
+            downloaded_companies = {
+                'Москва': [
+                    % for my $c (@$companies) {
+                        [<%== join ',', map { s/'/\\'/g; "'$_'" } @$c{qw(id name)} %>],
+                    % }
+                ],
+            },
+            downloaded_addresses = {};
+        function update_companies(elem) {
+            var arr = downloaded_companies[elem];
+            if (!arr)
+                return;
+            var $sel = $("#org_sel"),
+                $menu = $sel.find('.menu.items-list').empty();
+            arr.forEach(function (item) {
+                $menu.append($("<div>", {
+                        'class': 'item',
+                        'data-value': item[0],
+                    }).text(item[1]));
+            });
+            $sel.dropdown('clear').dropdown('refresh');
+        }
+        $("#region_sel").dropdown({
+            'custom change': 'activate',
+            onChange: function (value, text, $selectedItem) {
+                if (downloaded_companies[value]) {
+                    update_companies(value);
+                } else if (currently_downloaded != value) {
+                    currently_downloaded = value;
+                    $.ajax({
+                        method: 'get',
+                        url: '<%= $general_url %>/cgi-bin/companies',
+                        data: {
+                            region: value,
+                        },
+                        success: function (data) {
+                            var arr = [];
+                            data.companies.forEach(function (val) {
+                                arr.push([ val.id, val.name ]);
+                            });
+                            downloaded_companies[value] = arr;
+                            update_companies(value);
+                        },
+                    });
+                }
+            },
+        }).dropdown('set selected', 'Москва');
+
+        function update_addresses(org) {
+            var arr = downloaded_addresses[org];
+            if (!arr)
+                return;
+
+            var $items_container = $addr_sel.find('.grouped.fields');
+            $items_container.find('.field').remove();
+            arr.forEach(function (val, index) {
+                $items_container.append($("<div>", { 'class': 'field', })
+                    .append($("<div>", { 'class': 'ui radio checkbox', })
+                    .append($("<input>", { 'type': 'radio', 'name': val[0], }).prop('checked', index == 0))
+                    .append($("<label>").text(val[1]))));
+            });
+            $addr_sel.show();
+        }
+        $("#org_sel").dropdown({
+            'custom change': 'activate',
+            onChange: function (value, _, _) {
+                if (downloaded_addresses[value]) {
+                    update_addresses(value);
+                } else {
+                    $.ajax({
+                        method: 'get',
+                        url: '<%= $general_url %>/cgi-bin/buildings',
+                        data: {
+                            company: value,
+                        },
+                        success: function (data) {
+                            var arr = [];
+                            data.buildings.forEach(function (b) {
+                                arr.push([ b.id, b.name ]);
+                            });
+                            downloaded_addresses[value] = arr;
+                            update_addresses(value);
+                        },
+                    });
+                }
+            },
+        });
+    });
+% end
     </div>
 </div>

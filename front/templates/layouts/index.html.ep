@@ -13,7 +13,7 @@
 %   { url => '/maps', role => 'user', img => 'em_maps', name => 'На карте',
 %       js => [{ external => 1, url => 'http://api-maps.yandex.ru/2.1/?lang=ru_RU', }], },
 %   { url => '/catalogue', role => 'manager', img => 'em_catalogue', name => 'Справочники',
-%       js => [{ url => 'catalogue.js', }, { url => 'semantic.min.js', }],
+%       js => [{ url => 'semantic.min.js', }],
 %       css => [{ url => 'catalogue.css', }, { url => 'semantic.min.css' }], },
 %   { url => '#', role => 'manager', img => 'em_estimate', name => 'Таблицы смет', },
 %   { url => '/users', role => 'admin', img => 'em_users', name => 'Таблица<br/>пользователей', },
