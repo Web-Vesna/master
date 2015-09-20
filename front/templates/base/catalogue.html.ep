@@ -1,0 +1,84 @@
+% layout 'index';
+
+<div id="wrapper">
+    <div class="ui center aligned container segment">
+        <div class="ui centered grid">
+            <div class="sixteen wide column">
+                <div class="ui three steps">
+                    <a class="active step">
+                        <i class="sitemap icon"></i>
+                        <div class="content">
+                            <div class="title">Организация</div>
+                        </div>
+                    </a>
+                        <a class="disabled step">
+                        <i class="building icon"></i>
+                        <div class="content">
+                            <div class="title">Адрес</div>
+                        </div>
+                    </a>
+                    <a class="disabled step">
+                        <i class="exchange icon"></i>
+                        <div class="content">
+                            <div class="title">Объекты</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div class="ten wide column">
+                <div id="region_sel" class="ui fluid selection dropdown mrg">
+                    <input type="hidden" name="gender">
+                    <i class="dropdown icon"></i>
+                    <div class="default text">Регион</div>
+                    <div class="menu">
+% my $current = 'Москва';
+% my %regions = map { $_->{region} => $_->{id} } @{$districts->{districts}};
+% for (sort keys %regions) {
+                        <div class="item" data-value="<%= $_ %>" district_id="<%= $regions{$_} %>"><%= $_ %></div>
+% }
+                    </div>
+                </div>
+            </div>
+            <div class="ten wide column">
+                <div id="org_sel" class="ui fluid selection dropdown">
+                    <input type="hidden" name="gender">
+                    <i class="dropdown icon"></i>
+                    <div class="default text">Организация</div>
+                    <div class="menu">
+                        <div class="item" data-value="1">ГБУЗ "Московский научно-практический центр наркологии Департамента здравоохранения города Москвы"</div>
+                        <div class="item" data-value="0">ГАУЗ "Московский научно-практический центр медицинской реабилитации, восстановительной и спортивной медицины Департамента здравоохранения города Москвы"</div>
+                    </div>
+                </div>
+            </div>
+            <div id="address_sel" class="ten wide column">
+                <div class="ui form">
+                    <div class="grouped fields">
+                    <label>Выберите адрес:</label>
+                        <div class="field">
+                            <div class="ui radio checkbox">
+                                <input type="radio" name="example2" checked="checked">
+                                <label>ИНО 2035: Зеленоград, Каштановая аллея ул., д.8, стр.1 (Филиал №10, НД №10) </label>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="ui radio checkbox">
+                                <input type="radio" name="example2" >
+                                <label>ИНО 2036: Панфиловский пр-кт, д.16А, корп. 1</label>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="ui radio checkbox">
+                                <input type="radio" name="example2" >
+                                <label>ИНО 2068: Панфиловский пр-кт, д.16А, корп. 2</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="sixteen wide column">
+                <a href="step2.html" class="ui basic button right floated">Далее</a>
+                <a href="#" class="ui basic button right floated">Печать</a>
+            </div>
+        </div>
+    </div>
+</div>

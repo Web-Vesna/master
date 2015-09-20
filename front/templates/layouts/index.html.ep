@@ -3,15 +3,41 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name = "format-detection" content = "telephone=no" />
-<title></title>
-<link rel="stylesheet" href="<%= $general_url %>/css/style.css" type="text/css" media="screen">
-<!--script-->
+<title>Аудит Предприятий Энергетического Комплекса</title>
 <script type="text/javascript" src="<%= $general_url %>/js/jquery-1.10.2.min.js"></script>
 <script type="text/javascript" src="<%= $general_url %>/js/main.js"></script>
-<!--form-->
 <script type="text/javascript" src="<%= $general_url %>/js/jquery.formstyler.min.js"></script>
 
-%== stash('url') eq '/maps' ? '<script src="http://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>' : ''
+% my @_menu_impl = (
+%   { url => '/', role => 'user', img => 'em_main', name => 'Форма запроса', },
+%   { url => '/maps', role => 'user', img => 'em_maps', name => 'На карте',
+%       js => [{ external => 1, url => 'http://api-maps.yandex.ru/2.1/?lang=ru_RU', }], },
+%   { url => '/catalogue', role => 'manager', img => 'em_catalogue', name => 'Справочники',
+%       js => [{ url => 'catalogue.js', }, { url => 'semantic.min.js', }],
+%       css => [{ url => 'catalogue.css', }, { url => 'semantic.min.css' }], },
+%   { url => '#', role => 'manager', img => 'em_estimate', name => 'Таблицы смет', },
+%   { url => '/users', role => 'admin', img => 'em_users', name => 'Таблица<br/>пользователей', },
+%   { url => '/objects', role => 'manager', img => 'em_nodes', name => 'Данные<br/>инженерных узлов', },
+% );
+% my @_menu;
+% my %_roles = ( user => 1, manager => 2, admin => 3 );
+% my $_current_role = $_roles{$role};
+% my $_current_url = stash('url');
+% for my $_m (@_menu_impl) {
+%   next if $_current_role < $_roles{$_m->{role}};
+%   push @_menu, $_m;
+%   next if $_current_url ne $_m->{url};
+%   for my $_css (@{$_m->{css} // []}) {
+%       my $_url = $_css->{external} ? $_css->{url} : "$general_url/css/$_css->{url}";
+        <link rel="stylesheet" href="<%= $_url %>" type="text/css" media="screen">
+%   }
+%   for my $_js (@{$_m->{js} // []}) {
+%       my $_url = $_js->{external} ? $_js->{url} : "$general_url/js/$_js->{url}";
+        <script type="text/javascript" src="<%= $_url %>"></script>
+%   }
+% }
+
+<link rel="stylesheet" href="<%= $general_url %>/css/style.css" type="text/css" media="screen">
 
 <!--[if lt IE 9]>
     <script type="text/javascript" src="<%= $general_url %>/js/html5.js"></script>
@@ -63,37 +89,15 @@
 % if ($role ne 'user') {
        <!-- edit-data -->
         <div class="edit-data">
-            <h2><a href="#"><span></span></a>&nbsp;<!--Редактировать данные--></h2>
+            <h2><a href="#" style="box-sizing:initial;"><span></span></a>&nbsp;<!--Редактировать данные--></h2>
             <nav>
               <ul>
-                <li><a href="<%= $general_url %>/" <%= stash('url') eq '/' ? "class=active" : '' %>>
-                  <em id="em_main"></em>
-                  <span>Форма запроса</span>
+%   for my $_m (@_menu) {
+                <li><a href="<%= $general_url . $_m->{url} %>" <%== $_current_url eq $_m->{url} ? 'class="active"' : '' %>>
+                    <em id="<%= $_m->{img} %>"></em>
+                    <span><%== $_m->{name} %></span>
                 </a></li>
-                <li><a href="<%= $general_url %>/maps" <%= stash('url') eq '/maps' ? "class=active" : '' %>>
-                  <em id="em_maps"></em>
-                  <span>На карте</span>
-                </a></li>
-                
-                <li><a href="#">
-                  <em id="em_catalogue"></em>
-                  <span>Справочники</span>
-                </a></li>
-                 
-                <li><a href="#">
-                  <em id="em_estimate"></em>
-                  <span>Таблицы смет</span>
-                </a></li>
-% if ($role eq 'admin') {
-                <li><a href="<%= $general_url %>/users" <%= stash('url') eq '/users' ? "class=active" : '' %> >
-                    <em id="em_users"></em>
-                    <span>Таблица<br  />пользователей</span>
-                </a></li>
-% }
-                <li><a href="<%= $general_url %>/objects" <%= stash('url') eq '/objects' ? "class=active" : '' %> >
-                    <em id="em_nodes"></em>
-                    <span>Данные<br  />Инженерных узлов</span>
-                </a></li>
+%   }
               </ul>
             </nav>
         </div>
@@ -106,23 +110,28 @@
   <!--===============================/content==============================-->
 </div>
 <!--===============================/footer==============================-->
+
 <footer>
 % my @time = localtime(time);
     <p>&copy;&nbsp;<%= $time[5] + 1900 %> &laquo;Аудит Предприятий Энергетического Комплекса&raquo;</p>
     <a title="ВЕСНА" href="#"><img src="<%= $general_url %>/images/springtime.png" alt=""></a>
 </footer>
-<!--=============================== /Modal ==============================-->
-<!--========== modal-enter ==========-->
-<div id="modal-enter" class="reveal-modal modal-enter">
- <div class="modal-center">
-    <h6>К сожалению по вашему запросу ничего не найдено</h6>
-    <p>Измените критерий поиска<br  />и попробуйте снова</p>
-    <div>
-      <a class="close-reveal-modal"  href="#">ХОРОШО</a>
+
+% if ($_current_url eq '/maps') {
+    <!--=============================== /Modal ==============================-->
+    <!--========== modal-enter ==========-->
+    <div id="modal-enter" class="reveal-modal modal-enter">
+     <div class="modal-center">
+        <h6>К сожалению по вашему запросу ничего не найдено</h6>
+        <p>Измените критерий поиска<br  />и попробуйте снова</p>
+        <div>
+          <a class="close-reveal-modal"  href="#">ХОРОШО</a>
+        </div>
+     </div>
     </div>
- </div>
-</div>
-<!--========== /modal-enter ==========-->
-<!--=============================== /Modal ==============================-->
+    <!--========== /modal-enter ==========-->
+    <!--=============================== /Modal ==============================-->
+% }
+
 </body>
 </html>

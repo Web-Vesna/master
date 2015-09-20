@@ -97,6 +97,7 @@ sub startup {
     $auth->get('/upload')->to(cb => sub { shift->render(template => 'base/upload'); });
     $auth->get('/report_v2')->to("builder#report_v2");
     $auth->get('/maps')->to("builder#maps");
+    $auth->get('/catalogue')->to("builder#catalogue");
     $auth->get('/geolocation')->to("builder#start_geolocation");
 
     $auth->any('/*any' => { any => '' } => sub {
