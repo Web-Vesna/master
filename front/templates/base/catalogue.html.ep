@@ -54,11 +54,12 @@
                 </div>
             </div>
             <div class="sixteen wide column">
-                <a href="step2.html" class="ui basic button right floated">Далее</a>
-                <a href="#" class="ui basic button right floated">Печать</a>
+                <a href="step2.html" class="ui basic button right floated disabled" id="btn_next">Далее</a>
+                <a href="#" class="ui basic button right floated" onclick="print(); return false;">Печать</a>
             </div>
         </div>
 %= javascript begin
+    var selected_object;
     $(function () {
         var currently_downloaded = '',
             $addr_sel = $("#address_sel"),
@@ -87,6 +88,7 @@
         $("#region_sel").dropdown({
             'custom change': 'activate',
             onChange: function (value, text, $selectedItem) {
+            selected_object = { region: value };
                 if (downloaded_companies[value]) {
                     update_companies(value);
                 } else if (currently_downloaded != value) {
@@ -107,6 +109,8 @@
                         },
                     });
                 }
+                $("#btn_next").addClass('disabled');
+                $addr_sel.hide();
             },
         }).dropdown('set selected', 'Москва');
 
@@ -122,15 +126,20 @@
                     .append($("<div>", { 'class': 'ui radio checkbox', })
                     .append($("<input>", { 'type': 'radio', 'name': val[0], }).prop('checked', index == 0))
                     .append($("<label>").text(val[1]))));
+                if (index == 0)
+                    selected_object = { building: val[0] };
             });
             $addr_sel.show();
         }
         $("#org_sel").dropdown({
             'custom change': 'activate',
-            onChange: function (value, _, _) {
+            onChange: function (value) {
+                if (value == "")
+                    return;
                 if (downloaded_addresses[value]) {
                     update_addresses(value);
                 } else {
+                    $("#btn_next").addClass('loading');
                     $.ajax({
                         method: 'get',
                         url: '<%= $general_url %>/cgi-bin/buildings',
@@ -138,6 +147,7 @@
                             company: value,
                         },
                         success: function (data) {
+                            $("#btn_next").removeClass('loading disabled');
                             var arr = [];
                             data.buildings.forEach(function (b) {
                                 arr.push([ b.id, b.name ]);
@@ -149,7 +159,18 @@
                 }
             },
         });
+        $addr_sel.on('click', '.field input', function () {
+            // dirty hack =( Can't trigger 'refresh' for semantic-ui radio button
+            var $this = $(this);
+            $this.parent().parent().parent().find('input').prop('checked', false);
+            $this.prop('checked', true);
+            selected_object = { building: $this.attr('name') };
+        });
     });
+
+    function print() {
+        window.open(window.location.origin + '<%= $general_url %>/cgi-bin/build?' + $.param(selected_object), '_blank');
+    }
 % end
     </div>
 </div>

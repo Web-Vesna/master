@@ -47,13 +47,11 @@
                             pass = $frm.find("[name=intro-password]").val();
 
                         if (login == "") { // TODO: Trim spaces
-							$("#modal-enter").reveal();
-                            //$err.text("Login field is required!");
+                            $("#modal-enter").reveal();
                             return;
                         }
                         if (pass == "") {
-							$("#modal-enter").reveal();
-                            //$err.text("Password field is required!");
+                            $("#modal-enter").reveal();
                             return;
                         }
 
@@ -69,11 +67,9 @@
                                 },
                                 error: function (data) {
                                     if (data && data.description) {
-										$("#modal-enter").reveal();
-                                        //$err.text(data.description);
+                                        $("#modal-enter").reveal();
                                     } else {
-										$("#modal-enter").reveal();
-                                        //$err.text("Invalid login or password"); // Maybe set "internal server error" ?
+                                        $("#modal-enter").reveal();
                                     }
                                 },
                             });
