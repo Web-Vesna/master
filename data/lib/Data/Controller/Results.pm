@@ -173,6 +173,8 @@ sub prepare_int {
 sub add_buildings {
     my $self = shift;
 
+    $self->app->log->warn("TRYNG TO REQUEST DEPRECATED METHOD");
+
     my $args = $self->req->params->to_hash;
     return $self->render(json => { status => 400, error => "file not found" }) unless $args->{filename} or not -f $args->{filename};
 
@@ -1143,7 +1145,7 @@ sub build {
         from objects o
         join buildings b on b.id = o.building
         join companies c on c.id = b.company_id
-        join districts d on d.id = c.district_id
+        join districts d on d.id = b.district_id
         join categories cat on cat.id = o.object_name
         join categories_names cat_n on cat.category_name = cat_n.id
         left outer join characteristics charac on charac.id = o.characteristic

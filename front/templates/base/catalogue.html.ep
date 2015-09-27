@@ -1,7 +1,7 @@
 % layout 'index';
 
 <div id="wrapper">
-    <div class="ui center aligned container segment">
+    <div class="ui center aligned container">
         <div class="ui centered grid">
             <div class="sixteen wide column">
                 <div class="ui three steps">
@@ -41,7 +41,7 @@
                 </div>
             </div>
             <div class="step-1 ten wide column">
-                <div id="org_sel" class="ui fluid selection dropdown">
+                <div id="org_sel" class="ui fluid search selection dropdown">
                     <input type="hidden" name="gender">
                     <i class="dropdown icon"></i>
                     <div class="default text">Организация</div>

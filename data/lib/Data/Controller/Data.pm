@@ -46,11 +46,13 @@ sub companies {
 
     return $self->render(json => { status => 400, error => "invalid district" }) if defined $d && $d !~ /^\d+$/;
 
-    my @args = ($self, "select c.id as id, c.name as name, d.name as district from companies c join districts d on d.id = c.district_id " .
-        ($filter_heads ? "inner join buildings b on c.id = b.company_id and b.status = 'Голова' " : "") .
-        (defined $q ? "where c.name like ? " : "") .
-        (defined $d ? (defined $q ? "and" : "where") . " c.district_id=? " : "") .
-        (defined $region ? (defined $q || defined $d ? "and" : "where") . " d.region=? " : "") . "order by c.name");
+    my @args = ($self, qq/select b.company_id as id, c.name as name, d.name as district from buildings b join
+        districts d on d.id = b.district_id join companies c on b.company_id = c.id/ .
+        ($filter_heads ? " where b.status = 'Голова'" : "") .
+        (defined $q ? ($filter_heads ? " and" : " where") . " c.name like ?" : "") .
+        (defined $d ? (defined $q || $filter_heads ? " and" : " where") . " b.district_id = ?" : "") .
+        (defined $region ? (defined $q || defined $d || $filter_heads ? " and" : " where") . " d.region = ?" : "") .
+        " group by b.company_id order by c.name");
 
     push @args, $q if defined $q;
     push @args, $d if defined $d;
@@ -76,7 +78,7 @@ sub buildings {
 
     my @args = (
         "select b.id as id, b.name as name, d.name as district, c.name as company " .
-        "from buildings b join companies c on c.id = b.company_id join districts d on d.id = c.district_id " .
+        "from buildings b join companies c on c.id = b.company_id join districts d on d.id = b.district_id " .
         (defined $args->{company} ? "where c.id = ? " : "") .
         (defined $args->{district} ? "where d.id = ? " : "") .
         (defined $args->{q} ? ($id_found ? "and " : "where ") . " b.name like ? " : "") .
