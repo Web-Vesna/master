@@ -20,4 +20,6 @@ UPDATE buildings buil JOIN B bb ON bb.id = buil.company_id SET buil.company_id =
 ALTER TABLE companies DROP KEY fk_companies_districts1_idx, DROP COLUMN district_id, DROP FOREIGN KEY fk_companies_districts1;
 DELETE FROM companies WHERE id IN (SELECT id FROM B);
 
+ALTER TABLE buildings ADD COLUMN flags SET('editable') NOT NULL;
+
 SET foreign_key_checks = 1;

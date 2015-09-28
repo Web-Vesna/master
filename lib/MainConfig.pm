@@ -56,8 +56,12 @@ $path =~ s#/\w*$##;
 $path .= '/../../config';
 
 my %CFG;
+my $f;
 
-open my $f, '<', $path or croak "Can't open $path: $!\n";
+unless (open $f, '<', 'config') {
+    open $f, '<', $path or croak "Can't open $path: $!\n";
+}
+
 while (<$f>) {
     my ($name, $val) = /(\w*)\s*=\s*(.*)/;
     next unless $name;
