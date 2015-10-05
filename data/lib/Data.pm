@@ -28,6 +28,7 @@ sub startup {
     $r->get('/buildings')->to('data#buildings');
     $r->get('/objects')->to('data#objects');
     $r->get('/objects/filter')->to('data#filter_objects');
+    $r->get('/objects/names')->to('data#objects_names');
     $r->get('/calc_types')->to('data#calc_types');
     $r->get('/conn_types')->to('data#conn_types');
 

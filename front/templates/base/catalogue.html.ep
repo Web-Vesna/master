@@ -79,15 +79,15 @@
                     </div>
                     <div class="field required">
                         <label>Нагрузка, кВт:</label>
-                        <input type="text" placeholder="кВт" id="edt-heat_load" key="heat_load">
+                        <input type="text" placeholder="кВт" id="edt-heat_load" key="heat_load" class="numbers_only float_numbers">
                     </div>
                     <div class="field">
                         <label>Дата ввода в экплуатацию:</label>
-                        <input type="text" id="edt-expl" key="build_date">
+                        <input type="text" id="edt-expl" key="build_date" class="numbers_only">
                     </div>
                     <div class="field">
                         <label>Дата капитального ремонта:</label>
-                        <input type="text" id="edt-repair" key="reconstruction_date">
+                        <input type="text" id="edt-repair" key="reconstruction_date" class="numbers_only">
                     </div>
                     <div class="ui checkbox">
                         <input type="checkbox" name="example" id="chb-no_edit">
@@ -372,15 +372,14 @@
                             <form class="ui form">
                                 <div class="required field">
                                     <label>Наименование объекта:</label>
-                                    <div class="ui fluid selection dropdown">
+                                    <div id="objects_names" class="ui fluid selection dropdown">
                                         <input type="hidden" name="gender">
                                         <i class="dropdown icon"></i>
                                         <div class="default text">---</div>
                                         <div class="menu">
-                                            <div class="item" data-value="3">Трубопровод котельной</div>
-                                            <div class="item" data-value="2">Запорная арматура</div>
-                                            <div class="item" data-value="1">Дутьевой вентилятор</div>
-                                            <div class="item" data-value="0">Дымосос</div>
+                                            % for my $item (@$objects_names) {
+                                            <div class="item" data-value="<%= $item->{id} %>" group="<%= $item->{group_id} %>"><%= $item->{name} %></div>
+                                            % }
                                         </div>
                                     </div>
                                 </div>
@@ -401,7 +400,7 @@
                                     </div>
                                     <div class="field">
                                         <label>Тип изоляции:</label>
-                                        <div id="type" class="ui fluid selection dropdown">
+                                        <div id="isolation_type" class="ui fluid selection dropdown">
                                             <input type="hidden" name="gender">
                                             <i class="dropdown icon"></i>
                                             <div class="default text">---</div>
@@ -417,7 +416,7 @@
                                 <div class="two fields">
                                     <div class="field">
                                         <label>Способ прокладки тепловых сетей:</label>
-                                        <div id="type" class="ui fluid selection dropdown">
+                                        <div id="laying_method" class="ui fluid selection dropdown">
                                             <input type="hidden" name="gender">
                                             <i class="dropdown icon"></i>
                                             <div class="default text">---</div>
@@ -487,6 +486,12 @@
     $(function () {
         $(".step-2,.step-3").hide();
         $(".step-1").show();
+        $('#create_button, #edit_button').click(function() {
+            $('#edit_modal').modal('show');
+        });
+        $('#delete_button').click(function() {
+            $('#delete_modal').modal('show');
+        });
         var currently_downloaded = '',
             $addr_sel = $("#address_sel"),
             downloaded_companies = {
@@ -511,6 +516,11 @@
             });
             $sel.dropdown('clear').dropdown('refresh');
         }
+
+        $("#isolation_type").dropdown();
+        $("#laying_method").dropdown();
+        $("#objects_names").dropdown();
+
         $("#region_sel").dropdown({
             'custom change': 'activate',
             onChange: function (value, text, $selectedItem) {
@@ -551,16 +561,25 @@
             if (!arr)
                 return;
 
-            var $items_container = $addr_sel.find('.grouped.fields');
+            var $items_container = $addr_sel.find('.grouped.fields'),
+                editable_found = false;
             $items_container.find('.field').remove();
             arr.forEach(function (val, index) {
+                var should_be_checked = !editable_found && val.flags.editable;
+                if (should_be_checked)
+                    editable_found = true;
                 $items_container.append($("<div>", { 'class': 'field', })
-                    .append($("<div>", { 'class': 'ui radio checkbox', })
-                    .append($("<input>", { 'type': 'radio', 'name': val[0], }).prop('checked', index == 0))
-                    .append($("<label>").text(val[1]))));
+                    .append($("<div>", { 'class': 'ui radio checkbox' + (val.flags.editable ? '' : ' disabled'), })
+                    .append($("<input>", { 'type': 'radio', 'name': val.id, }).prop('checked', should_be_checked))
+                    .append($("<label>").text('ИНО_' + val.id + ": " + val.name))));
             });
-            on_radio_click($items_container.find('input').first());
+            var $selected = $items_container.find('input:checked').first(),
+                classes = "loading";
+            if ($selected[0])
+                classes += " disabled";
+            on_radio_click($selected);
             $addr_sel.show();
+            $("#btn_next").removeClass(classes);
         }
         $("#org_sel").dropdown({
             'custom change': 'activate',
@@ -579,12 +598,7 @@
                             company: value,
                         },
                         success: function (data) {
-                            $("#btn_next").removeClass('loading disabled');
-                            var arr = [];
-                            data.buildings.forEach(function (b) {
-                                arr.push([ b.id, b.name ]);
-                            });
-                            downloaded_addresses[value] = arr;
+                            downloaded_addresses[value] = data.buildings;
                             update_addresses(value);
                         },
                     });
@@ -617,7 +631,8 @@
             var $this = $(this);
             current_object[$this.attr('key')] = $this.val();
             toggle_next_btn();
-        }).on('keydown', function (e) {
+        });
+        $(".numbers_only").on('keydown', function (e) {
             // Allow: backspace, delete, tab, escape, enter and .
             if ($.inArray(e.keyCode, [9, 46, 8, 27, 13, 110]) !== -1 ||
                 (e.keyCode == 65 && ( e.ctrlKey === true || e.metaKey === true ) ) ||
@@ -673,6 +688,7 @@
             $("#conn_type_sel").dropdown('clear');
             $("#edt-heat_load,#edt-expl,#edt-repair").val('');
             $("#chb-no_edit").prop('checked', false);
+            $("#btn_next").removeClass('disabled');
 
             current_object = { region: current_object.region, building: current_object.building };
         }

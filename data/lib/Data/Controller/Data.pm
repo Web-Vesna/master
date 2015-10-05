@@ -77,7 +77,7 @@ sub buildings {
     return $self->render(json => { status => 400, error => "invalid company" }) if defined $args->{company} && $args->{company} !~ /^\d+$/;
 
     my @args = (
-        "select b.id as id, b.name as name, d.name as district, c.name as company " .
+        "select b.id as id, b.name as name, d.name as district, c.name as company, b.flags as flags " .
         "from buildings b join companies c on c.id = b.company_id join districts d on d.id = b.district_id " .
         (defined $args->{company} ? "where c.id = ? " : "") .
         (defined $args->{district} ? "where d.id = ? " : "") .
@@ -92,6 +92,7 @@ sub buildings {
 
     return return_500 $self unless $r;
 
+    map { $_->{flags} = { map { $_ => 1 } split ',', $_->{flags} } } @$r;
     return $self->render(json => { ok => 1, count => scalar @$r, buildings => $r });
 }
 
@@ -116,6 +117,15 @@ sub objects {
     push @args, $q if defined $q;
 
     my $r = select_all $self, @args;
+
+    return return_500 $self unless $r;
+    return $self->render(json => { ok => 1, count => scalar @$r, objects => $r });
+}
+
+sub objects_names {
+    my $self = shift;
+
+    my $r = select_all $self, "select id, name, group_id from objects_names order by id";
 
     return return_500 $self unless $r;
     return $self->render(json => { ok => 1, count => scalar @$r, objects => $r });

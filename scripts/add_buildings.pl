@@ -28,6 +28,7 @@ while (<$f>) {
         warn "Unknown district found: $row[2] (row $id). Ignore\n";
         next;
     }
+    $row[1] =~ s/^"|"$//g;
     push @{$data{$row[0]}}, { id => 2000 + $id, addr => $row[1], district => $districts{lc $row[2]} };
 }
 
@@ -43,7 +44,7 @@ for (keys %data) {
 }
 
 $insert = DB::prepare_query(undef, qq/insert into buildings(id, company_id, status, name, corpus, district_id, flags) values
-    (?, ?, '', ?, '', ?, 'editable')/);
+    (?, ?, '', ?, '', ?, 'editable,new_objects_names_scheme')/);
 
 for my $c (values %data) {
     for (@$c) {

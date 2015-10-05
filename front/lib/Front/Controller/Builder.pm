@@ -99,6 +99,13 @@ sub catalogue {
     return $self->render(template => 'base/internal_err') unless $r && $r->{conn_types};
     $self->stash(conn_types => $r->{conn_types});
 
+    $r = send_request($self,
+        url => 'objects/names',
+        port => DATA_PORT,
+    );
+    return $self->render(template => 'base/internal_err') unless $r && $r->{objects};
+    $self->stash(objects_names => $r->{objects});
+
     return $self->render(template => 'base/catalogue');
 }
 
