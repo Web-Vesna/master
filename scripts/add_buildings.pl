@@ -21,7 +21,6 @@ my %districts = map { utf8::encode($_->{name}); lc($_->{name}) => $_->{id} } @$d
 my %data;
 my $id = 0;
 while (<$f>) {
-    ++$id;
     chomp;
     my @row = split "\t";
     unless (defined $districts{lc $row[2]}) {
@@ -29,7 +28,7 @@ while (<$f>) {
         next;
     }
     $row[1] =~ s/^"|"$//g;
-    push @{$data{$row[0]}}, { id => 2000 + $id, addr => $row[1], district => $districts{lc $row[2]} };
+    push @{$data{$row[0]}}, { id => 2000 + $id++, addr => $row[1], district => $districts{lc $row[2]} };
 }
 
 my $select = DB::prepare_query(undef, "select id from companies where name = ?");

@@ -122,242 +122,11 @@
                             <th class="center aligned">Год ввода в экспл</th>
                             <th class="center aligned">Год посл. реконс.</th>
                             <th class="center aligned">Износ, %</th>
+                            <th>&nbsp;</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <div id="popup" class="ui flowing popup top left transition">TEST</div>
-                        <tr id="marked" class="positive">
-                            <td class="single line">
-                                Трубопровод отопления (удлинение)
-                            </td>
-                            <td>
-                                сталь
-                            </td>
-                            <td>
-                                3
-                            </td>
-                            <td>
-                                200
-                            </td>
-                            <td>
-                                Минеральная вата
-                            </td>
-                            <td>
-                                Внутри помещений
-                            </td>
-                            <td>
-                                2001
-                            </td>
-                            <td>
-
-                            </td>
-                            <td>
-                                50
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="single line">
-                                Трубопровод отопления (удлинение)
-                            </td>
-                            <td>
-                                сталь
-                            </td>
-                            <td>
-                                3
-                            </td>
-                            <td>
-                                200
-                            </td>
-                            <td>
-                                Минеральная вата
-                            </td>
-                            <td>
-                                Внутри помещений
-                            </td>
-                            <td>
-                                2001
-                            </td>
-                            <td>
-
-                            </td>
-                            <td>
-                                50
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="single line">
-                                Трубопровод отопления (удлинение)
-                            </td>
-                            <td>
-                                сталь
-                            </td>
-                            <td>
-                                3
-                            </td>
-                            <td>
-                                200
-                            </td>
-                            <td>
-                                Минеральная вата
-                            </td>
-                            <td>
-                                Внутри помещений
-                            </td>
-                            <td>
-
-                            </td>
-                            <td>
-                                2008
-                            </td>
-                            <td>
-                                50
-                            </td>
-                        </tr>
-                        <tr id="marked" class="positive">
-                            <td class="single line">
-                                Трубопровод отопления (удлинение)
-                            </td>
-                            <td>
-                                сталь
-                            </td>
-                            <td>
-                                3
-                            </td>
-                            <td>
-                                200
-                            </td>
-                            <td>
-                                Минеральная вата
-                            </td>
-                            <td>
-                                Внутри помещений
-                            </td>
-                            <td>
-                                2001
-                            </td>
-                            <td>
-
-                            </td>
-                            <td>
-                                50
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="single line">
-                                Трубопровод отопления (удлинение)
-                            </td>
-                            <td>
-                                сталь
-                            </td>
-                            <td>
-                                3
-                            </td>
-                            <td>
-                                200
-                            </td>
-                            <td>
-                                Минеральная вата
-                            </td>
-                            <td>
-                                Внутри помещений
-                            </td>
-                            <td>
-                                2001
-                            </td>
-                            <td>
-
-                            </td>
-                            <td>
-                                50
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="single line">
-                                Трубопровод отопления (удлинение)
-                            </td>
-                            <td>
-                                сталь
-                            </td>
-                            <td>
-                                3
-                            </td>
-                            <td>
-                                200
-                            </td>
-                            <td>
-                                Минеральная вата
-                            </td>
-                            <td>
-                                Внутри помещений
-                            </td>
-                            <td>
-                                2001
-                            </td>
-                            <td>
-
-                            </td>
-                            <td>
-                                50
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="single line">
-                                Трубопровод отопления (удлинение)
-                            </td>
-                            <td>
-                                сталь
-                            </td>
-                            <td>
-                                3
-                            </td>
-                            <td>
-                                200
-                            </td>
-                            <td>
-                                Минеральная вата
-                            </td>
-                            <td>
-                                Внутри помещений
-                            </td>
-                            <td>
-                                2001
-                            </td>
-                            <td>
-
-                            </td>
-                            <td>
-                                50
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="single line">
-                                Трубопровод отопления (удлинение)
-                            </td>
-                            <td>
-                                сталь
-                            </td>
-                            <td>
-                                3
-                            </td>
-                            <td>
-                                200
-                            </td>
-                            <td>
-                                Минеральная вата
-                            </td>
-                            <td>
-                                Внутри помещений
-                            </td>
-                            <td>
-                                2001
-                            </td>
-                            <td>
-
-                            </td>
-                            <td>
-                                50
-                            </td>
-                        </tr>
+                    <tbody id="tbl-objects-list">
+                        <!-- <div id="popup" class="ui flowing popup top left transition">Список объектов предприятия</div> --!>
                     </tbody>
                 </table>
             </div>
@@ -477,7 +246,7 @@
             <div class="sixteen wide column">
                 <a href="#" class="step-2 step-3 ui basic button left floated" onclick="prev_step(); return false;">Назад</a>
                 <a href="#" class="step-1 step-2 ui basic button right floated disabled" id="btn_next" onclick="next_step(); return false;">Далее</a>
-                <a href="<%= $general_url %>/catalogues" class="step-3 ui basic button right floated">Готово</a>
+                <a href="<%= $general_url %>/catalogues" class="step-3 ui basic button right floated" id="btn_finish">Готово</a>
                 <a href="#" class="ui basic button right floated" onclick="print(); return false;">Печать</a>
             </div>
         </div>
@@ -487,7 +256,8 @@
         $(".step-2,.step-3").hide();
         $(".step-1").show();
         $('#create_button, #edit_button').click(function() {
-            $('#edit_modal').modal('show');
+            var text = $(this).attr("id") == "create_button" ? "Форма добавления" : "Форма редактирования";
+            $('#edit_modal').modal('show').find(".header").text(text);
         });
         $('#delete_button').click(function() {
             $('#delete_modal').modal('show');
@@ -657,6 +427,75 @@
         window.open(window.location.origin + '<%= $general_url %>/cgi-bin/build?' + $.param(selected_object), '_blank');
     }
 
+    function on_add_child_click(parent_id) {
+        return function () {
+            $('#edit_modal').modal('show');
+        }
+    }
+
+    function load_objects() {
+        var classes = "disabled loading",
+            $finish_btn = $("#btn_finish").addClass(classes);
+        $.ajax({
+            method: 'get',
+            url: '<%= $general_url %>/cgi-bin/objects',
+            data: selected_object,
+            success: function (data) {
+                $finish_btn.removeClass(classes);
+                var $objects_list = $("#tbl-objects-list").html('');
+                data.objects.forEach(function (item) {
+                    var $tr = $("<tr>");
+
+                    if (item.new_group == "1")
+                        $tr.addClass("positive").attr("id", "marked");
+
+                    if (item.new_group == "2" || item.new_group == "3") {
+                        $tr.addClass("positive");
+                        if (item.parent_id == undefined)
+                            $tr.attr("id", "marked");
+                    }
+
+                    // old names are not expected
+                    [ 'new_name',//{ name: 'new_name', class: 'single line', }, TODO: uncomment
+                      'material_name',
+                      'count',      // ???
+                      'diametr',
+                      'isolation',
+                      'laying_method',
+                      'install_year',
+                      'reconstruction_year',
+                      'wear',
+                    ].forEach(function (input) {
+                        var key = input,
+                            $td = $("<td>");
+                        if (typeof(input) == "object") {
+                            $td.addClass(input.class);
+                            key = input.name;
+                        }
+                        $tr.append($td.text(item[key] == undefined ? "" : item[key]));
+                    });
+
+                    var $td = $("<td>").css('vertical-align: middle;');
+                    if (item.new_group == "1" || item.new_group == "2") {
+                        // TODO: remove hardcode
+                        $td.append(
+                            $("<div>").addClass("ui mini basic icon buttons").append(
+                                $("<button>")
+                                    .addClass("ui button")
+                                    .click(on_add_child_click(item.id))
+                                    .append(
+                                        $("<i>").addClass("file outline icon")
+                                    )
+                                )
+                            );
+                    }
+
+                    $objects_list.append($tr.append($td));
+                });
+            }
+        });
+    }
+
     function next_step() {
         if (current_step > 3) {
             current_step = 3;
@@ -674,6 +513,10 @@
         $('.step-' + ++current_step).show();
         $('#step-' + current_step + '-nav').addClass('active').removeClass('disabled');
         $('.modal').hide();
+
+        if (current_step == 3) {
+            load_objects();
+        }
     }
 
     function prev_step() {

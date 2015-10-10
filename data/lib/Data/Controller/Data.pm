@@ -5,6 +5,8 @@ use Mojo::JSON qw( encode_json );
 use MainConfig qw( :all );
 use AccessDispatcher qw( send_request check_access );
 
+use List::Util;
+
 use Data::Dumper;
 
 use DB qw( :all );
@@ -100,26 +102,86 @@ sub objects {
     my $self = shift;
 
     my $args = $self->req->params->to_hash;
-    my $q = "%$args->{q}%" if $args->{q};
 
     for (qw( building )) { # TODO: add other cases (district && company)
         return $self->render(json => { status => 400, error => "invalid $_" }) if defined $args->{$_} && $args->{$_} !~ /^\d+$/;
     }
 
     my @args = (
-        "select o.id as id, cat.object_name as name from objects o join categories cat on o.object_name = cat.id " .
-        (defined $args->{building} ? "where building = ? " : "") .
-        (defined $args->{q} ? (defined $args->{building} ? "and " : "where ") . "cat.object_name like ? " : "") .
-        "order by cat.object_name"
+        sprintf(qq/
+            select
+                o.id as id,
+                c.name as material_name,
+                c.material as material,
+                o.size as diametr,
+                i.name as isolation,
+                l.name as laying_method,
+                o.install_year as install_year,
+                o.reconstruction_year as reconstruction_year,
+                o.wear as wear,
+                cat.object_name as name,
+                new_o.name as new_name,
+                new_o.group_id as new_group,
+                oo.id as parent_id
+            from objects o
+            join characteristics c on c.id = o.characteristic
+            join isolations i on i.id = o.isolation
+            join laying_methods l on l.id = o.laying_method
+            left outer join objects oo on oo.id = o.parent_object
+            left outer join objects_names new_o on new_o.id = o.object_name_new
+            left outer join categories cat on o.object_name = cat.id %s
+            order by cat.object_name/,
+        (defined $args->{building} ? "where o.building = ?" : "")),
     );
 
     push @args, $args->{building} if defined $args->{building};
-    push @args, $q if defined $q;
 
     my $r = select_all $self, @args;
-
     return return_500 $self unless $r;
-    return $self->render(json => { ok => 1, count => scalar @$r, objects => $r });
+
+    my $current_group = -1;
+    my %tree = map {
+        $current_group = $_->{new_group}
+            if defined $_->{new_group} && $_->{new_group} > $current_group;
+        $_->{id} => $_
+    } @$r;
+
+    while ($current_group > 1) {
+        for (keys %tree) {
+            if (defined($tree{$_}{parent_id}) && $tree{$_}{new_group} == $current_group) {
+                push @{$tree{$tree{$_}{parent_id}}{children}}, $tree{$_};
+                delete $tree{$_};
+            }
+        }
+        --$current_group;
+    }
+
+    my @to_return;
+    my $_add = sub {
+        my ($_add, $o) = @_;
+        my $children = $o->{children} // [];
+        delete $o->{children};
+        push @to_return, $o;
+
+        $_add->($_add, $_) for sort {
+            $a->{new_group} <=> $b->{new_group}
+        } @$children;
+    };
+
+    my @tail; # objects without group;
+    for (keys %tree) {
+        if (defined $tree{$_}{children}) {
+            $_add->($_add, $tree{$_});
+        } else {
+            push @tail, $tree{$_};
+        }
+    }
+
+    return $self->render(json => {
+        ok => 1,
+        count => scalar @$r,
+        objects => [ @to_return, @tail ],
+    });
 }
 
 sub objects_names {
