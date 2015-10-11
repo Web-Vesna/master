@@ -165,6 +165,12 @@ my %access_control = (
         access => 'Authorized',
         roles => 'user',
     },
+
+    'building/edit' => {
+        method => 'get',
+        access => 'Authorized',
+        roles => 'manager',
+    },
 );
 
 sub redirect_to_login {

@@ -26,6 +26,7 @@ sub startup {
     $r->get('/companies')->to('data#companies');
     $r->get('/company')->to('data#company_info');
     $r->get('/buildings')->to('data#buildings');
+    $r->get('/building/edit')->to('data#edit_building');
     $r->get('/objects')->to('data#objects');
     $r->get('/objects/filter')->to('data#filter_objects');
     $r->get('/objects/names')->to('data#objects_names');

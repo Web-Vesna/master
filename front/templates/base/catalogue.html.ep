@@ -238,12 +238,17 @@
             <div class="sixteen wide column">
                 <a href="#" class="step-2 step-3 ui basic button left floated" onclick="prev_step(); return false;">Назад</a>
                 <a href="#" class="step-1 step-2 ui basic button right floated disabled" id="btn_next" onclick="next_step(); return false;">Далее</a>
+                <div class="step-2 ui basic button right floated disabled" id="btn_save_building"
+                    onclick="save_changed_building(); return false;">
+                    <i class="icon" style="display: none;"></i>
+                    <span>Сохранить<span>
+                </div>
                 <a href="<%= $general_url %>/catalogues" class="step-3 ui basic button right floated" id="btn_finish">Готово</a>
                 <a href="#" class="ui basic button right floated" onclick="print(); return false;">Печать</a>
             </div>
         </div>
 %= javascript begin
-    var selected_object, current_step = 1, current_object;
+    var selected_object, current_step = 1, current_object, current_object_main_properties, downloaded_addresses = {};
     $(function () {
         $(".step-2,.step-3").hide();
         $(".step-1").show();
@@ -255,8 +260,7 @@
                         [<%== join ',', map { s/'/\\'/g; "'$_'" } @$c{qw(id name)} %>],
                     % }
                 ],
-            },
-            downloaded_addresses = {};
+            };
         function update_companies(elem) {
             var arr = downloaded_companies[elem];
             if (!arr)
@@ -306,10 +310,32 @@
             },
         }).dropdown('set selected', 'Москва');
 
-        function on_radio_click($o) {
-            selected_object = { building: $o.attr('name') };
-            current_object.building = $o.attr('name');
-            $(".ttl-address").text($o.parent().children('label').text());
+        function toggle_save_changed_building_btn(all_fields_set) {
+            var $ctype = $("#conn_type_sel"),
+                $heat_load = $("#edt-heat_load"),
+                $build_date = $("#edt-expl"),
+                $repair_date = $("#edt-repair"),
+                $btn = $("#btn_save_building"),
+                $icon = $btn.find("i");
+
+            if (!all_fields_set) {
+                $btn.addClass("basic disabled").removeClass("green");
+                $icon.removeClass("circle thin checkmark").hide();
+                return;
+            }
+
+            current_object_main_properties = current_object_main_properties || {};
+            if ($ctype.dropdown('get value') != current_object_main_properties.characteristic
+                    || $heat_load.val() != (current_object_main_properties.heat_load || "")
+                    || $build_date.val() != (current_object_main_properties.build_date || "")
+                    || $repair_date.val() != (current_object_main_properties.reconstruction_date || "")) {
+                $btn.removeClass("basic disabled").addClass("green");
+                $icon.addClass("circle thin").removeClass("checkmark").show();
+            } else {
+                $btn.addClass("basic disabled").removeClass("green");
+                $icon.hide();
+            }
+            $btn.find("span").text("Соxранить");
         }
         function update_addresses(org) {
             var arr = downloaded_addresses[org];
@@ -325,7 +351,8 @@
                     editable_found = true;
                 $items_container.append($("<div>", { 'class': 'field', })
                     .append($("<div>", { 'class': 'ui radio checkbox' + (val.flags.editable ? '' : ' disabled'), })
-                    .append($("<input>", { 'type': 'radio', 'name': val.id, })
+                    .append($("<input>", { 'type': 'radio', 'name': val.id })
+                        .attr('org', org)
                         .prop('checked', should_be_checked)
                         .prop('disabled', !val.flags.editable))
                     .append($("<label>").text('ИНО_' + val.id + ": " + val.name))));
@@ -366,14 +393,16 @@
             if (current_object.conn_type && current_object.heat_load
                     && (current_object.reconstruction_date || current_object.build_date)) {
                 $("#btn_next").removeClass('disabled');
+                toggle_save_changed_building_btn(true);
             } else {
                 $("#btn_next").addClass('disabled');
+                toggle_save_changed_building_btn(false);
             }
         }
         $("#conn_type_sel").dropdown({
             'custom change': 'activate',
             onChange: function (value, name) {
-                current_object.conn_type = value;
+                update_current_object('conn_type', value);
                 toggle_next_btn();
             },
         });
@@ -386,7 +415,7 @@
         });
         $("#edt-heat_load,#edt-expl,#edt-repair").on('change', function () {
             var $this = $(this);
-            current_object[$this.attr('key')] = $this.val();
+            update_current_object($this.attr('key'), $this.val());
             toggle_next_btn();
         });
         $(".numbers_only").on('keydown', function (e) {
@@ -414,6 +443,41 @@
         window.open(window.location.origin + '<%= $general_url %>/cgi-bin/build?' + $.param(selected_object), '_blank');
     }
 
+    function save_changed_building() {
+        var $ctype = $("#conn_type_sel"),
+            $heat_load = $("#edt-heat_load"),
+            $build_date = $("#edt-expl"),
+            $repair_date = $("#edt-repair"),
+            $btn = $("#btn_save_building"),
+            $icon = $btn.find("i"),
+            to_send = {
+                conn_type: $ctype.dropdown('get value').trim(),
+                heat_load: $heat_load.val().trim(),
+                build_date: $build_date.val().trim(),
+                repair_date: $repair_date.val().trim(),
+                id: current_object_main_properties.id,
+            };
+
+        $.ajax({
+            method: 'get',
+            url: '<%= $general_url %>/cgi-bin/building/edit',
+            data: to_send,
+            success: function (data) {
+                data = data.buildings[0];
+
+                var objects = downloaded_addresses[data.company_id];
+                for (var o in objects) {
+                    if (objects[o].id == data.id) {
+                        current_object_main_properties = objects[o] = data;
+                        break;
+                    }
+                }
+                $btn.addClass("basic disabled").removeClass("green").find("span").text("Сохранено!");
+                $icon.addClass("checkmark").removeClass("circle thin").show();
+            },
+        });
+    }
+
     function on_add_child_click(parent) {
         return function () {
             $('#edit_modal').modal('show').find('.header').text('Форма добавления объекта');
@@ -424,6 +488,73 @@
         return function () {
             $('#delete_modal').modal('show');
         }
+    }
+
+    function update_current_object(key, value) {
+        if (key) {
+            current_object[key] = value;
+        } else {
+            current_object.conn_type = $('#conn_type_sel').dropdown('get value');
+            [ 'edt-heat_load', 'edt-expl', 'edt-repair' ].forEach(function (sel) {
+                var $o = $("#" + sel);
+                current_object[$o.attr('key')] = $o.val();
+            });
+        }
+    }
+
+    function on_radio_click($o) {
+        var name = $o.attr('name');
+        selected_object = { building: name };
+        current_object.building = name;
+        $(".ttl-address").text($o.parent().children('label').text());
+
+        current_object_main_properties = (downloaded_addresses[$o.attr("org")] || []).find(function (e) { return name == e.id; });
+        var $ctype = $("#conn_type_sel"),
+            $heat_load = $("#edt-heat_load"),
+            $build_date = $("#edt-expl"),
+            $repair_date = $("#edt-repair"),
+            cur_object = current_object_main_properties;
+
+        if (!cur_object)
+            return;
+
+        function set_edt($o, v) {
+            if (v != undefined)
+                return function () { $o.val(v); };
+            else
+                return function (v) { $o.val(v); };
+        };
+
+        [
+            {
+                data: cur_object.characteristic,
+                ok: function (v) { $ctype.dropdown('set selected', v); },
+                fail: function () { $ctype.dropdown('restore defaults'); },
+            },
+            {
+                data: cur_object.heat_load,
+                ok: set_edt($heat_load),
+                fail: set_edt($heat_load, ''),
+            },
+            {
+                data: cur_object.build_date,
+                ok: set_edt($build_date),
+                fail: set_edt($build_date, ''),
+            },
+            {
+                data: cur_object.reconstruction_date,
+                ok: set_edt($repair_date),
+                fail: set_edt($repair_date, ''),
+            },
+        ].forEach(function (e) {
+            if (e.data == undefined)
+                e.fail();
+            else
+                e.ok(e.data);
+        });
+
+        update_current_object();
+        $("#btn_next").removeClass('disabled'); // hack: fixme
     }
 
     function on_edit_item_click(obj, parent_obj) {
@@ -554,7 +685,7 @@
         }
 
         if (current_step == 1) {
-            $("#btn_next").addClass('disabled');
+            update_current_object();
         }
 
         $('.step-' + current_step).hide();
@@ -583,6 +714,7 @@
             $("#btn_next").removeClass('disabled');
 
             current_object = { region: current_object.region, building: current_object.building };
+            on_radio_click($("#address_sel").find('.grouped.fields').find('input:checked').first());
         }
 
         $('.step-' + current_step).hide();

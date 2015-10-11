@@ -66,24 +66,18 @@ sub companies {
     return $self->render(json => { ok => 1, count => scalar @$r, companies => $r });
 }
 
-sub buildings {
+sub select_building {
     my $self = shift;
-
-    my $args = $self->req->params->to_hash;
-    my $q = "%$args->{q}%" if $args->{q};
-    delete $args->{district} if defined $args->{company};
+    my $args = shift // {};
 
     my $id_found = defined $args->{company} || defined $args->{district};
-
-    return $self->render(json => { status => 400, error => "invalid district" }) if defined $args->{district} && $args->{district} !~ /^\d+$/;
-    return $self->render(json => { status => 400, error => "invalid company" }) if defined $args->{company} && $args->{company} !~ /^\d+$/;
-
     my @args = (sprintf qq/
             select
                 b.id as id,
                 b.name as name,
                 d.name as district,
                 c.name as company,
+                c.id as company_id,
                 b.flags as flags,
                 bm.characteristic as characteristic,
                 bm.build_date as build_date,
@@ -93,21 +87,66 @@ sub buildings {
             join companies c on c.id = b.company_id
             join districts d on d.id = b.district_id
             left outer join buildings_meta bm on bm.building_id = b.id
-            %s
-            %s
-            %s
-            order by b.name
+            %s %s %s %s order by b.name
         /,
-        (defined $args->{company} ? "where c.id = ? " : ""),
-        (defined $args->{district} ? "where d.id = ? " : ""),
-        (defined $args->{q} ? ($id_found ? "and " : "where ") . " b.name like ? " : "")
+        (defined $args->{id} ? "where b.id = ?" : ""),
+        (defined $args->{company} ? (defined $args->{id} ? "and" : "where") . " c.id = ?" : ""),
+        (!defined($args->{company}) && defined $args->{district} ? (defined $args->{id} ? "and" : "where") . " d.id = ?" : ""),
+        (defined $args->{q} ? (defined $args->{id} || $id_found ? "and" : "where") . " b.name like ?" : "")
     );
 
+    push @args, $args->{id} if defined $args->{id};
     push @args, $args->{company} || $args->{district} if $id_found;
+
+    my $q = "%$args->{q}%" if $args->{q};
     push @args, $q if defined $q;
 
-    my $r = select_all $self, @args;
+    return select_all $self, @args;
+}
 
+sub edit_building {
+    my $self = shift;
+    my $args = $self->req->params->to_hash;
+
+    return $self->render(json => { status => 400, error => "invalid id" }) if !defined $args->{id} || $args->{id} =~ /\D/;
+
+    my @not_found_key = grep { !defined $args->{$_} || $args->{$_} eq "" } qw( conn_type heat_load );
+    unless (@not_found_key) {
+        @not_found_key = grep { !defined $args->{$_} || $args->{$_} eq "" } qw( repair_date build_date );
+        if (scalar(@not_found_key) != 2) {
+            $args->{repair_date} ||= undef;
+            $args->{build_date} ||= undef;
+            @not_found_key = ();
+        }
+    }
+    return $self->render(json => { status => 400, error => join(', ', @not_found_key) . " is not found in request" }) if @not_found_key;
+
+    execute_query $self, qq/
+        insert into buildings_meta (building_id, characteristic, build_date, reconstruction_date, heat_load)
+        values (?, ?, ?, ?, ?)
+        on duplicate key
+        update
+            characteristic = ?,
+            build_date = ?,
+            reconstruction_date = ?,
+            heat_load = ?
+    /, @$args{qw( id conn_type build_date repair_date heat_load conn_type build_date repair_date heat_load )};
+
+    my $r = select_building $self, { id => $args->{id} };
+    return return_500 $self unless $r;
+    return $self->render(json => { ok => 1, count => scalar @$r, buildings => $r });
+}
+
+sub buildings {
+    my $self = shift;
+
+    my $args = $self->req->params->to_hash;
+    delete $args->{district} if defined $args->{company};
+
+    return $self->render(json => { status => 400, error => "invalid district" }) if defined $args->{district} && $args->{district} !~ /^\d+$/;
+    return $self->render(json => { status => 400, error => "invalid company" }) if defined $args->{company} && $args->{company} !~ /^\d+$/;
+
+    my $r = select_building $self, $args;
     return return_500 $self unless $r;
 
     map { $_->{flags} = { map { $_ => 1 } split ',', $_->{flags} } } @$r;

@@ -48,7 +48,7 @@ sub last_err {
 sub select_row {
     my ($ctl, $query, @args) = @_;
 
-    $ctl->app->log->debug(sprintf "SQL query: '%s'. [args: %s]", $query, join(',', @args)) if $ctl;
+    $ctl->app->log->debug(sprintf "SQL query: '%s'. [args: %s]", $query, join(',', map { $_ // "undef" } @args)) if $ctl;
     my $sth = $dbh->prepare($query);
     $sth->execute(@args) or return $ctl->app->log->warn($dbh->errstr) and undef;
 
@@ -57,13 +57,13 @@ sub select_row {
 
 sub select_all {
     my ($ctl, $query, @args) = @_;
-    $ctl->app->log->debug(sprintf "SQL query: '%s'. [args: %s]", $query, join(',', @args)) if $ctl;
+    $ctl->app->log->debug(sprintf "SQL query: '%s'. [args: %s]", $query, join(',', map { $_ // "undef" } @args)) if $ctl;
     return $dbh->selectall_arrayref($query, { Slice => {} }, @args) or ($ctl->app->log->warn($dbh->errstr) and undef);
 }
 
 sub execute_query {
     my ($ctl, $query, @args) = @_;
-    $ctl->app->log->debug(sprintf "SQL query: '%s'. [args: %s]", $query, join(',', map { defined $_ ? $_ : "undef" } @args)) if $ctl;
+    $ctl->app->log->debug(sprintf "SQL query: '%s'. [args: %s]", $query, join(',', map { $_ // "undef" } @args)) if $ctl;
     return $dbh->do($query, undef, @args) or ($ctl->app->log->warn($dbh->errstr) and undef);
 }
 
