@@ -102,6 +102,9 @@
                 <h3 class="ui header ttl-company"></h3>
                 <h4 class="ui header ttl-address"></h4>
             </div>
+            <div class="step-3 sixteen wide column">
+                <a href="#" class="ui green button right floated" id="btn-add-obj-group-1">Добавить объект на верхнем уровне</a>
+            </div>
             <div id="table" class="step-3 sixteen wide column">
                 <table class="ui selectable celled very compact small table">
                     <thead>
@@ -151,13 +154,13 @@
                                     </div>
                                     <div class="field">
                                         <label>Количество, п.м./шт:</label>
-                                        <input type="text" id="edt-characteristic-value">
+                                        <input type="text" id="edt-characteristic-value" class="numbers_only">
                                     </div>
                                 </div>
                                 <div class="two fields">
                                     <div class="field">
                                         <label>Диаметр, мм:</label>
-                                        <input type="text" id="edt-size">
+                                        <input type="text" id="edt-size" class="numbers_only">
                                     </div>
                                     <div class="field">
                                         <label>Тип изоляции:</label>
@@ -189,17 +192,17 @@
                                     </div>
                                     <div class="field">
                                         <label>Инструментальный износ:</label>
-                                        <input type="text" id="edt-wear">
+                                        <input type="text" id="edt-wear" class="numbers_only float_numbers">
                                     </div>
                                 </div>
                                 <div class="two fields">
                                     <div class="field">
                                         <label>Год ввода в эксплуатацию:</label>
-                                        <input type="text" id="edt-install-year">
+                                        <input type="text" id="edt-install-year" class="numbers_only">
                                     </div>
                                     <div class="field">
                                         <label>Год последней реконструкции:</label>
-                                        <input type="text" id="edt-reconstruction-year">
+                                        <input type="text" id="edt-reconstruction-year" class="numbers_only">
                                     </div>
                                 </div>
 
@@ -252,6 +255,8 @@
     $(function () {
         $(".step-2,.step-3").hide();
         $(".step-1").show();
+        $("#btn-add-obj-group-1").click(on_show_modal('Добавить объект на первом уровне иерархии'));
+
         var currently_downloaded = '',
             $addr_sel = $("#address_sel"),
             downloaded_companies = {
@@ -310,33 +315,6 @@
             },
         }).dropdown('set selected', 'Москва');
 
-        function toggle_save_changed_building_btn(all_fields_set) {
-            var $ctype = $("#conn_type_sel"),
-                $heat_load = $("#edt-heat_load"),
-                $build_date = $("#edt-expl"),
-                $repair_date = $("#edt-repair"),
-                $btn = $("#btn_save_building"),
-                $icon = $btn.find("i");
-
-            if (!all_fields_set) {
-                $btn.addClass("basic disabled").removeClass("green");
-                $icon.removeClass("circle thin checkmark").hide();
-                return;
-            }
-
-            current_object_main_properties = current_object_main_properties || {};
-            if ($ctype.dropdown('get value') != current_object_main_properties.characteristic
-                    || $heat_load.val() != (current_object_main_properties.heat_load || "")
-                    || $build_date.val() != (current_object_main_properties.build_date || "")
-                    || $repair_date.val() != (current_object_main_properties.reconstruction_date || "")) {
-                $btn.removeClass("basic disabled").addClass("green");
-                $icon.addClass("circle thin").removeClass("checkmark").show();
-            } else {
-                $btn.addClass("basic disabled").removeClass("green");
-                $icon.hide();
-            }
-            $btn.find("span").text("Соxранить");
-        }
         function update_addresses(org) {
             var arr = downloaded_addresses[org];
             if (!arr)
@@ -389,16 +367,6 @@
                 }
             },
         });
-        function toggle_next_btn() {
-            if (current_object.conn_type && current_object.heat_load
-                    && (current_object.reconstruction_date || current_object.build_date)) {
-                $("#btn_next").removeClass('disabled');
-                toggle_save_changed_building_btn(true);
-            } else {
-                $("#btn_next").addClass('disabled');
-                toggle_save_changed_building_btn(false);
-            }
-        }
         $("#conn_type_sel").dropdown({
             'custom change': 'activate',
             onChange: function (value, name) {
@@ -427,7 +395,7 @@
             }
             // decimal point processing
             if (!e.shiftKey && e.keyCode == 190
-                    && $(this).attr('key') == 'heat_load'
+                    && $(this).hasClass('float_numbers') == 'heat_load'
                     && $(this).val().indexOf(".") == -1
                     && $(this).val().length > 0) {
                 return;
@@ -479,7 +447,7 @@
     }
 
     function on_add_child_click(parent) {
-        return on_show_modal(parent, 'Форма добавления объекта');
+        return on_show_modal('Форма добавления объекта', parent);
     }
 
     function on_remove_item_click(obj) {
@@ -556,16 +524,16 @@
     }
 
     function on_edit_item_click(obj, parent_obj) {
-        return on_show_modal(parent_obj, "Форма редактирования", obj);
+        return on_show_modal("Форма редактирования", parent_obj, obj);
     }
 
-    function on_show_modal(parent_obj, name, obj) {
+    function on_show_modal(name, parent_obj, obj) {
         return function () {
+            obj = obj || {};
+
             var $frm = $("#edit_modal"),
                 $select = $frm.find("#objects_names").dropdown("set selected", obj.new_name_id);
             $frm.find('.header').text(name);
-
-            obj = obj || {};
 
             var hide = [];
             if (parent_obj == undefined) {
@@ -588,6 +556,34 @@
             $frm.find("#edt-wear").val(obj.wear || "");
             $frm.find("#edt-install-year").val(obj.install_year || "");
             $frm.find("#edt-reconstruction-year").val(obj.reconstruction_year || "");
+
+            $frm.find("#btn-save-object").click(function () {
+                var obj_name = $frm.find("#objects_names").dropdown("get value");
+                if (!obj_name) {
+                    // TODO: FIXME
+                    alert("Необходимо указать имя объекта");
+                    return false;
+                }
+                $.ajax({
+                    method: 'get',
+                    url: '<%= $general_url %>/cgi-bin/objects/add-edit',
+                    data: {
+                        id: obj.id,
+                        material_name: $frm.find("#edt-characteristic").val(),
+                        count: $frm.find("#edt-characteristic-value").val(),
+                        isolation_type: $frm.find("#isolation_type").dropdown('get value'),
+                        laying_method: $frm.find("#laying_method").dropdown('get value'),
+                        wear: $frm.find("#edt-wear").val(),
+                        install_year: $frm.find("#edt-install-year").val(),
+                        reconstruction_year: $frm.find("#edt-reconstruction-year").val(),
+                        object_name: obj_name,
+                    },
+                    success: function () {
+                        load_objects(); // todo: return new objects list from server
+                        $frm.modal('hide');
+                    },
+                });
+            });
 
             $frm.modal('show');
         }
@@ -685,6 +681,45 @@
         });
     }
 
+    function toggle_save_changed_building_btn(all_fields_set) {
+        var $ctype = $("#conn_type_sel"),
+            $heat_load = $("#edt-heat_load"),
+            $build_date = $("#edt-expl"),
+            $repair_date = $("#edt-repair"),
+            $btn = $("#btn_save_building"),
+            $icon = $btn.find("i");
+
+        if (!all_fields_set) {
+            $btn.addClass("basic disabled").removeClass("green");
+            $icon.removeClass("circle thin checkmark").hide();
+            return;
+        }
+
+        current_object_main_properties = current_object_main_properties || {};
+        if ($ctype.dropdown('get value') != current_object_main_properties.characteristic
+                || $heat_load.val() != (current_object_main_properties.heat_load || "")
+                || $build_date.val() != (current_object_main_properties.build_date || "")
+                || $repair_date.val() != (current_object_main_properties.reconstruction_date || "")) {
+            $btn.removeClass("basic disabled").addClass("green");
+            $icon.addClass("circle thin").removeClass("checkmark").show();
+        } else {
+            $btn.addClass("basic disabled").removeClass("green");
+            $icon.hide();
+        }
+        $btn.find("span").text("Соxранить");
+    }
+
+    function toggle_next_btn() {
+        if (current_object.conn_type && current_object.heat_load
+                && (current_object.reconstruction_date || current_object.build_date)) {
+            $("#btn_next").removeClass('disabled');
+            toggle_save_changed_building_btn(true);
+        } else {
+            $("#btn_next").addClass('disabled');
+            toggle_save_changed_building_btn(false);
+        }
+    }
+
     function next_step() {
         if (current_step > 3) {
             current_step = 3;
@@ -703,7 +738,9 @@
         $('#step-' + current_step + '-nav').addClass('active').removeClass('disabled');
         $('.modal').hide();
 
-        if (current_step == 3) {
+        if (current_step == 2) {
+            toggle_next_btn();
+        } else if (current_step == 3) {
             load_objects();
         }
     }
