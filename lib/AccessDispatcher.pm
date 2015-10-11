@@ -171,6 +171,24 @@ my %access_control = (
         access => 'Authorized',
         roles => 'manager',
     },
+
+    'isolation_types' => {
+        method => 'get',
+        access => 'Authorized',
+        roles => 'user',
+    },
+
+    'laying_methods' => {
+        method => 'get',
+        access => 'Authorized',
+        roles => 'user',
+    },
+
+    'characteristics' => {
+        method => 'get',
+        access => 'Authorized',
+        roles => 'user',
+    },
 );
 
 sub redirect_to_login {

@@ -106,6 +106,20 @@ sub catalogue {
     return $self->render(template => 'base/internal_err') unless $r && $r->{objects};
     $self->stash(objects_names => $r->{objects});
 
+    $r = send_request($self,
+        url => 'laying_methods',
+        port => DATA_PORT,
+    );
+    return $self->render(template => 'base/internal_err') unless $r && $r->{methods};
+    $self->stash(laying_methods => $r->{methods});
+
+    $r = send_request($self,
+        url => 'isolation_types',
+        port => DATA_PORT,
+    );
+    return $self->render(template => 'base/internal_err') unless $r && $r->{isolations};
+    $self->stash(isolation_types => $r->{isolations});
+
     return $self->render(template => 'base/catalogue');
 }
 

@@ -38,6 +38,7 @@
 
 #table td:first-child .outside-buttons {
     position: absolute;
+    background-color: #FCFFF5;
     top: 0px;
     left: -73px;
     display: none;

@@ -134,7 +134,7 @@
                                 <div class="required field">
                                     <label>Наименование объекта:</label>
                                     <div id="objects_names" class="ui fluid selection dropdown">
-                                        <input type="hidden" name="gender">
+                                        <input type="hidden" name="unknown">
                                         <i class="dropdown icon"></i>
                                         <div class="default text">---</div>
                                         <div class="menu">
@@ -147,29 +147,28 @@
                                 <div class="two fields">
                                     <div class="field">
                                         <label>Характеристика/материал:</label>
-                                        <input type="text">
+                                        <input type="text" id="edt-characteristic">
                                     </div>
                                     <div class="field">
                                         <label>Количество, п.м./шт:</label>
-                                        <input type="text">
+                                        <input type="text" id="edt-characteristic-value">
                                     </div>
                                 </div>
                                 <div class="two fields">
                                     <div class="field">
                                         <label>Диаметр, мм:</label>
-                                        <input type="text">
+                                        <input type="text" id="edt-size">
                                     </div>
                                     <div class="field">
                                         <label>Тип изоляции:</label>
                                         <div id="isolation_type" class="ui fluid selection dropdown">
-                                            <input type="hidden" name="gender">
+                                            <input type="hidden" name="unknown">
                                             <i class="dropdown icon"></i>
                                             <div class="default text">---</div>
                                             <div class="menu">
-                                                <div class="item" data-value="3">Минеральная вата</div>
-                                                <div class="item" data-value="2">Металлический кожух</div>
-                                                <div class="item" data-value="1">Маты минераловатные</div>
-                                                <div class="item" data-value="0">Бетонная изоляция</div>
+                                                <% for my $i (@$isolation_types) { %>
+                                                    <div class="item" data-value="<%= $i->{id} %>"><%= $i->{name} %></div>
+                                                <% } %>
                                             </div>
                                         </div>
                                     </div>
@@ -178,38 +177,39 @@
                                     <div class="field">
                                         <label>Способ прокладки тепловых сетей:</label>
                                         <div id="laying_method" class="ui fluid selection dropdown">
-                                            <input type="hidden" name="gender">
+                                            <input type="hidden" name="unknown">
                                             <i class="dropdown icon"></i>
                                             <div class="default text">---</div>
                                             <div class="menu">
-                                                <div class="item" data-value="1">Внутри помещений</div>
-                                                <div class="item" data-value="0">В непроходных каналах</div>
+                                                <% for my $m (@$laying_methods) { %>
+                                                    <div class="item" data-value="<%= $m->{id} %>"><%= $m->{name} %></div>
+                                                <% } %>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="field">
                                         <label>Инструментальный износ:</label>
-                                        <input type="text">
+                                        <input type="text" id="edt-wear">
                                     </div>
                                 </div>
                                 <div class="two fields">
                                     <div class="field">
                                         <label>Год ввода в эксплуатацию:</label>
-                                        <input type="text">
+                                        <input type="text" id="edt-install-year">
                                     </div>
                                     <div class="field">
                                         <label>Год последней реконструкции:</label>
-                                        <input type="text">
+                                        <input type="text" id="edt-reconstruction-year">
                                     </div>
                                 </div>
 
                             </form>
                         </div>
-                        <div class="sixteen wide column">
+                        <div class="sixteen wide column actions">
                             <div class="right floated ui deny button">
                                 Отмена
                             </div>
-                            <div class="right floated ui positive button">
+                            <div class="right floated ui positive button" id="btn-save-object">
                                 Сохранить
                             </div>
                         </div>
@@ -479,9 +479,7 @@
     }
 
     function on_add_child_click(parent) {
-        return function () {
-            $('#edit_modal').modal('show').find('.header').text('Форма добавления объекта');
-        }
+        return on_show_modal(parent, 'Форма добавления объекта');
     }
 
     function on_remove_item_click(obj) {
@@ -558,10 +556,16 @@
     }
 
     function on_edit_item_click(obj, parent_obj) {
+        return on_show_modal(parent_obj, "Форма редактирования", obj);
+    }
+
+    function on_show_modal(parent_obj, name, obj) {
         return function () {
             var $frm = $("#edit_modal"),
                 $select = $frm.find("#objects_names").dropdown("set selected", obj.new_name_id);
-            $frm.find('.header').text('Форма редактирования');
+            $frm.find('.header').text(name);
+
+            obj = obj || {};
 
             var hide = [];
             if (parent_obj == undefined) {
@@ -576,6 +580,15 @@
 
             $select.find(".item").show();
             hide.forEach(function (i) { $select.find(".item[group='" + i + "']").hide(); });
+
+            $frm.find("#edt-characteristic").val(obj.material_name || "");
+            $frm.find("#edt-characteristic-value").val(obj.count || "");
+            $frm.find("#isolation_type").dropdown("set selected", obj.isolation_type_id);
+            $frm.find("#laying_method").dropdown("set selected", obj.laying_method_id);
+            $frm.find("#edt-wear").val(obj.wear || "");
+            $frm.find("#edt-install-year").val(obj.install_year || "");
+            $frm.find("#edt-reconstruction-year").val(obj.reconstruction_year || "");
+
             $frm.modal('show');
         }
     }
@@ -613,9 +626,9 @@
                     }
 
                     // old names are not expected
-                    [ 'new_name',//{ name: 'new_name', class: 'single line', }, TODO: uncomment
+                    [ 'new_name',
                       'material_name',
-                      'count',      // ???
+                      'count',
                       'diametr',
                       'isolation',
                       'laying_method',
@@ -625,10 +638,6 @@
                     ].forEach(function (input) {
                         var key = input,
                             $td = $("<td>");
-                        if (typeof(input) == "object") {
-                            $td.addClass(input.class);
-                            key = input.name;
-                        }
                         var text = item[key] == undefined ? "" : item[key];
                         if (input == "new_name") {
                             // TODO: remove hardcode

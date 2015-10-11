@@ -66,6 +66,30 @@ sub companies {
     return $self->render(json => { ok => 1, count => scalar @$r, companies => $r });
 }
 
+sub isolation_types {
+    my $self = shift;
+
+    my $r = select_all $self, "select id, name from isolations group by name order by name";
+    return return_500 $self unless $r;
+    return $self->render(json => { ok => 1, count => scalar @$r, isolations => $r });
+}
+
+sub laying_methods {
+    my $self = shift;
+
+    my $r = select_all $self, "select id, name from laying_methods group by name order by name";
+    return return_500 $self unless $r;
+    return $self->render(json => { ok => 1, count => scalar @$r, methods => $r });
+}
+
+sub characteristics {
+    my $self = shift;
+
+    my $r = select_all $self, "select id, name from characteristics group by name order by name";
+    return return_500 $self unless $r;
+    return $self->render(json => { ok => 1, count => scalar @$r, characteristics => $r });
+}
+
 sub select_building {
     my $self = shift;
     my $args = shift // {};
@@ -168,9 +192,13 @@ sub objects {
                 o.id as id,
                 c.name as material_name,
                 c.material as material,
+                c.id as material_id,
+                o.characteristic_value as count,
                 o.size as diametr,
                 i.name as isolation,
+                i.id as isolation_type_id,
                 l.name as laying_method,
+                l.id as laying_method_id,
                 o.install_year as install_year,
                 o.reconstruction_year as reconstruction_year,
                 o.wear as wear,
