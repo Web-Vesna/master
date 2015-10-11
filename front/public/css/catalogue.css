@@ -12,7 +12,7 @@
 }
 
 #table {
-    overflow-x: auto!important;
+    /* overflow-x: auto!important; */
     padding-top: 3px;
 }
 
@@ -26,6 +26,29 @@
 
 #table td:nth-child(12) {
     text-align: center;
+}
+
+#table td:first-child {
+    vertical-align: middle;
+}
+
+#table td:first-child>div {
+    position: relative;
+}
+
+#table td:first-child .outside-buttons {
+    position: absolute;
+    top: 0px;
+    left: -73px;
+    display: none;
+}
+
+#table td:first-child .outside-buttons.long-buttons-group {
+    left: -105px;
+}
+
+#table tr:hover td:first-child .outside-buttons {
+    display: block;
 }
 
 #wrapper .content {

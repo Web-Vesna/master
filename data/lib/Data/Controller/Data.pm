@@ -78,13 +78,29 @@ sub buildings {
     return $self->render(json => { status => 400, error => "invalid district" }) if defined $args->{district} && $args->{district} !~ /^\d+$/;
     return $self->render(json => { status => 400, error => "invalid company" }) if defined $args->{company} && $args->{company} !~ /^\d+$/;
 
-    my @args = (
-        "select b.id as id, b.name as name, d.name as district, c.name as company, b.flags as flags " .
-        "from buildings b join companies c on c.id = b.company_id join districts d on d.id = b.district_id " .
-        (defined $args->{company} ? "where c.id = ? " : "") .
-        (defined $args->{district} ? "where d.id = ? " : "") .
-        (defined $args->{q} ? ($id_found ? "and " : "where ") . " b.name like ? " : "") .
-        "order by b.name",
+    my @args = (sprintf qq/
+            select
+                b.id as id,
+                b.name as name,
+                d.name as district,
+                c.name as company,
+                b.flags as flags,
+                bm.characteristic as characteristic,
+                bm.build_date as build_date,
+                bm.reconstruction_date as reconstruction_date,
+                bm.heat_load as heat_load
+            from buildings b
+            join companies c on c.id = b.company_id
+            join districts d on d.id = b.district_id
+            left outer join buildings_meta bm on bm.building_id = b.id
+            %s
+            %s
+            %s
+            order by b.name
+        /,
+        (defined $args->{company} ? "where c.id = ? " : ""),
+        (defined $args->{district} ? "where d.id = ? " : ""),
+        (defined $args->{q} ? ($id_found ? "and " : "where ") . " b.name like ? " : "")
     );
 
     push @args, $args->{company} || $args->{district} if $id_found;
@@ -121,6 +137,7 @@ sub objects {
                 o.wear as wear,
                 cat.object_name as name,
                 new_o.name as new_name,
+                new_o.id as new_name_id,
                 new_o.group_id as new_group,
                 oo.id as parent_id
             from objects o
