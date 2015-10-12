@@ -30,12 +30,12 @@ sub startup {
     $r->get('/objects')->to('data#objects');
     $r->get('/objects/filter')->to('data#filter_objects');
     $r->get('/objects/names')->to('data#objects_names');
+    $r->get('/objects/add-edit')->to('data#objects_add_edit');
     $r->get('/calc_types')->to('data#calc_types');
     $r->get('/conn_types')->to('data#conn_types');
 
     $r->get('/isolation_types')->to('data#isolation_types');
     $r->get('/laying_methods')->to('data#laying_methods');
-    $r->get('/characteristics')->to('data#characteristics');
 
     $r->get('/build')->to('results#build');
     $r->get('/rebuild_cache')->to('results#rebuild_cache');

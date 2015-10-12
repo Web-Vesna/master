@@ -82,14 +82,6 @@ sub laying_methods {
     return $self->render(json => { ok => 1, count => scalar @$r, methods => $r });
 }
 
-sub characteristics {
-    my $self = shift;
-
-    my $r = select_all $self, "select id, name from characteristics group by name order by name";
-    return return_500 $self unless $r;
-    return $self->render(json => { ok => 1, count => scalar @$r, characteristics => $r });
-}
-
 sub select_building {
     my $self = shift;
     my $args = shift // {};
@@ -190,9 +182,7 @@ sub objects {
         sprintf(qq/
             select
                 o.id as id,
-                c.name as material_name,
-                c.material as material,
-                c.id as material_id,
+                o.characteristic as characteristic,
                 o.characteristic_value as count,
                 o.size as diametr,
                 i.name as isolation,
@@ -208,9 +198,8 @@ sub objects {
                 new_o.group_id as new_group,
                 oo.id as parent_id
             from objects o
-            join characteristics c on c.id = o.characteristic
-            join isolations i on i.id = o.isolation
-            join laying_methods l on l.id = o.laying_method
+            left outer join isolations i on i.id = o.isolation
+            left outer join laying_methods l on l.id = o.laying_method
             left outer join objects oo on oo.id = o.parent_object
             left outer join objects_names new_o on new_o.id = o.object_name_new
             left outer join categories cat on o.object_name = cat.id %s
@@ -266,6 +255,55 @@ sub objects {
         count => scalar @$r,
         objects => [ @to_return, @tail ],
     });
+}
+
+sub objects_add_edit {
+    my $self = shift;
+    my $args = $self->req->params->to_hash;
+
+    return $self->render(json => { status => 400, error => "building id is required" }) unless $args->{building};
+
+    my $req;
+    if (defined $args->{id}) {
+        $req = qq/
+            update objects set
+                size = ?,
+                isolation = ?,
+                laying_method = ?,
+                install_year = ?,
+                reconstruction_year = ?,
+                object_name_new = ?,
+                characteristic = ?,
+                characteristic_value = ?,
+                wear = ?,
+                parent_object = ?,
+                building = ?
+            where id = ?
+        /;
+    } else {
+        $req = qq/
+            insert into objects (
+                size,
+                isolation,
+                laying_method,
+                install_year,
+                reconstruction_year,
+                object_name_new,
+                characteristic,
+                characteristic_value,
+                wear,
+                parent_object,
+                building
+            ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        /;
+    }
+
+    my $r = execute_query $self, $req, map { $_ || undef } @$args{qw(
+        diametr isolation_type laying_method install_year reconstruction_year
+        object_name characteristic characteristic_value wear parent_object building id)};
+    return $self->render(json => { status => 400, error => "failed" }) unless $r;
+
+    return $self->render(json => { status => 200 });
 }
 
 sub objects_names {

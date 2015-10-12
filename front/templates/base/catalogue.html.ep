@@ -246,7 +246,7 @@
                     <i class="icon" style="display: none;"></i>
                     <span>Сохранить<span>
                 </div>
-                <a href="<%= $general_url %>/catalogues" class="step-3 ui basic button right floated" id="btn_finish">Готово</a>
+                <a href="<%= $general_url %>/catalogue" class="step-3 ui basic button right floated" id="btn_finish">Готово</a>
                 <a href="#" class="ui basic button right floated" onclick="print(); return false;">Печать</a>
             </div>
         </div>
@@ -395,7 +395,7 @@
             }
             // decimal point processing
             if (!e.shiftKey && e.keyCode == 190
-                    && $(this).hasClass('float_numbers') == 'heat_load'
+                    && $(this).hasClass('float_numbers')
                     && $(this).val().indexOf(".") == -1
                     && $(this).val().length > 0) {
                 return;
@@ -532,7 +532,8 @@
             obj = obj || {};
 
             var $frm = $("#edit_modal"),
-                $select = $frm.find("#objects_names").dropdown("set selected", obj.new_name_id);
+                $select = $frm.find("#objects_names");
+
             $frm.find('.header').text(name);
 
             var hide = [];
@@ -549,15 +550,28 @@
             $select.find(".item").show();
             hide.forEach(function (i) { $select.find(".item[group='" + i + "']").hide(); });
 
-            $frm.find("#edt-characteristic").val(obj.material_name || "");
+            $frm.find("#edt-characteristic").val(obj.characteristic || "");
             $frm.find("#edt-characteristic-value").val(obj.count || "");
-            $frm.find("#isolation_type").dropdown("set selected", obj.isolation_type_id);
-            $frm.find("#laying_method").dropdown("set selected", obj.laying_method_id);
             $frm.find("#edt-wear").val(obj.wear || "");
             $frm.find("#edt-install-year").val(obj.install_year || "");
             $frm.find("#edt-reconstruction-year").val(obj.reconstruction_year || "");
+            $frm.find("#edt-size").val(obj.diametr || "");
 
-            $frm.find("#btn-save-object").click(function () {
+            // TODO: refactor
+            if (obj.new_name_id != undefined)
+                $select.dropdown("set selected", obj.new_name_id);
+            else
+                $select.dropdown('clear');
+            if (obj.isolation_type_id != undefined)
+                $frm.find("#isolation_type").dropdown("set selected", obj.isolation_type_id);
+            else
+                $frm.find("#isolation_type").dropdown("clear");
+            if (obj.laying_method_id != undefined)
+                $frm.find("#laying_method").dropdown("set selected", obj.laying_method_id);
+            else
+                $frm.find("#laying_method").dropdown("clear");
+
+            $frm.find("#btn-save-object").unbind('click').click(function () {
                 var obj_name = $frm.find("#objects_names").dropdown("get value");
                 if (!obj_name) {
                     // TODO: FIXME
@@ -569,14 +583,17 @@
                     url: '<%= $general_url %>/cgi-bin/objects/add-edit',
                     data: {
                         id: obj.id,
-                        material_name: $frm.find("#edt-characteristic").val(),
+                        characteristic: $frm.find("#edt-characteristic").val(),
                         count: $frm.find("#edt-characteristic-value").val(),
                         isolation_type: $frm.find("#isolation_type").dropdown('get value'),
                         laying_method: $frm.find("#laying_method").dropdown('get value'),
                         wear: $frm.find("#edt-wear").val(),
                         install_year: $frm.find("#edt-install-year").val(),
                         reconstruction_year: $frm.find("#edt-reconstruction-year").val(),
+                        diametr: $frm.find("#edt-size").val(),
                         object_name: obj_name,
+                        building: current_object.building,
+                        parent_object: parent_obj && parent_obj.id,
                     },
                     success: function () {
                         load_objects(); // todo: return new objects list from server
@@ -586,6 +603,7 @@
             });
 
             $frm.modal('show');
+            return false;
         }
     }
 
@@ -623,7 +641,7 @@
 
                     // old names are not expected
                     [ 'new_name',
-                      'material_name',
+                      'characteristic',
                       'count',
                       'diametr',
                       'isolation',

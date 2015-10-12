@@ -184,10 +184,10 @@ my %access_control = (
         roles => 'user',
     },
 
-    'characteristics' => {
+    'objects/add-edit' => {
         method => 'get',
         access => 'Authorized',
-        roles => 'user',
+        roles => 'manager',
     },
 );
 

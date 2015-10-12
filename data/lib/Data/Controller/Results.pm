@@ -420,6 +420,7 @@ sub add_buildings_meta {
     return $self->render(json => { count => $count, ok => 1, errors => { count => scalar @errors, errors => \@errors } });
 }
 
+# TODO: remove this method
 sub add_content {
     my $self = shift;
     my $args = $self->req->params->to_hash;
@@ -1127,7 +1128,7 @@ sub build {
             cat.object_name as object_name,
             cat_n.category_type = 'marked' as need_mark,
             cat_n.name as category_name,
-            charac.name as characteristic,
+            o.characteristic as characteristic,
             o.size as size,
             o.characteristic_value as count,
             i.name as isolation_type,
@@ -1148,7 +1149,6 @@ sub build {
         join districts d on d.id = b.district_id
         join categories cat on cat.id = o.object_name
         join categories_names cat_n on cat.category_name = cat_n.id
-        left outer join characteristics charac on charac.id = o.characteristic
         left outer join isolations i on i.id = o.isolation
         left outer join laying_methods l on l.id = o.laying_method
         left outer join buildings_meta bm on bm.building_id = b.id
