@@ -300,10 +300,22 @@ sub objects_add_edit {
 
     my $r = execute_query $self, $req, map { $_ || undef } @$args{qw(
         diametr isolation_type laying_method install_year reconstruction_year
-        object_name characteristic characteristic_value wear parent_object building id)};
-    return $self->render(json => { status => 400, error => "failed" }) unless $r;
+        object_name characteristic count wear parent_object building id)};
+    return $self->render(json => { status => 400, error => "request failed" }) unless $r;
 
-    return $self->render(json => { status => 200 });
+    return $self->render(json => { status => 200, desription => 'saved', ok => 1});
+}
+
+sub remove_object {
+    my $self = shift;
+    my $args = $self->req->params->to_hash;
+
+    return $self->render(json => { status => 400, error => 'object id is required' }) unless $args->{id};
+
+    my $r = execute_query $self, "delete from objects where id = ?", $args->{id};
+    return $self->render(json => { status => 400, error => "request failed" }) unless $r;
+
+    return $self->render(json => { status => 200, description => 'removed', ok => 1 });
 }
 
 sub objects_names {

@@ -31,6 +31,7 @@ sub startup {
     $r->get('/objects/filter')->to('data#filter_objects');
     $r->get('/objects/names')->to('data#objects_names');
     $r->get('/objects/add-edit')->to('data#objects_add_edit');
+    $r->get('/objects/remove')->to('data#remove_object');
     $r->get('/calc_types')->to('data#calc_types');
     $r->get('/conn_types')->to('data#conn_types');
 

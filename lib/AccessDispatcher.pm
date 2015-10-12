@@ -189,6 +189,12 @@ my %access_control = (
         access => 'Authorized',
         roles => 'manager',
     },
+
+    'objects/remove' => {
+        method => 'get',
+        access => 'Authorized',
+        roles => 'manager',
+    },
 );
 
 sub redirect_to_login {

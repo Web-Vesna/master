@@ -224,13 +224,13 @@
                     Удаление объекта
                 </div>
                 <div class="content">
-                    <p>Вы уверены, что хотите удалить выбранный объект?</p>
+                    <p>Вы уверены, что хотите удалить объект "<span id="obj_name_field"></span>"?</p>
                 </div>
                 <div class="actions">
                     <div class="ui negative button">
                         Отмена
                     </div>
-                    <div class="ui positive right labeled icon button">
+                    <div class="ui positive right labeled icon button" id="btn-delete-row">
                         Удалить
                         <i class="checkmark icon"></i>
                     </div>
@@ -452,7 +452,22 @@
 
     function on_remove_item_click(obj) {
         return function () {
-            $('#delete_modal').modal('show');
+            var $frm = $('#delete_modal');
+
+            $frm.find("#btn-delete-row").unbind('click').click(function () {
+                $.ajax({
+                    method: 'get',
+                    url: '<%= $general_url %>/cgi-bin/objects/remove',
+                    data: { id: obj.id },
+                    success: function () {
+                        load_objects();
+                        $frm.modal('hide');
+                    },
+                });
+            });
+
+            $frm.find("span#obj_name_field").text(obj.new_name);
+            $frm.modal('show');
         }
     }
 
