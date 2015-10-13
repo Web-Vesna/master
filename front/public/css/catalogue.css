@@ -39,12 +39,19 @@
 #table td:first-child .outside-buttons {
     position: absolute;
     background-color: #FCFFF5;
-    top: 0px;
-    left: -73px;
+    top: -6px;
     display: none;
 }
 
-#table td:first-child .outside-buttons.long-buttons-group {
+#table td:first-child .outside-buttons.icon-group-1 {
+    left: -73px;
+}
+
+#table td:first-child .outside-buttons.icon-group-2 {
+    left: -73px;
+}
+
+#table td:first-child .outside-buttons.icon-group-3 {
     left: -105px;
 }
 

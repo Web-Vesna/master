@@ -58,7 +58,7 @@
             <!-- END OF STEP 1 -->
 
             <!-- STEP 2 -->
-            <div class="step-2 twelve wide center aligned column">
+            <div class="step-2 sixteen wide center aligned column">
                 <h3 class="ui header ttl-company"></h3>
                 <h4 class="ui header ttl-address"></h4>
             </div>
@@ -79,7 +79,7 @@
                     </div>
                     <div class="field required">
                         <label>Нагрузка, кВт:</label>
-                        <input type="text" placeholder="кВт" id="edt-heat_load" key="heat_load" class="numbers_only float_numbers">
+                        <input type="text" placeholder="кВт" id="edt-heat_load" key="heat_load" class="">
                     </div>
                     <div class="field">
                         <label>Дата ввода в экплуатацию:</label>
@@ -103,7 +103,7 @@
                 <h4 class="ui header ttl-address"></h4>
             </div>
             <div class="step-3 sixteen wide column">
-                <a href="#" class="ui green button right floated" id="btn-add-obj-group-1">Добавить объект на верхнем уровне</a>
+                <a href="#" class="ui basic button right floated" id="btn-add-obj-group-1">Добавить объект на верхнем уровне</a>
             </div>
             <div id="table" class="step-3 sixteen wide column">
                 <table class="ui selectable celled very compact small table">
@@ -178,7 +178,7 @@
                                 </div>
                                 <div class="two fields">
                                     <div class="field">
-                                        <label>Способ прокладки тепловых сетей:</label>
+                                        <label>Способ прокладки тепл. сетей:</label>
                                         <div id="laying_method" class="ui fluid selection dropdown">
                                             <input type="hidden" name="unknown">
                                             <i class="dropdown icon"></i>
@@ -632,6 +632,12 @@
             success: function (data) {
                 $finish_btn.removeClass(classes);
                 var $objects_list = $("#tbl-objects-list").html('');
+
+                var objects_with_children = {};
+                data.objects.forEach(function (item) {
+                    objects_with_children[item.parent_id] = 1;
+                });
+
                 data.objects.forEach(function (item) {
                     var $tr = $("<tr>");
 
@@ -666,31 +672,39 @@
                       'wear',
                     ].forEach(function (input) {
                         var key = input,
-                            $td = $("<td>");
-                        var text = item[key] == undefined ? "" : item[key];
+                            $td = $("<td>"),
+                            text = item[key] == undefined ? "" : item[key],
+                            n_icons = 0;
+
                         if (input == "new_name") {
                             // TODO: remove hardcode
-                            var $div = $("<div>")
-                                .addClass("ui mini basic icon buttons outside-buttons")
-                                .append(
+                            var $div = $("<div>").addClass("ui mini basic icon buttons outside-buttons");
+
+                            if (!objects_with_children[item.id]) {
+                                ++n_icons;
+                                $div.append(
                                     $("<button>")
                                         .addClass("ui button")
                                         .click(on_remove_item_click(item))
                                         .append(
                                             $("<i>").addClass("remove icon")
                                         )
-                                    )
-                                .append(
-                                    $("<button>")
-                                        .addClass("ui button")
-                                        .click(on_edit_item_click(item, parent_obj))
-                                        .append(
-                                            $("<i>").addClass("write icon")
-                                        )
                                     );
-                                    $td.append($("<div>").append($div).append($("<span>").text(text)));
+                            }
+
+                            ++n_icons;
+                            $div.append(
+                                $("<button>")
+                                    .addClass("ui button")
+                                    .click(on_edit_item_click(item, parent_obj))
+                                    .append(
+                                        $("<i>").addClass("write icon")
+                                    )
+                                );
+                            $td.append($("<div>").append($div).append($("<span>").text(text)));
 
                             if (item.new_group == "1" || item.new_group == "2") {
+                                ++n_icons
                                 $div.append(
                                     $("<button>")
                                         .addClass("ui button")
@@ -698,8 +712,9 @@
                                         .append(
                                             $("<i>").addClass("file outline icon")
                                         )
-                                    ).addClass("long-buttons-group");
+                                    );
                             }
+                            $div.addClass('icon-group-' + n_icons);
                         } else {
                             $td.text(text);
                         }

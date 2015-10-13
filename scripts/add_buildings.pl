@@ -6,7 +6,7 @@ use utf8;
 
 # XXX: FILL COORDINATES
 
-my $fname = '/tmp/address list.txt';
+my $fname = 'address list.txt';
 
 open my $f, '<', $fname or die "can't open: $!\n";
 
@@ -19,7 +19,7 @@ my $d = DB::select_all(undef, 'select id, name from districts');
 my %districts = map { utf8::encode($_->{name}); lc($_->{name}) => $_->{id} } @$d;
 
 my %data;
-my $id = 0;
+my $id = 1;
 while (<$f>) {
     chomp;
     my @row = split "\t";
