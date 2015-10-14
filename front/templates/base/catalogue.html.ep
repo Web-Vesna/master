@@ -41,11 +41,12 @@
                 </div>
             </div>
             <div class="step-1 ten wide column">
-                <div id="org_sel" class="ui fluid search selection dropdown">
-                    <input type="hidden" name="gender">
-                    <i class="dropdown icon"></i>
-                    <div class="default text">Организация</div>
-                    <div class="menu items-list"></div>
+
+                <label for="organization">Организация</label>
+                <div>
+                    <select name="organization" id="org_sel">
+                        <option value="-1" selected>Выберете организацию</option>
+                    </select>
                 </div>
             </div>
             <div id="address_sel" class="step-1 ten wide column" style="display:none">
@@ -252,12 +253,15 @@
                 <a href="#" class="ui basic button right floated" onclick="print(); return false;">Печать</a>
             </div>
         </div>
+        <script src="<%= $general_url %>/js/functions.js"></script>
 %= javascript begin
     var selected_object, current_step = 1, current_object, current_object_main_properties, downloaded_addresses = {};
     $(function () {
         $(".step-2,.step-3").hide();
         $(".step-1").show();
         $("#btn-add-obj-group-1").click(on_show_modal('Добавить объект на первом уровне иерархии'));
+
+        select_change_controller(['org_sel'], '<%= $general_url %>');
 
         var currently_downloaded = '',
             $addr_sel = $("#address_sel"),
@@ -272,15 +276,13 @@
             var arr = downloaded_companies[elem];
             if (!arr)
                 return;
-            var $sel = $("#org_sel"),
-                $menu = $sel.find('.menu.items-list').empty();
+            var $sel = $("#org_sel").html('').append($("<option>", { 'value': '-1', 'selected': true }).text("Выберите организацию"));
             arr.forEach(function (item) {
-                $menu.append($("<div>", {
-                        'class': 'item',
-                        'data-value': item[0],
+                $sel.append($("<option>", {
+                        'value': item[0],
                     }).text(item[1]));
             });
-            $sel.dropdown('clear').dropdown('refresh');
+            $sel.val('-1').trigger('refresh');
         }
 
         $("#isolation_type").dropdown("set selected", "-1").dropdown("save defaults");
@@ -318,13 +320,14 @@
         }).dropdown('set selected', 'Москва');
 
         function update_addresses(org) {
-            var arr = downloaded_addresses[org];
+            var arr = downloaded_addresses[org],
+                $items_container = $addr_sel.find('.grouped.fields'),
+                editable_found = false;
+            $items_container.find('.field').remove();
+
             if (!arr)
                 return;
 
-            var $items_container = $addr_sel.find('.grouped.fields'),
-                editable_found = false;
-            $items_container.find('.field').remove();
             arr.forEach(function (val, index) {
                 var should_be_checked = !editable_found && val.flags.editable;
                 if (should_be_checked)
@@ -345,29 +348,29 @@
             $addr_sel.show();
             $("#btn_next").removeClass(classes);
         }
-        $("#org_sel").dropdown({
-            'custom change': 'activate',
-            onChange: function (value, name) {
-                if (value == "")
-                    return;
-                $(".ttl-company").text(name);
-                if (downloaded_addresses[value]) {
-                    update_addresses(value);
-                } else {
-                    $("#btn_next").addClass('loading');
-                    $.ajax({
-                        method: 'get',
-                        url: '<%= $general_url %>/cgi-bin/buildings',
-                        data: {
-                            company: value,
-                        },
-                        success: function (data) {
-                            downloaded_addresses[value] = data.buildings;
-                            update_addresses(value);
-                        },
-                    });
-                }
-            },
+        $("#org_sel").on('change', function (e) {
+            var value = e.target.value;
+            if (value == "-1") {
+                update_addresses();
+                return;
+            }
+            $(".ttl-company").text($(this).find(':selected').text());
+            if (downloaded_addresses[value]) {
+                update_addresses(value);
+            } else {
+                $("#btn_next").addClass('loading');
+                $.ajax({
+                    method: 'get',
+                    url: '<%= $general_url %>/cgi-bin/buildings',
+                    data: {
+                        company: value,
+                    },
+                    success: function (data) {
+                        downloaded_addresses[value] = data.buildings;
+                        update_addresses(value);
+                    },
+                });
+            }
         });
         $("#conn_type_sel").dropdown({
             'custom change': 'activate',
