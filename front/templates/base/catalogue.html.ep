@@ -58,7 +58,7 @@
             <!-- END OF STEP 1 -->
 
             <!-- STEP 2 -->
-            <div class="step-2 sixteen wide center aligned column">
+            <div class="step-2 twelve wide center aligned column">
                 <h3 class="ui header ttl-company"></h3>
                 <h4 class="ui header ttl-address"></h4>
             </div>
@@ -79,7 +79,7 @@
                     </div>
                     <div class="field required">
                         <label>Нагрузка, кВт:</label>
-                        <input type="text" placeholder="кВт" id="edt-heat_load" key="heat_load" class="">
+                        <input type="text" placeholder="кВт" id="edt-heat_load" key="heat_load" class="numbers_only float_numbers">
                     </div>
                     <div class="field">
                         <label>Дата ввода в экплуатацию:</label>
@@ -169,6 +169,7 @@
                                             <i class="dropdown icon"></i>
                                             <div class="default text">---</div>
                                             <div class="menu">
+                                                <div class="item" data-value="-1">Пустой элемент</div>
                                                 <% for my $i (@$isolation_types) { %>
                                                     <div class="item" data-value="<%= $i->{id} %>"><%= $i->{name} %></div>
                                                 <% } %>
@@ -178,12 +179,13 @@
                                 </div>
                                 <div class="two fields">
                                     <div class="field">
-                                        <label>Способ прокладки тепл. сетей:</label>
+                                        <label>Способ прокладки тепловых сетей:</label>
                                         <div id="laying_method" class="ui fluid selection dropdown">
                                             <input type="hidden" name="unknown">
                                             <i class="dropdown icon"></i>
                                             <div class="default text">---</div>
                                             <div class="menu">
+                                                <div class="item" data-value="-1">Пустой элемент</div>
                                                 <% for my $m (@$laying_methods) { %>
                                                     <div class="item" data-value="<%= $m->{id} %>"><%= $m->{name} %></div>
                                                 <% } %>
@@ -281,8 +283,8 @@
             $sel.dropdown('clear').dropdown('refresh');
         }
 
-        $("#isolation_type").dropdown();
-        $("#laying_method").dropdown();
+        $("#isolation_type").dropdown("set selected", "-1").dropdown("save defaults");
+        $("#laying_method").dropdown("set selected", "-1").dropdown("save defaults");
         $("#objects_names").dropdown();
 
         $("#region_sel").dropdown({
@@ -580,11 +582,11 @@
             if (obj.isolation_type_id != undefined)
                 $frm.find("#isolation_type").dropdown("set selected", obj.isolation_type_id);
             else
-                $frm.find("#isolation_type").dropdown("clear");
+                $frm.find("#isolation_type").dropdown("restore defaults");
             if (obj.laying_method_id != undefined)
                 $frm.find("#laying_method").dropdown("set selected", obj.laying_method_id);
             else
-                $frm.find("#laying_method").dropdown("clear");
+                $frm.find("#laying_method").dropdown("restore defaults");
 
             $frm.find("#btn-save-object").unbind('click').click(function () {
                 var obj_name = $frm.find("#objects_names").dropdown("get value");
@@ -593,6 +595,9 @@
                     alert("Необходимо указать имя объекта");
                     return false;
                 }
+                var $laying_method = $frm.find("#laying_method"),
+                    $isolation_type = $frm.find("#isolation_type");
+
                 $.ajax({
                     method: 'get',
                     url: '<%= $general_url %>/cgi-bin/objects/add-edit',
@@ -600,8 +605,8 @@
                         id: obj.id,
                         characteristic: $frm.find("#edt-characteristic").val(),
                         count: $frm.find("#edt-characteristic-value").val(),
-                        isolation_type: $frm.find("#isolation_type").dropdown('get value'),
-                        laying_method: $frm.find("#laying_method").dropdown('get value'),
+                        isolation_type: $isolation_type.dropdown('get value') == -1 ? undefined : $isolation_type.dropdown('get value'),
+                        laying_method: $laying_method.dropdown('get value') == -1 ? undefined : $laying_method.dropdown('get value'),
                         wear: $frm.find("#edt-wear").val(),
                         install_year: $frm.find("#edt-install-year").val(),
                         reconstruction_year: $frm.find("#edt-reconstruction-year").val(),
