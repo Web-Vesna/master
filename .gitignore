@@ -8,3 +8,4 @@ config
 xlsx/*
 tmp/*
 */log/*
+tags
