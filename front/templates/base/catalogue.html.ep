@@ -27,28 +27,24 @@
             </div>
 
             <!-- STEP 1 -->
-            <div class="step-1 ten wide column">
-                <div id="region_sel" class="ui fluid selection dropdown mrg">
-                    <input type="hidden" name="gender">
-                    <i class="dropdown icon"></i>
-                    <div class="default text">Регион</div>
-                    <div class="menu items-list">
+            <div id="catalog-org-wrap" class="step-1 ten wide column report-request-form">
+                <div>
+                    <select name="region" id="region_sel">
                         % my %regions = map { $_->{region} => $_->{id} } @{$districts->{districts}};
                         % for (sort keys %regions) {
-                            <div class="item" data-value="<%= $_ %>" district_id="<%= $regions{$_} %>"><%= $_ %></div>
+                        <option value="<%= $_ %>" district_id="<%= $regions{$_} %>" <%= $_ eq 'Москва' ? 'selected' : '' %>><%= $_ %></option>
                         % }
-                    </div>
+                    </select>
                 </div>
             </div>
-            <div class="step-1 ten wide column">
-
-                <label for="organization">Организация</label>
+            <div id="catalog-org-wrap" class="step-1 ten wide column report-request-form">
                 <div>
                     <select name="organization" id="org_sel">
                         <option value="-1" selected>Выберете организацию</option>
                     </select>
                 </div>
             </div>
+
             <div id="address_sel" class="step-1 ten wide column" style="display:none">
                 <div class="ui form">
                     <div class="grouped fields">
@@ -180,7 +176,7 @@
                                 </div>
                                 <div class="two fields">
                                     <div class="field">
-                                        <label>Способ прокладки тепловых сетей:</label>
+                                        <label>Способ прокладки тепл. сетей:</label>
                                         <div id="laying_method" class="ui fluid selection dropdown">
                                             <input type="hidden" name="unknown">
                                             <i class="dropdown icon"></i>
@@ -261,8 +257,6 @@
         $(".step-1").show();
         $("#btn-add-obj-group-1").click(on_show_modal('Добавить объект на первом уровне иерархии'));
 
-        select_change_controller(['org_sel'], '<%= $general_url %>');
-
         var currently_downloaded = '',
             $addr_sel = $("#address_sel"),
             downloaded_companies = {
@@ -289,35 +283,33 @@
         $("#laying_method").dropdown("set selected", "-1").dropdown("save defaults");
         $("#objects_names").dropdown();
 
-        $("#region_sel").dropdown({
-            'custom change': 'activate',
-            onChange: function (value, text, $selectedItem) {
-                selected_object = { region: value };
-                current_object = { region: value };
-                if (downloaded_companies[value]) {
-                    update_companies(value);
-                } else if (currently_downloaded != value) {
-                    currently_downloaded = value;
-                    $.ajax({
-                        method: 'get',
-                        url: '<%= $general_url %>/cgi-bin/companies',
-                        data: {
-                            region: value,
-                        },
-                        success: function (data) {
-                            var arr = [];
-                            data.companies.forEach(function (val) {
-                                arr.push([ val.id, val.name ]);
-                            });
-                            downloaded_companies[value] = arr;
-                            update_companies(value);
-                        },
-                    });
-                }
-                $("#btn_next").addClass('disabled');
-                $addr_sel.hide();
-            },
-        }).dropdown('set selected', 'Москва');
+        $("#region_sel").on('change', function (e) {
+            var value = e.target.value;
+            selected_object = { region: value };
+            current_object = { region: value };
+            if (downloaded_companies[value]) {
+                update_companies(value);
+            } else if (currently_downloaded != value) {
+                currently_downloaded = value;
+                $.ajax({
+                    method: 'get',
+                    url: '<%= $general_url %>/cgi-bin/companies',
+                    data: {
+                        region: value,
+                    },
+                    success: function (data) {
+                        var arr = [];
+                        data.companies.forEach(function (val) {
+                            arr.push([ val.id, val.name ]);
+                        });
+                        downloaded_companies[value] = arr;
+                        update_companies(value);
+                    },
+                });
+            }
+            $("#btn_next").addClass('disabled');
+            $addr_sel.hide();
+        }).trigger('change');
 
         function update_addresses(org) {
             var arr = downloaded_addresses[org],

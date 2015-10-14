@@ -62,3 +62,33 @@
 #wrapper .content {
     padding: 0;
 }
+
+#catalog-org-wrap .jq-selectbox__select {
+    border: 1px solid rgba(34,36,38,.15);
+    border-radius: .28571429rem;
+}
+#catalog-org-wrap .jq-selectbox__select:hover {
+    border-color: rgba(34,36,38,.35);
+    border-radius: .28571429rem;
+}
+
+#catalog-org-wrap .jq-selectbox__trigger{
+    background-color: transparent;
+}
+#catalog-org-wrap .jq-selectbox:hover .jq-selectbox__trigger-arrow {
+    border-top: 4px solid #000000;
+}
+#catalog-org-wrap .jq-selectbox li{
+    background-color: transparent;
+    border-bottom: 1px solid #fafafa;
+}
+
+#catalog-org-wrap .jq-selectbox li:hover {
+    background: rgba(0,0,0,.05);
+    color: rgba(0,0,0,.95);
+    z-index: 13;
+}
+
+#address_sel .field{
+    text-align: left;
+}
