@@ -57,7 +57,7 @@ sub objects {
     $self->render(template => 'base/objects');
 }
 
-sub users {
+sub main_content {
     my $self = shift;
 
     my $r = send_request($self,
@@ -67,7 +67,7 @@ sub users {
     return $self->render(template => 'base/internal_err') unless $r;
 
     $self->stash(users => $r->{users} || []);
-    return $self->render(template => 'base/users');
+    return $self->render(template => 'base/main_content');
 }
 
 sub catalogue {

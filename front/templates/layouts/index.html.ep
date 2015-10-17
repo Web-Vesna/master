@@ -16,7 +16,7 @@
 %       js => [{ url => 'semantic.min.js', }],
 %       css => [{ url => 'catalogue.css', }, { url => 'semantic.min.css' }], },
 %   { url => '#', role => 'manager', img => 'em_estimate', name => 'Таблицы смет', },
-%   { url => '/users', role => 'admin', img => 'em_users', name => 'Таблица<br/>пользователей', },
+%   { url => '/main_content', role => 'admin', img => 'em_users', name => 'Основные<br/>таблицы', },
 %   { url => '/objects', role => 'manager', img => 'em_nodes', name => 'Данные<br/>инженерных узлов', },
 % );
 % my @_menu;
