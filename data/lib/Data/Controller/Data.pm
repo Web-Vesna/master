@@ -103,16 +103,20 @@ sub select_building {
             join companies c on c.id = b.company_id
             join districts d on d.id = b.district_id
             left outer join buildings_meta bm on bm.building_id = b.id
-            %s %s %s %s order by b.name
+            %s %s %s %s %s order by b.name
         /,
         (defined $args->{id} ? "where b.id = ?" : ""),
         (defined $args->{company} ? (defined $args->{id} ? "and" : "where") . " c.id = ?" : ""),
         (!defined($args->{company}) && defined $args->{district} ? (defined $args->{id} ? "and" : "where") . " d.id = ?" : ""),
-        (defined $args->{q} ? (defined $args->{id} || $id_found ? "and" : "where") . " b.name like ?" : "")
+        (defined $args->{q} ? (defined $args->{id} || $id_found ? "and" : "where") . " b.name like ?" : ""),
+        (defined $args->{company_by_building} ?
+            (defined($args->{id}) || defined($args->{q}) || $id_found ? "and" : "where") .
+            " c.id in (select company_id from buildings where id = ?)" : "")
     );
 
     push @args, $args->{id} if defined $args->{id};
     push @args, $args->{company} || $args->{district} if $id_found;
+    push @args, $args->{company_by_building} if defined $args->{company_by_building};
 
     my $q = "%$args->{q}%" if $args->{q};
     push @args, $q if defined $q;
@@ -148,8 +152,19 @@ sub edit_building {
             heat_load = ?
     /, @$args{qw( id conn_type build_date repair_date heat_load conn_type build_date repair_date heat_load )};
 
-    my $r = select_building $self, { id => $args->{id} };
+    execute_query $self, qq/
+        update companies c
+        join buildings b
+        on b.company_id = c.id
+        set b.name = ?, c.name = ?
+        where b.id = ?
+    /, @$args{qw( address company_name id )};
+
+    my $r = select_building $self, { company => $args->{company_id} };
     return return_500 $self unless $r;
+    for (@$r) {
+        $_->{flags} = { map { $_ => 1 } split ',', $_->{flags} };
+    }
     return $self->render(json => { ok => 1, count => scalar @$r, buildings => $r });
 }
 

@@ -55,12 +55,16 @@
             <!-- END OF STEP 1 -->
 
             <!-- STEP 2 -->
-            <div class="step-2 twelve wide center aligned column">
-                <h3 class="ui header ttl-company"></h3>
-                <h4 class="ui header ttl-address"></h4>
-            </div>
             <div class="step-2 five wide column">
                 <form class="ui form">
+                    <div class="field required">
+                        <label>Название организации:</label>
+                        <input type="text" id="edt-company" key="company">
+                    </div>
+                    <div class="field required">
+                        <label>Адрес объекта:</label>
+                        <input type="text" id="edt-address" key="address">
+                    </div>
                     <div class="field required">
                         <label>Тип присоединения:</label>
                         <div class="ui fluid selection dropdown" id="conn_type_sel">
@@ -311,42 +315,12 @@
             $addr_sel.hide();
         }).trigger('change');
 
-        function update_addresses(org) {
-            var arr = downloaded_addresses[org],
-                $items_container = $addr_sel.find('.grouped.fields'),
-                editable_found = false;
-            $items_container.find('.field').remove();
-
-            if (!arr)
-                return;
-
-            arr.forEach(function (val, index) {
-                var should_be_checked = !editable_found && val.flags.editable;
-                if (should_be_checked)
-                    editable_found = true;
-                $items_container.append($("<div>", { 'class': 'field', })
-                    .append($("<div>", { 'class': 'ui radio checkbox' + (val.flags.editable ? '' : ' disabled'), })
-                    .append($("<input>", { 'type': 'radio', 'name': val.id })
-                        .attr('org', org)
-                        .prop('checked', should_be_checked)
-                        .prop('disabled', !val.flags.editable))
-                    .append($("<label>").text('ИНО_' + val.id + ": " + val.name))));
-            });
-            var $selected = $items_container.find('input:checked').first(),
-                classes = "loading";
-            if ($selected[0])
-                classes += " disabled";
-            on_radio_click($selected);
-            $addr_sel.show();
-            $("#btn_next").removeClass(classes);
-        }
         $("#org_sel").on('change', function (e) {
             var value = e.target.value;
             if (value == "-1") {
                 update_addresses();
                 return;
             }
-            $(".ttl-company").text($(this).find(':selected').text());
             if (downloaded_addresses[value]) {
                 update_addresses(value);
             } else {
@@ -378,7 +352,7 @@
             $this.prop('checked', true);
             on_radio_click($this);
         });
-        $("#edt-heat_load,#edt-expl,#edt-repair").on('change', function () {
+        $("#edt-heat_load,#edt-expl,#edt-repair,#edt-company,#edt-address").on('change', function () {
             var $this = $(this);
             update_current_object($this.attr('key'), $this.val());
             toggle_next_btn();
@@ -408,19 +382,58 @@
         window.open(window.location.origin + '<%= $general_url %>/cgi-bin/build?' + $.param(selected_object), '_blank');
     }
 
+    function update_addresses(org) {
+        var $addr_sel = $("#address_sel"),
+            arr = downloaded_addresses[org],
+            $items_container = $addr_sel.find('.grouped.fields'),
+            editable_found = false;
+        $items_container.find('.field').remove();
+
+        if (!arr)
+            return;
+
+        arr.forEach(function (val, index) {
+            var should_be_checked = !editable_found && val.flags.editable;
+            if (should_be_checked)
+                editable_found = true;
+            $items_container.append($("<div>", { 'class': 'field', })
+                .append($("<div>", { 'class': 'ui radio checkbox' + (val.flags.editable ? '' : ' disabled'), })
+                .append($("<input>", { 'type': 'radio', 'name': val.id })
+                    .attr('org', org)
+                    .prop('checked', should_be_checked)
+                    .prop('disabled', !val.flags.editable))
+                .append($("<label>").text('ИНО_' + val.id + ": " + val.name))));
+        });
+        var $selected = $items_container.find('input:checked').first(),
+            classes = "loading";
+        if ($selected[0])
+            classes += " disabled";
+        on_radio_click($selected);
+
+        if (current_step == 1) {
+            $addr_sel.show();
+            $("#btn_next").removeClass(classes);
+        }
+    }
+
     function save_changed_building() {
         var $ctype = $("#conn_type_sel"),
             $heat_load = $("#edt-heat_load"),
             $build_date = $("#edt-expl"),
             $repair_date = $("#edt-repair"),
+            $address = $("#edt-address"),
+            $company = $("#edt-company"),
             $btn = $("#btn_save_building"),
             $icon = $btn.find("i"),
             to_send = {
-                conn_type: $ctype.dropdown('get value').trim(),
-                heat_load: $heat_load.val().trim(),
-                build_date: $build_date.val().trim(),
-                repair_date: $repair_date.val().trim(),
-                id: current_object_main_properties.id,
+                conn_type:      $ctype.dropdown('get value').trim(),
+                heat_load:      $heat_load.val().trim(),
+                build_date:     $build_date.val().trim(),
+                repair_date:    $repair_date.val().trim(),
+                company_name:   $company.val().trim(),
+                address:        $address.val().trim(),
+                id:             current_object_main_properties.id,
+                company_id:     current_object_main_properties.company_id,
             };
 
         $.ajax({
@@ -428,17 +441,14 @@
             url: '<%= $general_url %>/cgi-bin/building/edit',
             data: to_send,
             success: function (data) {
-                data = data.buildings[0];
-
-                var objects = downloaded_addresses[data.company_id];
-                for (var o in objects) {
-                    if (objects[o].id == data.id) {
-                        current_object_main_properties = objects[o] = data;
-                        break;
-                    }
-                }
+                var company_id = data.buildings[0].company_id;
+                downloaded_addresses[company_id] = data.buildings;
                 $btn.addClass("basic disabled").removeClass("green").find("span").text("Сохранено!");
                 $icon.addClass("checkmark").removeClass("circle thin").show();
+                $("#org_sel").find("option[value=" + company_id + "]")
+                    .text(data.buildings[0].company)
+                    .trigger('refresh')
+                    .trigger('change');
             },
         });
     }
@@ -473,7 +483,7 @@
             current_object[key] = value;
         } else {
             current_object.conn_type = $('#conn_type_sel').dropdown('get value');
-            [ 'edt-heat_load', 'edt-expl', 'edt-repair' ].forEach(function (sel) {
+            [ 'edt-heat_load', 'edt-expl', 'edt-repair', 'edt-company', 'edt-address' ].forEach(function (sel) {
                 var $o = $("#" + sel);
                 current_object[$o.attr('key')] = $o.val();
             });
@@ -487,6 +497,7 @@
         $(".ttl-address").text($o.parent().children('label').text());
 
         current_object_main_properties = (downloaded_addresses[$o.attr("org")] || []).find(function (e) { return name == e.id; });
+        $("#edt-address").val(current_object_main_properties.name || "");
         var $ctype = $("#conn_type_sel"),
             $heat_load = $("#edt-heat_load"),
             $build_date = $("#edt-expl"),
@@ -734,6 +745,8 @@
             $heat_load = $("#edt-heat_load"),
             $build_date = $("#edt-expl"),
             $repair_date = $("#edt-repair"),
+            $company = $("#edt-company"),
+            $address = $("#edt-address"),
             $btn = $("#btn_save_building"),
             $icon = $btn.find("i");
 
@@ -747,7 +760,9 @@
         if ($ctype.dropdown('get value') != current_object_main_properties.characteristic
                 || $heat_load.val() != (current_object_main_properties.heat_load || "")
                 || $build_date.val() != (current_object_main_properties.build_date || "")
-                || $repair_date.val() != (current_object_main_properties.reconstruction_date || "")) {
+                || $repair_date.val() != (current_object_main_properties.reconstruction_date || "")
+                || $company.val() != (current_object_main_properties.company || "")
+                || $address.val() != (current_object_main_properties.name || "")) {
             $btn.removeClass("basic disabled").addClass("green");
             $icon.addClass("circle thin").removeClass("checkmark").show();
         } else {
@@ -759,6 +774,7 @@
 
     function toggle_next_btn() {
         if (current_object.conn_type && current_object.heat_load
+                && current_object.address && current_object.company
                 && (current_object.reconstruction_date || current_object.build_date)) {
             $("#btn_next").removeClass('disabled');
             toggle_save_changed_building_btn(true);
@@ -777,6 +793,9 @@
         }
 
         if (current_step == 1) {
+            var company_name = $("#org_sel").find(":selected").text();
+            $("#edt-company").val(company_name);
+            $(".ttl-company").text(company_name);
             update_current_object();
         }
 
@@ -803,7 +822,7 @@
 
         if (current_step == 2) {
             $("#conn_type_sel").dropdown('clear');
-            $("#edt-heat_load,#edt-expl,#edt-repair").val('');
+            $("#edt-heat_load,#edt-expl,#edt-repair,#edt-company,#edt-address").val('');
             $("#chb-no_edit").prop('checked', false);
             $("#btn_next").removeClass('disabled');
 
