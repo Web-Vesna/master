@@ -59,14 +59,6 @@ sub objects {
 
 sub main_content {
     my $self = shift;
-
-    my $r = send_request($self,
-        url => 'users_list',
-        port => DATA_PORT,
-    );
-    return $self->render(template => 'base/internal_err') unless $r;
-
-    $self->stash(users => $r->{users} || []);
     return $self->render(template => 'base/main_content');
 }
 

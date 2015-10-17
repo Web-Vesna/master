@@ -1,5 +1,62 @@
 % layout 'index';
 
+% my @list_of_tables = ({
+%        text => 'Список пользователей',
+%        requests => {
+%            list => 'users',
+%            add => 'user/add',
+%            edit => 'user/edit',
+%            remove => 'user/remove',
+%        },
+%        columns => [
+%            { field => 'login', text => 'Логин', },
+%            { field => 'pass', text => 'Пароль', },
+%            { field => 'role', text => 'Роль', callback => qq/
+%
+%            / },
+%            { field => 'name', text => 'Имя', },
+%            { field => 'surname', text => 'Фамилия', },
+%            { field => 'email', text => 'Email', },
+%        ],
+%   },{
+%        text => 'Имена объектов',
+%        requests => {
+%            list => 'objects_names',
+%            add => 'object_name/add',
+%            edit => 'object_name/edit',
+%            remove => 'object_name/remove',
+%        },
+%        columns => [
+%            { field => 'name', text => 'Наименование', },
+%            { field => 'group', text => 'Группа', flags => {
+%                editable => 0,
+%            }},
+%        ],
+%    },{
+%        text => 'Способы прикладки сетей',
+%        requests => {
+%            list => 'laying_methods',
+%            add => 'laying_method/add',
+%            edit => 'laying_method/edit',
+%            remove => 'lating_method/remove',
+%        },
+%        columns => [
+%            { field => 'name', text => 'Наименование', },
+%        ],
+%    },{
+%        text => 'Типы изоляции',
+%        requests => {
+%            list => 'isolations',
+%            add => 'isolation/add',
+%            edit => 'isolation/edit',
+%            remove => 'isolation/remove',
+%        },
+%        columns => [
+%            { field => 'name', text => 'Наименование', },
+%        ],
+% });
+
+
        <!-- table-1 -->
         <div class="table-1" style="margin-top: 2em;">
             <form>
@@ -24,19 +81,6 @@
                   </tbody>
               </table>
               <!-- /table -->
-              <div class="row-button1">
-                  <div class="col-right">
-                     <a href="#" >
-                       <label class="file_upload" >
-                          <span>загрузить</span>
-                          <input type="file">
-                      </label>
-                     </a>
-                  </div>
-                  <div class="col-left">
-                     <a href="#" data-reveal-id="modal-upload"><input type="button" value="Выгрузить"></a>
-                  </div>
-              </div>
             </form>
         </div>
        <!-- /table-1 -->
