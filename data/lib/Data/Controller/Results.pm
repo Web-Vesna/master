@@ -967,6 +967,11 @@ sub render_xlsx {
     for (my $i = -2; $i < @$content;) {
         my $row = $content->[$i] if $i >= 0;
 
+        if ($row && $row->{object_name_new}) {
+            $row->{object_name} = $row->{object_name_new};
+            $row->{need_mark} = $row->{need_mark_new};
+        }
+
         my $building_changed = 0;
         if ($row && $last_building_id != $row->{contract_id}) {
             $building_changed = 1;
@@ -1126,7 +1131,9 @@ sub build {
             c.name as company_name,
             b.name as address,
             cat.object_name as object_name,
+            o_names.name as object_name_new,
             cat_n.category_type = 'marked' as need_mark,
+            o_names.group_id = 1 as need_mark_new,
             cat_n.name as category_name,
             o.characteristic as characteristic,
             o.size as size,
@@ -1147,8 +1154,9 @@ sub build {
         join buildings b on b.id = o.building
         join companies c on c.id = b.company_id
         join districts d on d.id = b.district_id
-        join categories cat on cat.id = o.object_name
-        join categories_names cat_n on cat.category_name = cat_n.id
+        left outer join objects_names o_names on o_names.id = o.object_name_new
+        left outer join categories cat on cat.id = o.object_name
+        left outer join categories_names cat_n on cat.category_name = cat_n.id
         left outer join isolations i on i.id = o.isolation
         left outer join laying_methods l on l.id = o.laying_method
         left outer join buildings_meta bm on bm.building_id = b.id

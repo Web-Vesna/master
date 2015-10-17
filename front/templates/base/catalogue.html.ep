@@ -379,7 +379,10 @@
     });
 
     function print() {
-        window.open(window.location.origin + '<%= $general_url %>/cgi-bin/build?' + $.param(selected_object), '_blank');
+        var to_print = selected_object;
+        if (to_print.building && current_step == 1)
+            to_print = { company: $("#org_sel").find("option:selected").val() };
+        window.open(window.location.origin + '<%= $general_url %>/cgi-bin/build?' + $.param(to_print), '_blank');
     }
 
     function update_addresses(org) {
