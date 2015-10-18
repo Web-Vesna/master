@@ -55,16 +55,25 @@
             <!-- END OF STEP 1 -->
 
             <!-- STEP 2 -->
+            <div class="step-2 twelve wide column">
+                <form class="ui form">
+                    % if (stash('role') ne 'admin') {
+                        <h3 class="ui header ttl-company"></h3>
+                        <h4 class="ui header ttl-address"></h4>
+                    % } else {
+                        <div class="field required">
+                            <label>Название организации:</label>
+                            <input type="text" id="edt-company" key="company">
+                        </div>
+                        <div class="field required">
+                            <label>Адрес объекта:</label>
+                            <input type="text" id="edt-address" key="address">
+                        </div>
+                    % }
+                </form>
+            </div>
             <div class="step-2 five wide column">
                 <form class="ui form">
-                    <div class="field required">
-                        <label>Название организации:</label>
-                        <input type="text" id="edt-company" key="company">
-                    </div>
-                    <div class="field required">
-                        <label>Адрес объекта:</label>
-                        <input type="text" id="edt-address" key="address">
-                    </div>
                     <div class="field required">
                         <label>Тип присоединения:</label>
                         <div class="ui fluid selection dropdown" id="conn_type_sel">
@@ -424,8 +433,10 @@
             $heat_load = $("#edt-heat_load"),
             $build_date = $("#edt-expl"),
             $repair_date = $("#edt-repair"),
+            % if (stash('role') eq 'admin') {
             $address = $("#edt-address"),
             $company = $("#edt-company"),
+            % }
             $btn = $("#btn_save_building"),
             $icon = $btn.find("i"),
             to_send = {
@@ -433,10 +444,12 @@
                 heat_load:      $heat_load.val().trim(),
                 build_date:     $build_date.val().trim(),
                 repair_date:    $repair_date.val().trim(),
-                company_name:   $company.val().trim(),
-                address:        $address.val().trim(),
                 id:             current_object_main_properties.id,
                 company_id:     current_object_main_properties.company_id,
+                % if (stash('role') eq 'admin') {
+                address:        $address.val().trim(),
+                company_name:   $company.val().trim(),
+                % }
             };
 
         $.ajax({
@@ -451,7 +464,10 @@
                 $("#org_sel").find("option[value=" + company_id + "]")
                     .text(data.buildings[0].company)
                     .trigger('refresh')
-                    .trigger('change');
+                    % if (stash('role') eq 'admin') {
+                    .trigger('change')
+                    % }
+                    ;
             },
         });
     }
@@ -748,8 +764,10 @@
             $heat_load = $("#edt-heat_load"),
             $build_date = $("#edt-expl"),
             $repair_date = $("#edt-repair"),
+            % if (stash('role') eq 'admin') {
             $company = $("#edt-company"),
             $address = $("#edt-address"),
+            % }
             $btn = $("#btn_save_building"),
             $icon = $btn.find("i");
 
@@ -764,8 +782,11 @@
                 || $heat_load.val() != (current_object_main_properties.heat_load || "")
                 || $build_date.val() != (current_object_main_properties.build_date || "")
                 || $repair_date.val() != (current_object_main_properties.reconstruction_date || "")
+                % if (stash('role') eq 'admin') {
                 || $company.val() != (current_object_main_properties.company || "")
-                || $address.val() != (current_object_main_properties.name || "")) {
+                || $address.val() != (current_object_main_properties.name || "")
+                % }
+                ) {
             $btn.removeClass("basic disabled").addClass("green");
             $icon.addClass("circle thin").removeClass("checkmark").show();
         } else {
@@ -777,7 +798,9 @@
 
     function toggle_next_btn() {
         if (current_object.conn_type && current_object.heat_load
+                % if (stash('role') eq 'admin') {
                 && current_object.address && current_object.company
+                % }
                 && (current_object.reconstruction_date || current_object.build_date)) {
             $("#btn_next").removeClass('disabled');
             toggle_save_changed_building_btn(true);

@@ -12,6 +12,7 @@ my %access_rules = (
     '/objects'   => 'manager',
     '/users'     => 'admin',
     '/maps'      => 'user',
+    '/catalogue' => 'manager',
     '/geolocation'          => 'admin',
     '/404.html'  => 'user',
 );

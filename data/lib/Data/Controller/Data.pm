@@ -152,13 +152,15 @@ sub edit_building {
             heat_load = ?
     /, @$args{qw( id conn_type build_date repair_date heat_load conn_type build_date repair_date heat_load )};
 
-    execute_query $self, qq/
-        update companies c
-        join buildings b
-        on b.company_id = c.id
-        set b.name = ?, c.name = ?
-        where b.id = ?
-    /, @$args{qw( address company_name id )};
+    if (defined $args->{address} && defined $args->{company_name}) {
+        execute_query $self, qq/
+            update companies c
+            join buildings b
+            on b.company_id = c.id
+            set b.name = ?, c.name = ?
+            where b.id = ?
+        /, @$args{qw( address company_name id )};
+    }
 
     my $r = select_building $self, { company => $args->{company_id} };
     return return_500 $self unless $r;
