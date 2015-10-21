@@ -78,7 +78,19 @@ sub laying_methods {
     my $self = shift;
 
     my $r = select_all $self, "select id, name from laying_methods group by name order by name";
-    return return_500 $self unless $r;
+    my $groups = select_all $self, "select laying_method as id from objects group by laying_method";
+    return return_500 $self unless $r && $groups;
+
+    for my $g (@$groups) {
+        next unless defined $g->{id};
+        for my $x (@$r) {
+            if ($x->{id} eq $g->{id}) {
+                $x->{used} = 1;
+                last;
+            }
+        }
+    }
+
     return $self->render(json => { ok => 1, count => scalar @$r, methods => $r });
 }
 
@@ -335,12 +347,50 @@ sub remove_object {
     return $self->render(json => { status => 200, description => 'removed', ok => 1 });
 }
 
+sub objects_names_add {
+    my $self = shift;
+    my $params = check_params $self, qw( group_id name );
+    return unless $params;
+    execute_query $self, "insert into objects_names(name, group_id) values (?, ?)", @$params{qw( name group_id )};
+    return $self->render(json => { ok => 1 });
+}
+
+sub objects_names_edit {
+    my $self = shift;
+    my $params = check_params $self, qw( name id );
+    return unless $params;
+
+    execute_query $self, "update objects_names set name = ? where id = ?", @$params{qw( name id )};
+    return $self->render(json => { ok => 1 });
+}
+
+sub objects_names_remove {
+    my $self = shift;
+    my $params = check_params $self, 'id';
+    return unless $params;
+
+    # TODO: check key usage
+    execute_query $self, "delete from objects_names where id = ?", $params->{id};
+    return $self->render(json => { ok => 1 });
+}
+
 sub objects_names {
     my $self = shift;
 
-    my $r = select_all $self, "select id, name, group_id from objects_names order by id";
+    my $r = select_all $self, "select id, name, group_id from objects_names order by name, group_id";
+    my $groups = select_all $self, "select object_name_new as id from objects group by object_name_new";
 
-    return return_500 $self unless $r;
+    return return_500 $self unless $r && $groups;
+    for my $g (@$groups) {
+        next unless defined $g->{id};
+        for my $x (@$r) {
+            if ($x->{id} eq $g->{id}) {
+                $x->{used} = 1;
+                last;
+            }
+        }
+    }
+
     return $self->render(json => { ok => 1, count => scalar @$r, objects => $r });
 }
 

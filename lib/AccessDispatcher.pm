@@ -40,12 +40,6 @@ my %access_control = (
         roles  => 'user',
     },
 
-    'register' => {
-        method => 'get',
-        access => 'Authorized',
-        roles  => 'admin',
-    },
-
     'roles'    => {
         method => 'get',
         access  => 'Authorized',
@@ -53,6 +47,24 @@ my %access_control = (
     },
 
     'users_list' => {
+        method => 'get',
+        access => 'Authorized',
+        roles  => 'admin',
+    },
+
+    'user/register' => {
+        method => 'get',
+        access => 'Authorized',
+        roles  => 'admin',
+    },
+
+    'user/edit' => {
+        method => 'get',
+        access => 'Authorized',
+        roles  => 'admin',
+    },
+
+    'user/remove' => {
         method => 'get',
         access => 'Authorized',
         roles  => 'admin',
@@ -98,6 +110,24 @@ my %access_control = (
         method => 'get',
         access => 'Authorized',
         roles => 'user',
+    },
+
+    'object/name/edit' => {
+        method => 'get',
+        access => 'Authorized',
+        roles => 'admin',
+    },
+
+    'object/name/add' => {
+        method => 'get',
+        access => 'Authorized',
+        roles => 'admin',
+    },
+
+    'object/name/remove' => {
+        method => 'get',
+        access => 'Authorized',
+        roles => 'admin',
     },
 
     'build'    => {

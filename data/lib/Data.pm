@@ -16,8 +16,8 @@ sub startup {
 
     # Normal route to controller
     $r->get('/roles')->to('users#roles');
-    $r->get('/register')->to('users#add');
     $r->get('/users_list')->to('users#list');
+    $r->get('/user/register')->to('users#add');
     $r->get('/user/remove')->to('users#remove');
     $r->get('/user/edit')->to('users#change');
 
@@ -29,6 +29,9 @@ sub startup {
     $r->get('/objects')->to('data#objects');
     $r->get('/objects/filter')->to('data#filter_objects');
     $r->get('/objects/names')->to('data#objects_names');
+    $r->get('/object/name/add')->to('data#objects_names_add');
+    $r->get('/object/name/edit')->to('data#objects_names_edit');
+    $r->get('/object/name/remove')->to('data#objects_names_remove');
     $r->get('/objects/add-edit')->to('data#objects_add_edit');
     $r->get('/objects/remove')->to('data#remove_object');
     $r->get('/calc_types')->to('data#calc_types');

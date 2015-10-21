@@ -7,7 +7,7 @@
 %        data_ref => 'users',
 %        requests => {
 %            list => 'users_list',
-%            add => 'user/add',
+%            add => 'user/register',
 %            edit => 'user/edit',
 %            remove => 'user/remove',
 %        },
@@ -33,6 +33,7 @@
 %            remove => 'object/name/remove',
 %        },
 %        columns => [
+%            { field => 'id', flags => { key_field => 1 }, },
 %            { field => 'name', text => 'Наименование', flags => { required => 1, }, },
 %            { field => 'group_id', text => 'Группа', flags => {
 %                read_only => 1, required => 1,
@@ -49,6 +50,7 @@
 %            remove => 'lating_method/remove',
 %        },
 %        columns => [
+%            { field => 'id', flags => { key_field => 1 }, },
 %            { field => 'name', text => 'Наименование', flags => { required => 1, }, },
 %        ],
 %    },{
@@ -62,6 +64,7 @@
 %            remove => 'isolation/remove',
 %        },
 %        columns => [
+%            { field => 'id', flags => { key_field => 1 }, },
 %            { field => 'name', text => 'Наименование', flags => { required => 1, }, },
 %        ],
 % });
@@ -95,6 +98,7 @@
         <table class="ui selectable celled very compact small table" id="tbl-<%= $table->{name} %>">
           <thead>
             % for my $col (@{$table->{columns}}) {
+                % next if $col->{flags}{key_field};
             <th class="center aligned"><%= $col->{text} %></th>
             % }
           </thead>
@@ -126,6 +130,9 @@
                                         <div class="item" data="<%= $f->{data} %>" data-value="<%= $f->{value} %>"><%= $f->{text} %></div>
                                         % }
                                     </div>
+                                </div>
+                            % } elsif ($col->{flags}{key_field}) {
+                                <a style="display: none;" id="a-<%= $table->{name} %>-<%= $col->{field} %>"></a>
                             % } else {
                                 <input type="text" id="edt-<%= $table->{name} %>-<%= $col->{field} %>"
                                 % if ($col->{flags}{read_only}) {
@@ -185,6 +192,7 @@
                 % for my $table (@list_of_tables) {
                 '<%= $table->{name} %>': [
                     % for my $col (@{$table->{columns}}) {
+                        % next if $col->{flags}{key_field};
                         % if (defined $col->{from_server_callback}) {
                         { field: '<%= $col->{field} %>', callback: <%== $col->{from_server_callback} %>, },
                         % } else {
@@ -212,16 +220,21 @@
                         if (!text)
                             text = "";
                         if (index == 0) {
-                            var $div = $("<div>").addClass("ui mini basic icon buttons outside-buttons");
+                            var $div = $("<div>").addClass("ui mini basic icon buttons outside-buttons"),
+                                block_len = 1;
 
+                            if (!item.used) {
+                                ++block_len;
+                                $div.append(
+                                    $("<button>")
+                                        .addClass("ui button")
+                                        .click(function (name, item) { return function () { delete_element(name, item); } }(name, item))
+                                        .append(
+                                            $("<i>").addClass("remove icon")
+                                        )
+                                    );
+                            }
                             $div.append(
-                                $("<button>")
-                                    .addClass("ui button")
-                                    .click(function (name, item) { return function () { delete_element(name, item); } }(name, item))
-                                    .append(
-                                        $("<i>").addClass("remove icon")
-                                    )
-                            ).append(
                                 $("<button>")
                                     .addClass("ui button")
                                     .click(function (name, item) { return function () { change_element(name, item); } }(name,item))
@@ -229,7 +242,7 @@
                                         $("<i>").addClass("write icon")
                                     )
                                 );
-                            $div.addClass('icon-group-2');
+                            $div.addClass('icon-group-' + block_len);
                             $td.append($("<div>").append($div).append($("<span>").text(text)));
                         } else {
                             $td.text(text);
@@ -265,8 +278,11 @@
         fields.forEach(function (field) {
             var $edt = $frm.find("#edt-" + name + "-" + field),
                 $span = $frm.find("#span-" + name + "-" + field),
-                $dropdown = $("#dropdown-" + name + "-" + field);
-            if (is_edit && $span.length) {
+                $dropdown = $("#dropdown-" + name + "-" + field),
+                $key_field = $("#a-" + name + "-" + field);
+            if ($key_field.length) {
+                $key_field.text(data[field]);
+            } else if (is_edit && $span.length) {
                 $edt.hide();
                 $span.show().text(data[field]);
             } else if ($dropdown.length && data[field]) {
@@ -280,15 +296,18 @@
         });
     }
 
-    function get_content(name, $frm, fields) {
+    function get_content(name, $frm, fields, is_edit) {
         var content = {};
         fields.forEach(function (field) {
             if (content == undefined)
                 return;
             var $edt = $frm.find("#edt-" + name + "-" + field),
                 $span = $frm.find("#span-" + name + "-" + field),
-                $dropdown = $("#dropdown-" + name + "-" + field);
-            if ($span.length)
+                $dropdown = $("#dropdown-" + name + "-" + field),
+                $key_field = $("#a-" + name + "-" + field);
+            if ($key_field.length)
+                content[field] = $key_field.text();
+            else if (is_edit && $span.length)
                 content[field] = $span.text();
             else if ($dropdown.length) {
                 var $v = $dropdown.dropdown('get item', $dropdown.dropdown('get value'));
@@ -326,7 +345,7 @@
         $frm.find("form").hide();
         fill_form(name, $frm.find("#frm-" + name).show(), form_content.fields, add_edit == "edit", data || {});
         $frm.find("#btn-save-object").unbind('click').click(function () {
-            data = get_content(name, $frm, form_content.fields);
+            data = get_content(name, $frm, form_content.fields, add_edit == "edit");
             if (!data)
                 return false;
             $.ajax({

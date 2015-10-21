@@ -13,23 +13,23 @@ use Helpers qw( :all );
 sub add {
     my $self = shift;
 
-    my $params = check_params $self, qw( login password name lastname email role );
+    my $params = check_params $self, qw( login password role );
     return unless $params;
 
     my $r = select_all($self, "select id, name from roles");
-    my $role_id;
+    my $role_id = $params->{role};
 
     return $self->render(status => 400, json => { error => "invalid", description => "invalid email" })
         unless $params->{email} =~ /^[^@]+@[^@]+$/;
 
     return $self->render(status => 400, json => { error => "invalid", description => "invalid role" })
-        unless grep { $_->{name} eq $params->{role} && (($role_id = $_->{id}) || 1) } @$r;
+        if $role_id =~ /\D/;
 
     $r = select_row($self, "select id from users where login = ?", $params->{login});
     return $self->render(status => 409, json => { error => 'User already exists' }) if $r;
 
     $r = execute_query($self, "insert into users(role, login, pass, name, lastname, email) values (?, ?, ?, ?, ?, ?)",
-        $role_id, @$params{qw(login password name lastname email)});
+        $role_id, map { $_ // "" } @$params{qw(login password name lastname email)});
 
     return return_500 $self unless $r;
 
@@ -62,11 +62,11 @@ sub remove {
 
 sub change {
     my $self = shift;
-    my $params = check_params $self, qw( login password name lastname email role );
+    my $params = check_params $self, qw( login password role );
     return unless $params;
 
     execute_query $self, "update users set role = ?, pass = ?, name = ?, lastname = ?, email = ? where login = ?",
-        @$params{qw( role password name lastname email login )};
+        map { $_ // "" } @$params{qw( role password name lastname email login )};
 
     return $self->render(json => { ok => 1 });
 }
@@ -83,7 +83,7 @@ sub list {
     my $self = shift;
 
     my $r = select_all($self, 'select r.name as role, u.pass as password, u.login as login, u.name as name, ' .
-        'u.lastname as lastname, u.email as email from users u join roles r on r.id = u.role order by r.id, u.name');
+        'u.lastname as lastname, u.email as email from users u join roles r on r.id = u.role order by r.id, u.login');
     return return_500 $self unless $r;
     return $self->render(json => { ok => 1, count => scalar @$r, users => $r });
 }

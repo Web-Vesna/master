@@ -12,14 +12,12 @@ our %EXPORT_TAGS = ( all => [ @EXPORT_OK ] );
 sub check_params {
     my $self = shift;
 
-    my %params;
     my $p = $self->req->params->to_hash;
     for (@_) {
-        $params{$_} = $p->{$_};
-        return $self->render(status => 400, json => { error => sprintf "%s field is required", ucfirst }) && undef unless $params{$_};
+        return $self->render(status => 400, json => { error => sprintf "%s field is required", ucfirst }) && undef unless $p->{$_};
     }
 
-    return \%params;
+    return $p;
 }
 
 sub _i_err {
