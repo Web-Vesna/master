@@ -18,9 +18,8 @@ sub startup {
     $r->get('/roles')->to('users#roles');
     $r->get('/register')->to('users#add');
     $r->get('/users_list')->to('users#list');
-
-    #$r->put('/change_user')->to('users#change'); TODO
-    #$r->delete('/del_user')->to('users#delete'); TODO
+    $r->get('/user/remove')->to('users#remove');
+    $r->get('/user/edit')->to('users#change');
 
     $r->get('/districts')->to('data#districts');
     $r->get('/companies')->to('data#companies');

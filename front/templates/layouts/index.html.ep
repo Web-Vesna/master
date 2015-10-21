@@ -15,9 +15,11 @@
 %   { url => '/catalogue', role => 'manager', img => 'em_catalogue', name => 'Адреса',
 %       js => [{ url => 'semantic.min.js', }],
 %       css => [{ url => 'catalogue.css', }, { url => 'semantic.min.css' }], },
-%   { url => '#', role => 'manager', img => 'em_estimate', name => 'Таблицы смет', },
-%   { url => '/main_content', role => 'admin', img => 'em_users', name => 'Справочники', },
-%   { url => '/objects', role => 'manager', img => 'em_nodes', name => 'Данные<br/>инженерных узлов', },
+%   #{ url => '#', role => 'manager', img => 'em_estimate', name => 'Таблицы смет', },
+%   { url => '/main_content', role => 'admin', img => 'em_users', name => 'Справочники',
+%       js => [{ url => 'semantic.min.js', }],
+%       css => [{ url => 'catalogue.css', }, { url => 'semantic.min.css' }], },
+%   #{ url => '/objects', role => 'manager', img => 'em_nodes', name => 'Данные<br/>инженерных узлов', },
 % );
 % my @_menu;
 % my %_roles = ( user => 1, manager => 2, admin => 3 );

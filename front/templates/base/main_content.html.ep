@@ -1,39 +1,47 @@
 % layout 'index';
 
+% my $role_to_text = '{' . join(',', map { "$_->{name}:'$_->{text}'" } @{ stash('roles') }) . '}';
 % my @list_of_tables = ({
+%        name => 'users',
 %        text => 'Список пользователей',
+%        data_ref => 'users',
 %        requests => {
-%            list => 'users',
+%            list => 'users_list',
 %            add => 'user/add',
 %            edit => 'user/edit',
 %            remove => 'user/remove',
 %        },
 %        columns => [
-%            { field => 'login', text => 'Логин', },
-%            { field => 'pass', text => 'Пароль', },
-%            { field => 'role', text => 'Роль', callback => qq/
-%
-%            / },
+%            { field => 'login', text => 'Логин', flags => { required => 1, }, },
+%            { field => 'password', text => 'Пароль', flags => { required => 1, }, },
+%            { field => 'role', text => 'Роль', flags => { required => 1, },
+%               from_server_callback => "function (role) { var roles = $role_to_text; return roles[role]; }",
+%               values => [ map {{ text => $_->{text}, data => $_->{id}, value => $_->{name} }} sort { $b->{id} <=> $a->{id} } @{ stash('roles') } ],
+%            },
 %            { field => 'name', text => 'Имя', },
-%            { field => 'surname', text => 'Фамилия', },
+%            { field => 'lastname', text => 'Фамилия', },
 %            { field => 'email', text => 'Email', },
 %        ],
 %   },{
+%        name => 'objects',
 %        text => 'Имена объектов',
+%        data_ref => 'objects',
 %        requests => {
-%            list => 'objects_names',
-%            add => 'object_name/add',
-%            edit => 'object_name/edit',
-%            remove => 'object_name/remove',
+%            list => 'objects/names',
+%            add => 'object/name/add',
+%            edit => 'object/name/edit',
+%            remove => 'object/name/remove',
 %        },
 %        columns => [
-%            { field => 'name', text => 'Наименование', },
-%            { field => 'group', text => 'Группа', flags => {
-%                editable => 0,
+%            { field => 'name', text => 'Наименование', flags => { required => 1, }, },
+%            { field => 'group_id', text => 'Группа', flags => {
+%                read_only => 1, required => 1,
 %            }},
 %        ],
 %    },{
+%        name => 'laying_methods',
 %        text => 'Способы прикладки сетей',
+%        data_ref => 'methods',
 %        requests => {
 %            list => 'laying_methods',
 %            add => 'laying_method/add',
@@ -41,46 +49,316 @@
 %            remove => 'lating_method/remove',
 %        },
 %        columns => [
-%            { field => 'name', text => 'Наименование', },
+%            { field => 'name', text => 'Наименование', flags => { required => 1, }, },
 %        ],
 %    },{
+%        name => 'isolations_types',
 %        text => 'Типы изоляции',
+%        data_ref => 'isolations',
 %        requests => {
-%            list => 'isolations',
+%            list => 'isolation_types',
 %            add => 'isolation/add',
 %            edit => 'isolation/edit',
 %            remove => 'isolation/remove',
 %        },
 %        columns => [
-%            { field => 'name', text => 'Наименование', },
+%            { field => 'name', text => 'Наименование', flags => { required => 1, }, },
 %        ],
 % });
 
-
-       <!-- table-1 -->
-        <div class="table-1" style="margin-top: 2em;">
-            <form>
-              <!-- table -->
-              <table>
-                  <thead>
-                    <th>Логин</th>
-                    <th>Пароль</th>
-                    <th>Роль</th>
-                    <th>Имя</th>
-                    <th>Фамилия</th>
-                    <th>Email</th>
-                  </thead>
-                  <tbody>
-% my @order = qw( login password role name lastname email );
-% my %roles = ( admin => 'Администратор', manager => 'Менеджер', user => 'Пользователь' );
-% for my $u (@{stash 'users'}) {
-                    <tr>
-% for (@order) {
-						<td><%= $_ eq 'role' ? $roles{$u->{$_}} : $u->{$_} %></td>
-% }}
-                  </tbody>
-              </table>
-              <!-- /table -->
-            </form>
+<div id="wrapper">
+  <div class="ui center aligned container">
+    <div class="ui centered grid">
+      <form class="ui form eight wide column">
+        <div class="field required">
+          <label>Справочник:</label>
+          <div class="ui fluid selection dropdown" id="list-sel">
+            <input type="hidden" name="connection-type">
+            <i class="dropdown icon"></i>
+            <div class="default text">---</div>
+            <div class="menu">
+              % for my $table (@list_of_tables) {
+              <div class="item" data-value="<%= $table->{name} %>"><%= $table->{text} %></div>
+              % }
+            </div>
+          </div>
         </div>
-       <!-- /table-1 -->
+      </form>
+      % for my $table (@list_of_tables) {
+      <div class="just-a-block blk-<%= $table->{name} %> sixteen wide column" style="display: none;">
+        <h3 class="ui header" id="ttl-<%= $table->{name} %>"><%= $table->{text} %></h3>
+      </div>
+      <div class="just-a-block blk-<%= $table->{name} %> sixteen wide column" style="display: none;">
+          <a href="#" class="ui basic button right floated" onclick="add_element('<%= $table->{name} %>')">Добавить элемент</a>
+      </div>
+      <div id="table" class="just-a-block blk-<%= $table->{name} %> sixteen wide column" style="display: none;">
+        <table class="ui selectable celled very compact small table" id="tbl-<%= $table->{name} %>">
+          <thead>
+            % for my $col (@{$table->{columns}}) {
+            <th class="center aligned"><%= $col->{text} %></th>
+            % }
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      % }
+    </div>
+    <div id="edit_modal" class="ui small modal" style="display: none;">
+        <i class="close icon"></i>
+        <div class="header">
+            Форма редактирования
+        </div>
+        <div class="content">
+            <div class="description ui centered grid">
+                <div class="twelve wide column">
+                    % for my $table (@list_of_tables) {
+                    <form class="ui form" id="frm-<%= $table->{name} %>">
+                        % for my $col (@{$table->{columns}}) {
+                        <div class="<%= $col->{flags}{required} ? "required" : "" %> field">
+                            <label><%= $col->{text} %></label>
+                            % if ($col->{values}) {
+                                <div id="dropdown-<%= $table->{name} %>-<%= $col->{field} %>" class="ui fluid selection dropdown">
+                                    <input type="hidden" name="unknown">
+                                    <i class="dropdown icon"></i>
+                                    <div class="default text">---</div>
+                                    <div class="menu">
+                                        % for my $f (@{ $col->{values} }) {
+                                        <div class="item" data="<%= $f->{data} %>" data-value="<%= $f->{value} %>"><%= $f->{text} %></div>
+                                        % }
+                                    </div>
+                            % } else {
+                                <input type="text" id="edt-<%= $table->{name} %>-<%= $col->{field} %>"
+                                % if ($col->{flags}{read_only}) {
+                                    class="inp-read_only"><span id="span-<%= $table->{name} %>-<%= $col->{field} %>"></span
+                                % }
+                                >
+                            % }
+                        </div>
+                        % }
+                    </form>
+                    % }
+                </div>
+                <div class="sixteen wide column actions">
+                    <div class="right floated ui deny button">
+                        Отмена
+                    </div>
+                    <div class="right floated ui positive button" id="btn-save-object">
+                        Сохранить
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="delete_modal" class="ui small modal" style="display: none;">
+        <div class="header">
+            Удаление элемента
+        </div>
+        <div class="content">
+            <p>Вы уверены, что хотите удалить выбранный элемент?</p>
+        </div>
+        <div class="actions">
+            <div class="ui negative button">
+                Отмена
+            </div>
+            <div class="ui positive right labeled icon button" id="btn-delete-row">
+                Удалить
+                <i class="checkmark icon"></i>
+            </div>
+        </div>
+    </div>
+  </div>
+</div>
+
+%= javascript begin
+    function request_data(name) {
+        var request = ({
+                % for my $table (@list_of_tables) {
+                '<%= $table->{name} %>': '<%= $table->{requests}{list} %>',
+                % }
+            })[name],
+            data_ref = ({
+                % for my $table (@list_of_tables) {
+                '<%= $table->{name} %>': '<%= $table->{data_ref} %>',
+                % }
+            })[name],
+            columns = ({
+                % for my $table (@list_of_tables) {
+                '<%= $table->{name} %>': [
+                    % for my $col (@{$table->{columns}}) {
+                        % if (defined $col->{from_server_callback}) {
+                        { field: '<%= $col->{field} %>', callback: <%== $col->{from_server_callback} %>, },
+                        % } else {
+                        '<%= $col->{field} %>',
+                        % }
+                    % }
+                ],
+                % }
+            })[name];
+
+        $.ajax({
+            method: 'get',
+            url: '<%= $general_url %>/cgi-bin/' + request,
+            success: function (data) {
+                var $tbl = $("#tbl-" + name + " tbody");
+                $tbl.html("");
+                data[data_ref].forEach(function (item) {
+                    var $tr = $("<tr>");
+                    columns.forEach(function (col, index) {
+                        if (typeof(col) != "object")
+                            col = { field: col };
+
+                        var $td = $("<td>"),
+                            text = col.callback ? col.callback(item[col.field]) : item[col.field];
+                        if (!text)
+                            text = "";
+                        if (index == 0) {
+                            var $div = $("<div>").addClass("ui mini basic icon buttons outside-buttons");
+
+                            $div.append(
+                                $("<button>")
+                                    .addClass("ui button")
+                                    .click(function (name, item) { return function () { delete_element(name, item); } }(name, item))
+                                    .append(
+                                        $("<i>").addClass("remove icon")
+                                    )
+                            ).append(
+                                $("<button>")
+                                    .addClass("ui button")
+                                    .click(function (name, item) { return function () { change_element(name, item); } }(name,item))
+                                    .append(
+                                        $("<i>").addClass("write icon")
+                                    )
+                                );
+                            $div.addClass('icon-group-2');
+                            $td.append($("<div>").append($div).append($("<span>").text(text)));
+                        } else {
+                            $td.text(text);
+                        }
+                        $tr.append($td);
+                    });
+                    $tbl.append($tr);
+                });
+            },
+        });
+    }
+
+    function delete_element(name, elem) {
+        var request = ({
+            % for my $table (@list_of_tables) {
+            '<%= $table->{name} %>': '<%= $table->{requests}{remove} %>',
+            % }
+        })[name];
+        $("#delete_modal").modal('show').find("#btn-delete-row").unbind('click').click(function () {
+            $.ajax({
+                method: 'get',
+                url: '<%= $general_url %>/cgi-bin/' + request,
+                data: elem,
+                success: function () {
+                    request_data(name);
+                },
+            });
+            $("#delete_modal").modal('hide');
+        });
+    }
+
+    function fill_form(name, $frm, fields, is_edit, data) {
+        fields.forEach(function (field) {
+            var $edt = $frm.find("#edt-" + name + "-" + field),
+                $span = $frm.find("#span-" + name + "-" + field),
+                $dropdown = $("#dropdown-" + name + "-" + field);
+            if (is_edit && $span.length) {
+                $edt.hide();
+                $span.show().text(data[field]);
+            } else if ($dropdown.length && data[field]) {
+                $dropdown.dropdown('set selected', data[field]);
+            } else if ($dropdown.length) {
+                $dropdown.dropdown('restore defaults');
+            } else {
+                $span.hide();
+                $edt.show().val(data[field]);
+            }
+        });
+    }
+
+    function get_content(name, $frm, fields) {
+        var content = {};
+        fields.forEach(function (field) {
+            if (content == undefined)
+                return;
+            var $edt = $frm.find("#edt-" + name + "-" + field),
+                $span = $frm.find("#span-" + name + "-" + field),
+                $dropdown = $("#dropdown-" + name + "-" + field);
+            if ($span.length)
+                content[field] = $span.text();
+            else if ($dropdown.length) {
+                var $v = $dropdown.dropdown('get item', $dropdown.dropdown('get value'));
+                content[field] = ""; // dirty hack =(
+                if ($v.length)
+                    content[field] = $v.attr('data');
+            } else
+                content[field] = $edt.val();
+
+            var is_required = $edt.parent().hasClass('required') || $dropdown.parent().hasClass('required');
+            if (is_required && content[field].trim() == "") {
+                alert("Не все необходимые поля заполнены!"); // TODO !!!!!
+                content = undefined;
+                return;
+            }
+        });
+        return content;
+    }
+
+    function show_edit_form(add_edit, name, data) {
+        var $frm = $("#edit_modal"),
+            form_content = ({
+                % for my $table (@list_of_tables) {
+                '<%= $table->{name} %>': {
+                    add: '<%= $table->{requests}{add} %>',
+                    edit: '<%= $table->{requests}{edit} %>',
+                    fields: [
+                    % for my $col (@{$table->{columns}}) {
+                        '<%= $col->{field} %>',
+                    % }
+                    ],
+                },
+                % }
+            })[name];
+        $frm.find("form").hide();
+        fill_form(name, $frm.find("#frm-" + name).show(), form_content.fields, add_edit == "edit", data || {});
+        $frm.find("#btn-save-object").unbind('click').click(function () {
+            data = get_content(name, $frm, form_content.fields);
+            if (!data)
+                return false;
+            $.ajax({
+                method: 'get',
+                url: '<%= $general_url %>/cgi-bin/' + form_content[add_edit],
+                data: data,
+                success: function () {
+                    request_data(name);
+                },
+            });
+            $frm.modal('hide');
+        });
+        $frm.modal('show');
+    }
+
+    function change_element(name, item) {
+        show_edit_form('edit', name, item);
+    }
+
+    function add_element(name) {
+        show_edit_form('add', name);
+    }
+
+    $(function () {
+        $(".dropdown").dropdown();
+        $("#list-sel").dropdown({
+            'custom change': 'activate',
+            onChange: function (value) {
+                $(".just-a-block").hide();
+                request_data(value);
+                $(".blk-" + value).show();
+            },
+        });
+    });
+% end

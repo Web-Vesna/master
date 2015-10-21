@@ -51,10 +51,30 @@ sub add {
     return $self->render(json => { ok => 1 });
 }
 
+sub remove {
+    my $self = shift;
+    my $params = check_params $self, 'login';
+    return unless $params;
+
+    execute_query($self, "delete from users where login = ?", $params->{login});
+    return $self->render(json => { ok => 1 }); # XXX: user can be looged in
+}
+
+sub change {
+    my $self = shift;
+    my $params = check_params $self, qw( login password name lastname email role );
+    return unless $params;
+
+    execute_query $self, "update users set role = ?, pass = ?, name = ?, lastname = ?, email = ? where login = ?",
+        @$params{qw( role password name lastname email login )};
+
+    return $self->render(json => { ok => 1 });
+}
+
 sub roles {
     my $self = shift;
 
-    my $r = select_all($self, "select name from roles order by name");
+    my $r = select_all($self, "select id, name, text from roles order by name");
     return $self->render(json => { ok => 1, roles => $r, count => scalar @$r }) if $r;
     return return_500 $self;
 }

@@ -17,3 +17,8 @@ ALTER TABLE objects DROP KEY fk_objects_characteristics1_idx;
 ALTER TABLE objects DROP COLUMN characteristic;
 ALTER TABLE objects CHANGE characteristic_new characteristic VARCHAR(255);
 DROP TABLE characteristics;
+
+alter table roles add column text varchar(255) default NULL;
+update roles set text = 'Администратор' where id = 1;
+update roles set text = 'Менеджер' where id = 3;
+update roles set text = 'Пользователь' where id = 4;
