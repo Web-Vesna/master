@@ -70,8 +70,47 @@ sub isolation_types {
     my $self = shift;
 
     my $r = select_all $self, "select id, name from isolations group by name order by name";
-    return return_500 $self unless $r;
+    my $groups = select_all $self, "select isolation as id from objects group by isolation";
+    return return_500 $self unless $r && $groups;
+
+    for my $g (@$groups) {
+        next unless defined $g->{id};
+        for my $x (@$r) {
+            if ($x->{id} eq $g->{id}) {
+                $x->{used} = 1;
+                last;
+            }
+        }
+    }
+
     return $self->render(json => { ok => 1, count => scalar @$r, isolations => $r });
+}
+
+sub isolation_type_add {
+    my $self = shift;
+    my $params = check_params $self, qw( name );
+    return unless $params;
+
+    execute_query $self, "insert into isolations(name) values (?)", @$params{qw( name )};
+    return $self->render(json => { ok => 1 });
+}
+
+sub isolation_type_edit {
+    my $self = shift;
+    my $params = check_params $self, qw( id name );
+    return unless $params;
+
+    execute_query $self, "update isolations set name = ? where id = ?", @$params{qw( name id )};
+    return $self->render(json => { ok => 1 });
+}
+
+sub isolation_type_remove {
+    my $self = shift;
+    my $params = check_params $self, qw( id );
+    return unless $params;
+
+    execute_query $self, "delete from isolations where id = ?", @$params{qw( id )};
+    return $self->render(json => { ok => 1 });
 }
 
 sub laying_methods {
@@ -92,6 +131,33 @@ sub laying_methods {
     }
 
     return $self->render(json => { ok => 1, count => scalar @$r, methods => $r });
+}
+
+sub laying_method_add {
+    my $self = shift;
+    my $params = check_params $self, qw( name );
+    return unless $params;
+
+    execute_query $self, 'insert into laying_methods(name) values (?)', $params->{name};
+    return $self->render(json => { ok => 1 });
+}
+
+sub laying_method_edit {
+    my $self = shift;
+    my $params = check_params $self, qw( name id );
+    return unless $params;
+
+    execute_query $self, 'update laying_methods set name = ? where id = ?', @$params{qw( name id )};
+    return $self->render(json => { ok => 1 });
+}
+
+sub laying_method_remove {
+    my $self = shift;
+    my $params = check_params $self, qw( id );
+    return unless $params;
+
+    execute_query $self, 'delete from laying_methods where id = ?', $params->{id};
+    return $self->render(json => { ok => 1 });
 }
 
 sub select_building {

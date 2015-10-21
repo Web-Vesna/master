@@ -38,7 +38,13 @@ sub startup {
     $r->get('/conn_types')->to('data#conn_types');
 
     $r->get('/isolation_types')->to('data#isolation_types');
+    $r->get('/isolation/add')->to('data#isolation_type_add');
+    $r->get('/isolation/edit')->to('data#isolation_type_edit');
+    $r->get('/isolation/remove')->to('data#isolation_type_remove');
     $r->get('/laying_methods')->to('data#laying_methods');
+    $r->get('/laying_method/add')->to('data#laying_method_add');
+    $r->get('/laying_method/edit')->to('data#laying_method_edit');
+    $r->get('/laying_method/remove')->to('data#laying_method_remove');
 
     $r->get('/build')->to('results#build');
     $r->get('/rebuild_cache')->to('results#rebuild_cache');

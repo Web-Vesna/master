@@ -208,10 +208,46 @@ my %access_control = (
         roles => 'user',
     },
 
+    'isolation/add' => {
+        method => 'get',
+        access => 'Authorized',
+        roles => 'admin',
+    },
+
+    'isolation/edit' => {
+        method => 'get',
+        access => 'Authorized',
+        roles => 'admin',
+    },
+
+    'isolation/remove' => {
+        method => 'get',
+        access => 'Authorized',
+        roles => 'admin',
+    },
+
     'laying_methods' => {
         method => 'get',
         access => 'Authorized',
         roles => 'user',
+    },
+
+    'laying_method/add' => {
+        method => 'get',
+        access => 'Authorized',
+        roles => 'admin',
+    },
+
+    'laying_method/edit' => {
+        method => 'get',
+        access => 'Authorized',
+        roles => 'admin',
+    },
+
+    'laying_method/remove' => {
+        method => 'get',
+        access => 'Authorized',
+        roles => 'admin',
     },
 
     'objects/add-edit' => {

@@ -47,7 +47,7 @@
 %            list => 'laying_methods',
 %            add => 'laying_method/add',
 %            edit => 'laying_method/edit',
-%            remove => 'lating_method/remove',
+%            remove => 'laying_method/remove',
 %        },
 %        columns => [
 %            { field => 'id', flags => { key_field => 1 }, },
