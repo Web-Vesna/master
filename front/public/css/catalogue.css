@@ -43,6 +43,10 @@
     display: none;
 }
 
+.closed_building {
+    background-color: green;
+}
+
 #table td:first-child .outside-buttons.icon-group-1 {
     left: -41px;
 }

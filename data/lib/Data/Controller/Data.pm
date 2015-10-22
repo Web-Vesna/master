@@ -207,6 +207,7 @@ sub edit_building {
     my $args = $self->req->params->to_hash;
 
     return $self->render(json => { status => 400, error => "invalid id" }) if !defined $args->{id} || $args->{id} =~ /\D/;
+    my %flags = map { my $a = $_; s/flags\[(.*)\]/$1/; $_ => (lc($args->{$a}) eq 'true') } grep { /^flags\[/ } keys %$args;
 
     my @not_found_key = grep { !defined $args->{$_} || $args->{$_} eq "" } qw( conn_type heat_load );
     unless (@not_found_key) {
@@ -218,6 +219,28 @@ sub edit_building {
         }
     }
     return $self->render(json => { status => 400, error => join(', ', @not_found_key) . " is not found in request" }) if @not_found_key;
+
+    my $r = select_all $self, "show columns from buildings like 'flags'";
+    return return_500 $self unless $r;
+
+    $r = $r->[0]{Type};
+    return return_500 $self unless $r;
+
+    $r =~ s/^set\(|'| |\)$//g;
+    my $i = 0;
+    my %expected_flags = map { $_ => (1 << $i++) } split ',', $r;
+
+    my ($set_flags, $remove_flags) = (0, 0);
+    for my $f (keys %flags) {
+        if ($flags{$f}) {
+            $set_flags |= $expected_flags{$f} // 0;
+        } else {
+            $remove_flags |= $expected_flags{$f} // 0;
+        }
+    }
+
+    execute_query $self, "update buildings set flags = flags | $set_flags where id = ?", $args->{id} if $set_flags;
+    execute_query $self, "update buildings set flags = flags & ~$remove_flags where id = ?", $args->{id} if $remove_flags;
 
     execute_query $self, qq/
         insert into buildings_meta (building_id, characteristic, build_date, reconstruction_date, heat_load)
@@ -240,7 +263,7 @@ sub edit_building {
         /, @$args{qw( address company_name id )};
     }
 
-    my $r = select_building $self, { company => $args->{company_id} };
+    $r = select_building $self, { company => $args->{company_id} };
     return return_500 $self unless $r;
     for (@$r) {
         $_->{flags} = { map { $_ => 1 } split ',', $_->{flags} };

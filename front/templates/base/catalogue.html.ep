@@ -100,7 +100,7 @@
                         <input type="text" id="edt-repair" key="reconstruction_date" class="numbers_only">
                     </div>
                     <div class="ui checkbox">
-                        <input type="checkbox" name="example" id="chb-no_edit">
+                        <input type="checkbox" name="example" id="chb-closed" key="closed">
                         <label>Закрыть редактирование</label>
                     </div>
                 </form>
@@ -361,7 +361,7 @@
             $this.prop('checked', true);
             on_radio_click($this);
         });
-        $("#edt-heat_load,#edt-expl,#edt-repair,#edt-company,#edt-address").on('change', function () {
+        $("#edt-heat_load,#edt-expl,#edt-repair,#edt-company,#edt-address,#chb-closed").on('change', function () {
             var $this = $(this);
             update_current_object($this.attr('key'), $this.val());
             toggle_next_btn();
@@ -409,8 +409,11 @@
             if (should_be_checked)
                 editable_found = true;
             $items_container.append($("<div>", { 'class': 'field', })
-                .append($("<div>", { 'class': 'ui radio checkbox' + (val.flags.editable ? '' : ' disabled'), })
-                .append($("<input>", { 'type': 'radio', 'name': val.id })
+                .append($("<div>", {
+                    'class': 'ui radio checkbox'
+                        + (val.flags.editable ? '' : ' disabled')
+                        + (val.flags.closed ? ' closed_building' : ''),
+                }).append($("<input>", { 'type': 'radio', 'name': val.id })
                     .attr('org', org)
                     .prop('checked', should_be_checked)
                     .prop('disabled', !val.flags.editable))
@@ -438,6 +441,7 @@
             $company = $("#edt-company"),
             % }
             $btn = $("#btn_save_building"),
+            $closed = $("#chb-closed"),
             $icon = $btn.find("i"),
             to_send = {
                 conn_type:      $ctype.dropdown('get value').trim(),
@@ -446,6 +450,9 @@
                 repair_date:    $repair_date.val().trim(),
                 id:             current_object_main_properties.id,
                 company_id:     current_object_main_properties.company_id,
+                flags: {
+                    closed: ($closed.attr("checked") && true || false),
+                },
                 % if (stash('role') eq 'admin') {
                 address:        $address.val().trim(),
                 company_name:   $company.val().trim(),
@@ -506,6 +513,10 @@
                 var $o = $("#" + sel);
                 current_object[$o.attr('key')] = $o.val();
             });
+            [ 'chb-closed' ].forEach(function (sel) {
+                var $o = $("#" + sel);
+                current_object[$o.attr('key')] = $o.attr("checked") != undefined;
+            });
         }
     }
 
@@ -521,6 +532,7 @@
             $heat_load = $("#edt-heat_load"),
             $build_date = $("#edt-expl"),
             $repair_date = $("#edt-repair"),
+            $closed = $("#chb-closed"),
             cur_object = current_object_main_properties;
 
         if (!cur_object)
@@ -531,6 +543,10 @@
                 return function () { $o.val(v); };
             else
                 return function (v) { $o.val(v); };
+        };
+
+        function set_chb($o, v) {
+            return function (v) { $o.attr('checked', v); };
         };
 
         [
@@ -553,6 +569,11 @@
                 data: cur_object.reconstruction_date,
                 ok: set_edt($repair_date),
                 fail: set_edt($repair_date, ''),
+            },
+            {
+                data: cur_object.flags.closed,
+                ok: set_chb($closed),
+                fail: set_chb($closed),
             },
         ].forEach(function (e) {
             if (e.data == undefined)
@@ -769,7 +790,8 @@
             $address = $("#edt-address"),
             % }
             $btn = $("#btn_save_building"),
-            $icon = $btn.find("i");
+            $icon = $btn.find("i"),
+            closed = $("#chb-closed").attr("checked") != undefined;
 
         if (!all_fields_set) {
             $btn.addClass("basic disabled").removeClass("green");
@@ -782,6 +804,7 @@
                 || $heat_load.val() != (current_object_main_properties.heat_load || "")
                 || $build_date.val() != (current_object_main_properties.build_date || "")
                 || $repair_date.val() != (current_object_main_properties.reconstruction_date || "")
+                || closed != (current_object_main_properties.flags.closed && true || false)
                 % if (stash('role') eq 'admin') {
                 || $company.val() != (current_object_main_properties.company || "")
                 || $address.val() != (current_object_main_properties.name || "")
@@ -849,7 +872,7 @@
         if (current_step == 2) {
             $("#conn_type_sel").dropdown('clear');
             $("#edt-heat_load,#edt-expl,#edt-repair,#edt-company,#edt-address").val('');
-            $("#chb-no_edit").prop('checked', false);
+            $("#chb-closed").prop('checked', false);
             $("#btn_next").removeClass('disabled');
 
             current_object = { region: current_object.region, building: current_object.building };
