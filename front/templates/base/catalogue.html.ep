@@ -398,7 +398,9 @@
         var $addr_sel = $("#address_sel"),
             arr = downloaded_addresses[org],
             $items_container = $addr_sel.find('.grouped.fields'),
-            editable_found = false;
+            editable_found = false,
+            selected_input = $items_container.find("input:checked").attr("name"),
+            input_to_check_id = undefined;
         $items_container.find('.field').remove();
 
         if (!arr)
@@ -406,8 +408,16 @@
 
         arr.forEach(function (val, index) {
             var should_be_checked = !editable_found && val.flags.editable;
-            if (should_be_checked)
-                editable_found = true;
+            if (should_be_checked) {
+                if (val.id == selected_input) {
+                    editable_found = true;
+                    input_to_check_id = undefined;
+                } else if (!input_to_check_id) {
+                    should_be_checked = false;
+                    input_to_check_id = val.id;
+                } else
+                    should_be_checked = false;
+            }
             $items_container.append($("<div>", { 'class': 'field', })
                 .append($("<div>", {
                     'class': 'ui radio checkbox'
@@ -419,6 +429,9 @@
                     .prop('disabled', !val.flags.editable))
                 .append($("<label>").text('ИНО_' + val.id + ": " + val.name))));
         });
+        if (input_to_check_id)
+            $items_container.find("input[name=" + input_to_check_id + "]").prop('checked', true);
+
         var $selected = $items_container.find('input:checked').first(),
             classes = "loading";
         if ($selected[0])
@@ -521,6 +534,9 @@
     }
 
     function on_radio_click($o) {
+        if (!$o.length)
+            return;
+
         var name = $o.attr('name');
         selected_object = { building: name };
         current_object.building = name;
@@ -546,7 +562,10 @@
         };
 
         function set_chb($o, v) {
-            return function (v) { $o.attr('checked', v); };
+            if (v != undefined)
+                return function () { $o.attr('checked', v); };
+            else
+                return function (v) { $o.attr('checked', v); };
         };
 
         [
@@ -573,7 +592,7 @@
             {
                 data: cur_object.flags.closed,
                 ok: set_chb($closed),
-                fail: set_chb($closed),
+                fail: set_chb($closed, false),
             },
         ].forEach(function (e) {
             if (e.data == undefined)

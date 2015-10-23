@@ -43,8 +43,14 @@
     display: none;
 }
 
+/*
 .closed_building {
     background-color: green;
+}
+*/
+
+.closed_building label{
+    color: #89c211!important;
 }
 
 #table td:first-child .outside-buttons.icon-group-1 {
