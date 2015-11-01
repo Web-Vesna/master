@@ -45,6 +45,8 @@
                 </div>
             </div>
 
+            <div id="catalog-org-bottom-margin"></div>
+
             <div id="address_sel" class="step-1 ten wide column" style="display:none">
                 <div class="ui form">
                     <div class="grouped fields">
@@ -325,6 +327,8 @@
         }).trigger('change');
 
         $("#org_sel").on('change', function (e) {
+            $("#btn_next").addClass("disabled");
+
             var value = e.target.value;
             if (value == "-1") {
                 update_addresses();
@@ -366,24 +370,28 @@
             update_current_object($this.attr('key'), $this.val());
             toggle_next_btn();
         });
-        $(".numbers_only").on('keydown', function (e) {
-            // Allow: backspace, delete, tab, escape, enter and .
-            if ($.inArray(e.keyCode, [9, 46, 8, 27, 13, 110]) !== -1 ||
-                (e.keyCode == 65 && ( e.ctrlKey === true || e.metaKey === true ) ) ||
-                (e.keyCode >= 35 && e.keyCode <= 40)) {
-                     return;
-            }
-            // decimal point processing
-            if (!e.shiftKey && e.keyCode == 190
-                    && $(this).hasClass('float_numbers')
-                    && $(this).val().indexOf(".") == -1
-                    && $(this).val().length > 0) {
-                return;
-            }
-            // Ensure that it is a number and stop the keypress
-            if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+        $(".numbers_only").on('keypress', function (e) {
+            var entered_value = $(this).val() + String.fromCharCode(e.charCode);
+            var regexPattern = /^\d+(\.\d*)?$/;
+            if (!$(this).hasClass("float_numbers"))
+                regexPattern = /^\d*$/;
+            if (regexPattern.test(entered_value))
+                return true;
+            e.preventDefault();
+            return false;
+        }).on('paste', function (e) {
+            // get event text and filter out letter characters
+            var regexPattern = /[^0-9.]/g;
+            if (!$(this).hasClass("float_numbers"))
+                regexPattern = /[^0-9]/g;
+            var pastedTxt = e.originalEvent.clipboardData.getData('Text').replace(regexPattern, '');
+            if ($.isNumeric(pastedTxt)){
+                e.originalEvent.target.value = pastedTxt;
                 e.preventDefault();
-            }
+            } else {
+                e.originalEvent.target.value = "";
+                e.preventDefault();
+            };
         });
     });
 
@@ -396,6 +404,7 @@
 
     function update_addresses(org) {
         var $addr_sel = $("#address_sel"),
+            $org_margin = $("#catalog-org-bottom-margin"),
             arr = downloaded_addresses[org],
             $items_container = $addr_sel.find('.grouped.fields'),
             editable_found = false,
@@ -440,6 +449,7 @@
 
         if (current_step == 1) {
             $addr_sel.show();
+            $org_margin.hide();
             $("#btn_next").removeClass(classes);
         }
     }

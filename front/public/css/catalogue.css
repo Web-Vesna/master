@@ -3,7 +3,7 @@
 }
 
 #wrapper {
-    padding: 50px 16px 80px 16px;
+    padding: 50px 16px 0px 16px;
 }
 
 #ab_row {
@@ -99,6 +99,16 @@
     z-index: 13;
 }
 
+#address_sel{
+    min-height: 120px;
+}
+
 #address_sel .field{
     text-align: left;
+}
+
+#catalog-org-bottom-margin{
+ width: 100%;
+ height: 200px;
+}
 }
