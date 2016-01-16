@@ -853,7 +853,8 @@
                 % if (stash('role') eq 'admin') {
                 && current_object.address && current_object.company
                 % }
-                && (current_object.reconstruction_date || current_object.build_date)) {
+                //&& (current_object.reconstruction_date || current_object.build_date)) { // TODO: don't accept data without any date
+                ) {
             $("#btn_next").removeClass('disabled');
             toggle_save_changed_building_btn(true);
         } else {
