@@ -321,7 +321,7 @@ sub objects {
             left outer join objects oo on oo.id = o.parent_object
             left outer join objects_names new_o on new_o.id = o.object_name_new
             left outer join categories cat on o.object_name = cat.id %s
-            order by cat.object_name/,
+            order by oo.id asc/,
         (defined $args->{building} ? "where o.building = ?" : "")),
     );
 
@@ -355,12 +355,12 @@ sub objects {
         push @to_return, $o;
 
         $_add->($_add, $_) for sort {
-            $a->{new_group} <=> $b->{new_group}
+            $a->{id} <=> $b->{id}
         } @$children;
     };
 
     my @tail; # objects without group;
-    for (keys %tree) {
+    for (sort { $tree{$a}{id} <=> $tree{$b}{id} } keys %tree) {
         if (defined $tree{$_}{children}) {
             $_add->($_add, $tree{$_});
         } else {

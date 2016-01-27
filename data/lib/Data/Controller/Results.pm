@@ -1133,7 +1133,7 @@ sub build {
             cat.object_name as object_name,
             o_names.name as object_name_new,
             cat_n.category_type = 'marked' as need_mark,
-            o_names.group_id = 1 as need_mark_new,
+            o_names.group_id != 4 as need_mark_new,
             cat_n.name as category_name,
             o.characteristic as characteristic,
             o.size as size,

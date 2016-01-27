@@ -86,7 +86,6 @@ sub catalogue {
         port => DATA_PORT,
         args => {
             region => 'Москва',
-            heads_only => 1,
         }
     );
     return $self->render(template => 'base/internal_err') unless $r && $r->{companies};
