@@ -5,10 +5,7 @@
 %define __g_version 1.2
 %define __g_release 1
 
-%global _use_internal_dependency_generator 0
-%global __find_requires_orig %{__find_requires}
-%define __find_requires %{_builddir}/%{repodir}/build/find-requires %{__find_requires_orig}
-
+Prefix:		/usr/local
 Name:		apek-energo
 License:	Redistributable, no modification permitted
 Version:	%{__g_version}
@@ -21,10 +18,6 @@ BuildRoot:	%{_tmppath}/%{name}-root
 BuildArch:	noarch
 
 %description
-
-Nothing interesting
-
-XXX: perl-Mojolicious can be installed via cpan
 
 %package common
 
@@ -42,6 +35,20 @@ Provides:	perl(Translation)
 %description common
 
 Common Apek-Energo scripts, used by all daemons
+
+Execute to install dependencies (via super user).
+Force is not required, but some tests are failed and modules can't be installed from this.
+
+$ cpan
+ > force install Time::HiRes
+ > force install Mojo::URL Mojo::UserAgent Mojo::Util Mojo::Base Mojo::JSON Mojolicious::Commands Mojo::Base Mojolicious::Commands Mojo::Base Mojolicious::Commands Mojo::Base Mojo::JSON Mojolicious::Commands Mojo::Base Mojolicious::Commands
+ > force install Data::Dumper::OneLine
+ > force install Excel::Writer::XLSX
+ > force install Spreadsheet::ParseExcel
+ > force install Spreadsheet::XLSX
+ > force install URL::Encode::XS
+ > force install Cache::Memcached
+ > force install JSON
 
 %package data
 
@@ -121,8 +128,6 @@ Requires:	%{name}-session = %{version}-%{release}
 
 Daemon implements a files interface for Apek-Energo project
 
-#################
-
 %prep
 
 %define buildroot_impl %{buildroot}/%{homepath}
@@ -131,6 +136,7 @@ cd %{repodir}
 git checkout origin/%{branch_name}
 
 # Generate a files list for any package
+# and copy them into required pathes
 for prj in 'data' 'front' 'session' 'logic' 'files' 'lib'; do
 	find $prj -type f \( -name '*.pl' -o -name '*.pm' -o -name "$prj" -o -name '*.js' -o -name '*.ep' \
 		-o -name '*.htc' -o -name '*.php' -o -name '*.png' -o -name '*.jpg' -o -name '*.gif' -o -name 'icons.woff2' \
@@ -141,13 +147,16 @@ for prj in 'data' 'front' 'session' 'logic' 'files' 'lib'; do
 	cat $prj.files | awk '{print "/%{homepath}/"$1}' > %{_builddir}/$prj.files
 done
 
-#################
+mkdir -p %{_builddir}/%{_sysconfdir}
+cp build/%{name}.conf %{_builddir}/%{_sysconfdir}
 
 %clean
 
 rm -rf %{_builddir}/%{repodir}
 
 %files common -f lib.files
+
+%config(noreplace) %{_sysconfdir}/%{name}.conf
 
 %files data -f data.files
 
