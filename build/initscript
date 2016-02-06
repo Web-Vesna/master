@@ -16,7 +16,7 @@
 
 servicename="$(basename $0)"
 homedir="/usr/local/apek-energo/$servicename"
-conffile="/usr/local/etc/apek-energo.conf"
+conffile="/usr/local/apek-energo/etc/apek-energo.conf"
 pidfile="/var/lock/$servicename.pid"
 lockfile="/var/lock/subsys/$servicename"
 uname='apek-energo'

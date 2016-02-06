@@ -1,11 +1,11 @@
-%define homepath %{_libdir}/apek-energo
+%define homepath /usr/local/apek-energo
+%define confpath %{homepath}/etc
 %define repodir repo
 %define branch_name apek-energo-test
 
 %define __g_version 1.2
-%define __g_release 1
+%define __g_release %(date +"%Y%m%d")
 
-Prefix:		/usr/local
 Name:		apek-energo
 License:	Redistributable, no modification permitted
 Version:	%{__g_version}
@@ -31,6 +31,12 @@ Provides:	perl(AccessDispatcher)
 Provides:	perl(DB)
 Provides:	perl(MainConfig)
 Provides:	perl(Translation)
+
+Requires(pre):	/usr/sbin/useradd
+
+%pre
+
+useradd -r -d %{homepath} -s /bin/false %{name}
 
 %description common
 
@@ -75,8 +81,6 @@ BuildArch:	noarch
 
 Requires:	nginx
 Requires:	%{name}-common = %{version}-%{release}
-Requires:	%{name}-session = %{version}-%{release}
-Requires:	%{name}-data = %{version}-%{release}
 
 %description front
 
@@ -106,8 +110,6 @@ Group:		Applications/Multimedia
 BuildArch:	noarch
 
 Requires:	%{name}-common = %{version}-%{release}
-Requires:	%{name}-session = %{version}-%{release}
-Requires:	%{name}-data = %{version}-%{release}
 
 %description logic 
 
@@ -122,7 +124,7 @@ Group:		Applications/Multimedia
 BuildArch:	noarch
 
 Requires:	memcached
-Requires:	%{name}-session = %{version}-%{release}
+Requires:	%{name}-common = %{version}-%{release}
 
 %description files
 
@@ -135,6 +137,11 @@ git clone https://github.com/Web-Vesna/master %{repodir}
 cd %{repodir}
 git checkout origin/%{branch_name}
 
+mkdir -p %{buildroot}/%{confpath}
+mkdir -p %{buildroot}/%{_initddir}
+
+cp build/%{name}.conf %{buildroot}/%{confpath}
+
 # Generate a files list for any package
 # and copy them into required pathes
 for prj in 'data' 'front' 'session' 'logic' 'files' 'lib'; do
@@ -145,10 +152,12 @@ for prj in 'data' 'front' 'session' 'logic' 'files' 'lib'; do
 	cat $prj.files | xargs -I @ dirname @ | xargs -I @@ mkdir -p %{buildroot_impl}/@@
 	cat $prj.files | xargs -I @ cp @ %{buildroot_impl}/@
 	cat $prj.files | awk '{print "/%{homepath}/"$1}' > %{_builddir}/$prj.files
+
+	if [ "$prj" != "lib" ]; then
+		cp build/initscript %{buildroot}/%{_initddir}/%{name}-$prj
+	fi
 done
 
-mkdir -p %{_builddir}/%{_sysconfdir}
-cp build/%{name}.conf %{_builddir}/%{_sysconfdir}
 
 %clean
 
@@ -156,16 +165,24 @@ rm -rf %{_builddir}/%{repodir}
 
 %files common -f lib.files
 
-%config(noreplace) %{_sysconfdir}/%{name}.conf
+%config(noreplace) %{confpath}/%{name}.conf
 
 %files data -f data.files
 
+%attr(755,root,root) %{_initddir}/%{name}-data
+
 %files front -f front.files
+
+%attr(755,root,root) %{_initddir}/%{name}-front
 
 %files session -f session.files
 
+%attr(755,root,root) %{_initddir}/%{name}-session
+
 %files logic -f logic.files
+
+%attr(755,root,root) %{_initddir}/%{name}-logic
 
 %files files -f files.files
 
-
+%attr(755,root,root) %{_initddir}/%{name}-files
