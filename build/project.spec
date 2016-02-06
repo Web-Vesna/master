@@ -11,9 +11,14 @@ Packager:	Pavel Berezhnoy <p.berezhnoy@web-vesna.ru>
 BuildRoot:	%{_tmppath}/%{name}-root
 BuildArch:	noarch
 
+# epel and magnum repos are required here
+Requires:	perl(Mojolicious)
+
 %description
 
 Nothing interesting
+
+XXX: perl-Mojolicious can be installed via cpan
 
 %package data
 
