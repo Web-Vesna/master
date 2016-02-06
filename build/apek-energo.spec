@@ -1,5 +1,6 @@
 %define homepath %{_libdir}/apek-energo
 %define repodir repo
+%define branch_name apek-energo-test
 
 %define __g_version 1.2
 %define __g_release 1
@@ -127,7 +128,7 @@ Daemon implements a files interface for Apek-Energo project
 %define buildroot_impl %{buildroot}/%{homepath}
 git clone https://github.com/Web-Vesna/master %{repodir}
 cd %{repodir}
-git checkout origin/apek-energo
+git checkout origin/%{branch_name}
 
 # Generate a files list for any package
 for prj in 'data' 'front' 'session' 'logic' 'files' 'lib'; do
