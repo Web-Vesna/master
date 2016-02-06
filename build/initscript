@@ -1,0 +1,78 @@
+#!/bin/bash
+#
+#       /etc/rc.d/init.d/<servicename>
+#
+#       <description of the *service*>
+#       <any general comments about this init script>
+#
+# <tags -- see below for tag definitions.  *Every line* from the top
+#  of the file to the end of the tags section must begin with a #
+#  character.  After the tags section, there should be a blank line.
+#  This keeps normal comments in the rest of the file from being
+#  mistaken for tags, should they happen to fit the pattern.>
+
+# Source function library.
+. /etc/init.d/functions
+
+servicename="$(basename $0)"
+homedir="/usr/local/apek-energo/$servicename"
+conffile="/usr/local/etc/apek-energo.conf"
+pidfile="/var/lock/$servicename.pid"
+lockfile="/var/lock/subsys/$servicename"
+uname='apek-energo'
+
+[ -f $conffile ] || echo "Config file '$conffile' not found!" && exit 1
+
+. $conffile
+
+start() {
+        echo -n "Starting $servicename: "
+
+        # Find host/port from config file
+        local path=$(echo -n $servicename | perl -ne '$_ = uc $_;  printf "\"http://\$$_%s:\$$_%s\"", "_HOST", "_PORT"')
+        path=$(eval "echo $path")
+
+        daemon --user $uname --pidfile $pidfile $homedir/script/$servicename daemon -l $path
+
+        local retval=$?
+        [ $retval -eq 0 ] && touch $lockfile && success || failure
+
+        return $retval
+}
+
+stop() {
+        echo -n "Shutting down $servicename: "
+        kill -9 $(cat $pidfile) && success || failure
+        local retval=$?
+        rm -f $lockfile
+        return $retval
+}
+
+status() {
+        echo -n "Checking $servicename status: "
+        kill -0 $(cat $pidfile)
+        local retval=$?
+        [ $retval -eq 0 ] && success || failure
+        return $retval
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    status)
+        status
+        ;;
+    restart)
+        stop
+        start
+        ;;
+    *)
+        echo "Usage: <servicename> {start|stop|status|reload|restart[|probe]"
+        exit 1
+        ;;
+esac
+exit $?
