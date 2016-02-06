@@ -1,18 +1,23 @@
 %define homepath %{_libdir}/apek-energo
+%define repodir repo
+
+%define __g_version 1.2
+%define __g_release 1
+
+%global _use_internal_dependency_generator 0
+%global __find_requires_orig %{__find_requires}
+%define __find_requires %{_builddir}/%{repodir}/build/find-requires %{__find_requires_orig}
 
 Name:		apek-energo
 License:	Redistributable, no modification permitted
-Version:	1
-Release:	2
+Version:	%{__g_version}
+Release:	%{__g_release}
 Summary:	Apek-Energo project
 Group:		Applications/Multimedia
 Url:		https://github.com/Web-Vesna/master
 Packager:	Pavel Berezhnoy <p.berezhnoy@web-vesna.ru>
 BuildRoot:	%{_tmppath}/%{name}-root
 BuildArch:	noarch
-
-# epel and magnum repos are required here
-Requires:	perl(Mojolicious)
 
 %description
 
@@ -23,10 +28,15 @@ XXX: perl-Mojolicious can be installed via cpan
 %package common
 
 Summary:	Apek-Energo common libraries
-Version:	1
-Release:	1
+Version:	%{__g_version}
+Release:	%{__g_release}
 Group:		Applications/Multimedia
 BuildArch:	noarch
+
+Provides:	perl(AccessDispatcher)
+Provides:	perl(DB)
+Provides:	perl(MainConfig)
+Provides:	perl(Translation)
 
 %description common
 
@@ -35,10 +45,13 @@ Common Apek-Energo scripts, used by all daemons
 %package data
 
 Summary:	Apek-Energo data daemon
-Version:	1
-Release:	1
+Version:	%{__g_version}
+Release:	%{__g_release}
 Group:		Applications/Multimedia
 BuildArch:	noarch
+
+Requires:	mysql-server
+Requires:	%{name}-common = %{version}-%{release}
 
 %description data
 
@@ -47,10 +60,15 @@ Daemon works with database engine and provides an access to low-level logic.
 %package front
 
 Summary:	Apek-Energo frontend daemon
-Version:	1
-Release:	1
+Version:	%{__g_version}
+Release:	%{__g_release}
 Group:		Applications/Multimedia
 BuildArch:	noarch
+
+Requires:	nginx
+Requires:	%{name}-common = %{version}-%{release}
+Requires:	%{name}-session = %{version}-%{release}
+Requires:	%{name}-data = %{version}-%{release}
 
 %description front
 
@@ -59,10 +77,13 @@ Apek-Energo project frontend part
 %package session
 
 Summary:	Apek-Energo session daemon
-Version:	1
-Release:	1
+Version:	%{__g_version}
+Release:	%{__g_release}
 Group:		Applications/Multimedia
 BuildArch:	noarch
+
+Requires:	memcached
+Requires:	%{name}-common = %{version}-%{release}
 
 %description session
 
@@ -71,10 +92,14 @@ Daemon enables a session mechanism for Apek-Energo project
 %package logic
 
 Summary:	Apek-Energo proxy daemon
-Version:	1
-Release:	1
+Version:	%{__g_version}
+Release:	%{__g_release}
 Group:		Applications/Multimedia
 BuildArch:	noarch
+
+Requires:	%{name}-common = %{version}-%{release}
+Requires:	%{name}-session = %{version}-%{release}
+Requires:	%{name}-data = %{version}-%{release}
 
 %description logic 
 
@@ -83,10 +108,13 @@ Daemon implements a proxy between frontend and data
 %package files
 
 Summary:	Apek-Energo files daemon
-Version:	1
-Release:	1
+Version:	%{__g_version}
+Release:	%{__g_release}
 Group:		Applications/Multimedia
 BuildArch:	noarch
+
+Requires:	memcached
+Requires:	%{name}-session = %{version}-%{release}
 
 %description files
 
@@ -96,7 +124,6 @@ Daemon implements a files interface for Apek-Energo project
 
 %prep
 
-%define repodir repo
 %define buildroot_impl %{buildroot}/%{homepath}
 git clone https://github.com/Web-Vesna/master %{repodir}
 cd %{repodir}
@@ -117,7 +144,7 @@ done
 
 %clean
 
-rm -rf %{_builddir}/master
+rm -rf %{_builddir}/%{repodir}
 
 %files common -f lib.files
 
