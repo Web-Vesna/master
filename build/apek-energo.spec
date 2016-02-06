@@ -1,9 +1,9 @@
-%define homepath %{__libdir}/apek-energo
+%define homepath %{_libdir}/apek-energo
 
 Name:		apek-energo
+License:	Redistributable, no modification permitted
 Version:	1
 Release:	2
-Source:		https://github.com/Web-Vesna/master/archive/apek-energo-release-%{version}-%{release}.tar.gz
 Summary:	Apek-Energo project
 Group:		Applications/Multimedia
 Url:		https://github.com/Web-Vesna/master
@@ -20,6 +20,18 @@ Nothing interesting
 
 XXX: perl-Mojolicious can be installed via cpan
 
+%package common
+
+Summary:	Apek-Energo common libraries
+Version:	1
+Release:	1
+Group:		Applications/Multimedia
+BuildArch:	noarch
+
+%description common
+
+Common Apek-Energo scripts, used by all daemons
+
 %package data
 
 Summary:	Apek-Energo data daemon
@@ -28,7 +40,7 @@ Release:	1
 Group:		Applications/Multimedia
 BuildArch:	noarch
 
-%description
+%description data
 
 Daemon works with database engine and provides an access to low-level logic.
 
@@ -40,7 +52,7 @@ Release:	1
 Group:		Applications/Multimedia
 BuildArch:	noarch
 
-%description
+%description front
 
 Apek-Energo project frontend part
 
@@ -52,7 +64,7 @@ Release:	1
 Group:		Applications/Multimedia
 BuildArch:	noarch
 
-%description
+%description session
 
 Daemon enables a session mechanism for Apek-Energo project
 
@@ -64,7 +76,7 @@ Release:	1
 Group:		Applications/Multimedia
 BuildArch:	noarch
 
-%description
+%description logic 
 
 Daemon implements a proxy between frontend and data
 
@@ -76,7 +88,7 @@ Release:	1
 Group:		Applications/Multimedia
 BuildArch:	noarch
 
-%description
+%description files
 
 Daemon implements a files interface for Apek-Energo project
 
@@ -84,14 +96,30 @@ Daemon implements a files interface for Apek-Energo project
 
 %prep
 
+%define repodir repo
+%define buildroot_impl %{buildroot}/%{homepath}
+git clone https://github.com/Web-Vesna/master %{repodir}
+cd %{repodir}
+git checkout origin/apek-energo
+
 # Generate a files list for any package
-find data -type f \( -name '*.pl' -o -name '*.pm' -o -name 'data' \)
+for prj in 'data' 'front' 'session' 'logic' 'files' 'lib'; do
+	find $prj -type f \( -name '*.pl' -o -name '*.pm' -o -name "$prj" -o -name '*.js' -o -name '*.ep' \
+		-o -name '*.htc' -o -name '*.php' -o -name '*.png' -o -name '*.jpg' -o -name '*.gif' -o -name 'icons.woff2' \
+		-o -name 'Thumbs.db' -o -name '*.css' \) > $prj.files
+
+	cat $prj.files | xargs -I @ dirname @ | xargs -I @@ mkdir -p %{buildroot_impl}/@@
+	cat $prj.files | xargs -I @ cp @ %{buildroot_impl}/@
+	cat $prj.files | awk '{print "/%{homepath}/"$1}' > %{_builddir}/$prj.files
+done
 
 #################
 
-%files
+%clean
 
-# Nothing to do
+rm -rf %{_builddir}/master
+
+%files common -f lib.files
 
 %files data -f data.files
 
