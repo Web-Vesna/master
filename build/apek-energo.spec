@@ -4,7 +4,7 @@
 %define branch_name apek-energo-test
 
 %define __g_version 1.2
-%define __g_release %(date +"%Y%m%d")
+%define __g_release %(date +"%Y%m%d%H%M")
 
 Name:		apek-energo
 License:	Redistributable, no modification permitted
@@ -32,11 +32,7 @@ Provides:	perl(DB)
 Provides:	perl(MainConfig)
 Provides:	perl(Translation)
 
-Requires(pre):	/usr/sbin/useradd
-
-%pre
-
-useradd -r -d %{homepath} -s /bin/false %{name}
+Requires(pre): shadow-utils
 
 %description common
 
@@ -158,31 +154,49 @@ for prj in 'data' 'front' 'session' 'logic' 'files' 'lib'; do
 	fi
 done
 
-
 %clean
 
 rm -rf %{_builddir}/%{repodir}
 
 %files common -f lib.files
 
+%defattr(644, %{name}, %{name}, -)
 %config(noreplace) %{confpath}/%{name}.conf
 
 %files data -f data.files
 
+%defattr(644, %{name}, %{name}, -)
 %attr(755,root,root) %{_initddir}/%{name}-data
 
 %files front -f front.files
 
+%defattr(644, %{name}, %{name}, -)
 %attr(755,root,root) %{_initddir}/%{name}-front
 
 %files session -f session.files
 
+%defattr(644, %{name}, %{name}, -)
 %attr(755,root,root) %{_initddir}/%{name}-session
 
 %files logic -f logic.files
 
+%defattr(644, %{name}, %{name}, -)
 %attr(755,root,root) %{_initddir}/%{name}-logic
 
 %files files -f files.files
 
+%defattr(644, %{name}, %{name}, -)
 %attr(755,root,root) %{_initddir}/%{name}-files
+
+%pre common
+
+getent group %{name} >/dev/null || groupadd -r %{name}
+getent passwd %{name} >/dev/null || \
+    useradd -r -g %{name} -d %{homepath} -s /sbin/nologin  %{name}
+exit 0
+
+%post common
+
+for prj in 'data' 'front' 'session' 'logic' 'files'; do
+	chmod 755 %{homepath}/$prj/script/$prj
+done

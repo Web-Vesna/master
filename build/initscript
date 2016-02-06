@@ -32,7 +32,7 @@ start() {
         local path=$(echo -n $servicename | perl -ne '$_ = uc $_;  printf "\"http://\$$_%s:\$$_%s\"", "_HOST", "_PORT"')
         path=$(eval "echo $path")
 
-        daemon --user $uname --pidfile $pidfile $homedir/script/$servicename daemon -l $path
+        daemon --user $uname --pidfile $pidfile perl $homedir/script/$servicename daemon -l $path
 
         local retval=$?
         [ $retval -eq 0 ] && touch $lockfile && success || failure
