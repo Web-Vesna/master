@@ -135,6 +135,7 @@ git checkout origin/%{branch_name}
 
 mkdir -p %{buildroot}/%{confpath}
 mkdir -p %{buildroot}/%{_initddir}
+mkdir -p %{buildroot}/tmp
 
 cp build/%{name}.conf %{buildroot}/%{confpath}
 cp build/nginx.conf %{buildroot}/%{confpath}
@@ -208,25 +209,25 @@ exit 0
 
 %post data
 
-/tmp/%{name}-%{release}-data.sh %{home} %{name} data
+/tmp/%{name}-%{release}-data.sh %{homepath} %{name} data
 rm -f /tmp/%{name}-%{release}-data.sh
 
 %post front
 
-/tmp/%{name}-%{release}-front.sh %{home} %{name} front
+/tmp/%{name}-%{release}-front.sh %{homepath} %{name} front
 rm -f /tmp/%{name}-%{release}-front.sh
 
 %post session
 
-/tmp/%{name}-%{release}-session.sh %{home} %{name} session
+/tmp/%{name}-%{release}-session.sh %{homepath} %{name} session
 rm -f /tmp/%{name}-%{release}-session.sh
 
 %post logic
 
-/tmp/%{name}-%{release}-logic.sh %{home} %{name} logic
+/tmp/%{name}-%{release}-logic.sh %{homepath} %{name} logic
 rm -f /tmp/%{name}-%{release}-logic.sh
 
 %post files
 
-/tmp/%{name}-%{release}-files.sh %{home} %{name} files
+/tmp/%{name}-%{release}-files.sh %{homepath} %{name} files
 rm -f /tmp/%{name}-%{release}-files.sh
