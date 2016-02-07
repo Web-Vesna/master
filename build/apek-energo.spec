@@ -137,6 +137,8 @@ mkdir -p %{buildroot}/%{confpath}
 mkdir -p %{buildroot}/%{_initddir}
 
 cp build/%{name}.conf %{buildroot}/%{confpath}
+cp build/nginx.conf %{buildroot}/%{confpath}
+cp translation %{buildroot}/%{confpath}/%{name}.translate
 
 # Generate a files list for any package
 # and copy them into required pathes
@@ -162,6 +164,9 @@ rm -rf %{_builddir}/%{repodir}
 
 %defattr(644, %{name}, %{name}, -)
 %config(noreplace) %{confpath}/%{name}.conf
+%config(noreplace) %{confpath}/nginx.conf
+
+%config %{confpath}/%{name}.translate
 
 %files data -f data.files
 

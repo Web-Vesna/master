@@ -14,14 +14,14 @@
 # Source function library.
 . /etc/init.d/functions
 
-servicename="$(basename $0)"
+servicename="$(basename $0 | perl -pe 's/^apek-energo-//')"
 homedir="/usr/local/apek-energo/$servicename"
 conffile="/usr/local/apek-energo/etc/apek-energo.conf"
 pidfile="/var/lock/$servicename.pid"
 lockfile="/var/lock/subsys/$servicename"
 uname='apek-energo'
 
-[ -f $conffile ] || echo "Config file '$conffile' not found!" && exit 1
+[ -f $conffile ] || (echo "Config file '$conffile' not found!" && exit 1)
 
 . $conffile
 
@@ -50,8 +50,13 @@ stop() {
 
 status() {
         echo -n "Checking $servicename status: "
-        kill -0 $(cat $pidfile)
-        local retval=$?
+
+        local retval=1
+	if [ -f $pidfile ]; then
+		kill -0 $(cat $pidfile)
+		retval=$?
+	fi
+
         [ $retval -eq 0 ] && success || failure
         return $retval
 }
@@ -71,8 +76,9 @@ case "$1" in
         start
         ;;
     *)
-        echo "Usage: <servicename> {start|stop|status|reload|restart[|probe]"
+        echo "Usage: <servicename> {start|stop|status|restart}"
         exit 1
         ;;
 esac
+echo
 exit $?
