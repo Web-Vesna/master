@@ -153,6 +153,7 @@ for prj in 'data' 'front' 'session' 'logic' 'files' 'lib'; do
 
 	if [ "$prj" != "lib" ]; then
 		cp build/initscript %{buildroot}/%{_initddir}/%{name}-$prj
+		cp build/post_inst.sh %{buildroot}/tmp/%{name}-%{release}-$prj.sh
 	fi
 done
 
@@ -172,26 +173,31 @@ rm -rf %{_builddir}/%{repodir}
 
 %defattr(644, %{name}, %{name}, -)
 %attr(755,root,root) %{_initddir}/%{name}-data
+%attr(755,root,root) /tmp/%{name}-%{release}-data.sh
 
 %files front -f front.files
 
 %defattr(644, %{name}, %{name}, -)
 %attr(755,root,root) %{_initddir}/%{name}-front
+%attr(755,root,root) /tmp/%{name}-%{release}-front.sh
 
 %files session -f session.files
 
 %defattr(644, %{name}, %{name}, -)
 %attr(755,root,root) %{_initddir}/%{name}-session
+%attr(755,root,root) /tmp/%{name}-%{release}-session.sh
 
 %files logic -f logic.files
 
 %defattr(644, %{name}, %{name}, -)
 %attr(755,root,root) %{_initddir}/%{name}-logic
+%attr(755,root,root) /tmp/%{name}-%{release}-logic.sh
 
 %files files -f files.files
 
 %defattr(644, %{name}, %{name}, -)
 %attr(755,root,root) %{_initddir}/%{name}-files
+%attr(755,root,root) /tmp/%{name}-%{release}-files.sh
 
 %pre common
 
@@ -200,8 +206,27 @@ getent passwd %{name} >/dev/null || \
     useradd -r -g %{name} -d %{homepath} -s /sbin/nologin  %{name}
 exit 0
 
-%post common
+%post data
 
-for prj in 'data' 'front' 'session' 'logic' 'files'; do
-	chmod 755 %{homepath}/$prj/script/$prj
-done
+/tmp/%{name}-%{release}-data.sh %{home} %{name} data
+rm -f /tmp/%{name}-%{release}-data.sh
+
+%post front
+
+/tmp/%{name}-%{release}-front.sh %{home} %{name} front
+rm -f /tmp/%{name}-%{release}-front.sh
+
+%post session
+
+/tmp/%{name}-%{release}-session.sh %{home} %{name} session
+rm -f /tmp/%{name}-%{release}-session.sh
+
+%post logic
+
+/tmp/%{name}-%{release}-logic.sh %{home} %{name} logic
+rm -f /tmp/%{name}-%{release}-logic.sh
+
+%post files
+
+/tmp/%{name}-%{release}-files.sh %{home} %{name} files
+rm -f /tmp/%{name}-%{release}-files.sh
