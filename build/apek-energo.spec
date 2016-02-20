@@ -147,7 +147,6 @@ for prj in 'data' 'front' 'session' 'logic' 'files' 'lib'; do
 		cp build/post_inst.sh %{buildroot}/tmp/%{name}-%{release}-$prj.sh
 
 		echo "%{service_path}/%{name}-$prj.service" >> %{_builddir}/$prj.files
-		echo "%{initscript_path}/%{name}-$prj.run" >> %{_builddir}/$prj.files
 	fi
 done
 
@@ -167,31 +166,31 @@ rm -rf %{_builddir}/%{repodir}
 
 %defattr(644, %{name}, %{name}, -)
 %attr(755,root,root) /tmp/%{name}-%{release}-data.sh
-%attr{755,root,root} %{initscript_path}/%{name}-data.run
+%attr(755,root,root) %{initscript_path}/%{name}-data.run
 
 %files front -f front.files
 
 %defattr(644, %{name}, %{name}, -)
 %attr(755,root,root) /tmp/%{name}-%{release}-front.sh
-%attr{755,root,root} %{initscript_path}/%{name}-front.run
+%attr(755,root,root) %{initscript_path}/%{name}-front.run
 
 %files session -f session.files
 
 %defattr(644, %{name}, %{name}, -)
 %attr(755,root,root) /tmp/%{name}-%{release}-session.sh
-%attr{755,root,root} %{initscript_path}/%{name}-session.run
+%attr(755,root,root) %{initscript_path}/%{name}-session.run
 
 %files logic -f logic.files
 
 %defattr(644, %{name}, %{name}, -)
 %attr(755,root,root) /tmp/%{name}-%{release}-logic.sh
-%attr{755,root,root} %{initscript_path}/%{name}-logic.run
+%attr(755,root,root) %{initscript_path}/%{name}-logic.run
 
 %files files -f files.files
 
 %defattr(644, %{name}, %{name}, -)
 %attr(755,root,root) /tmp/%{name}-%{release}-files.sh
-%attr{755,root,root} %{initscript_path}/%{name}-files.run
+%attr(755,root,root) %{initscript_path}/%{name}-files.run
 
 %pre common
 
