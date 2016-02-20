@@ -167,26 +167,31 @@ rm -rf %{_builddir}/%{repodir}
 
 %defattr(644, %{name}, %{name}, -)
 %attr(755,root,root) /tmp/%{name}-%{release}-data.sh
+%attr{755,root,root} %{initscript_path}/%{name}-data.run
 
 %files front -f front.files
 
 %defattr(644, %{name}, %{name}, -)
 %attr(755,root,root) /tmp/%{name}-%{release}-front.sh
+%attr{755,root,root} %{initscript_path}/%{name}-front.run
 
 %files session -f session.files
 
 %defattr(644, %{name}, %{name}, -)
 %attr(755,root,root) /tmp/%{name}-%{release}-session.sh
+%attr{755,root,root} %{initscript_path}/%{name}-session.run
 
 %files logic -f logic.files
 
 %defattr(644, %{name}, %{name}, -)
 %attr(755,root,root) /tmp/%{name}-%{release}-logic.sh
+%attr{755,root,root} %{initscript_path}/%{name}-logic.run
 
 %files files -f files.files
 
 %defattr(644, %{name}, %{name}, -)
 %attr(755,root,root) /tmp/%{name}-%{release}-files.sh
+%attr{755,root,root} %{initscript_path}/%{name}-files.run
 
 %pre common
 
@@ -198,24 +203,24 @@ exit 0
 %post data
 
 /tmp/%{name}-%{release}-data.sh %{homepath} %{name} data
-rm -f /tmp/%{name}-%{release}-data.sh
+rm -f /tmp/%{name}-%{release}-data.sh 2>/dev/null
 
 %post front
 
 /tmp/%{name}-%{release}-front.sh %{homepath} %{name} front
-rm -f /tmp/%{name}-%{release}-front.sh
+rm -f /tmp/%{name}-%{release}-front.sh 2>/dev/null
 
 %post session
 
 /tmp/%{name}-%{release}-session.sh %{homepath} %{name} session
-rm -f /tmp/%{name}-%{release}-session.sh
+rm -f /tmp/%{name}-%{release}-session.sh 2>/dev/null
 
 %post logic
 
 /tmp/%{name}-%{release}-logic.sh %{homepath} %{name} logic
-rm -f /tmp/%{name}-%{release}-logic.sh
+rm -f /tmp/%{name}-%{release}-logic.sh 2>/dev/null
 
 %post files
 
 /tmp/%{name}-%{release}-files.sh %{homepath} %{name} files
-rm -f /tmp/%{name}-%{release}-files.sh
+rm -f /tmp/%{name}-%{release}-files.sh 2>/dev/null
