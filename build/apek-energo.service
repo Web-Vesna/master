@@ -1,0 +1,12 @@
+[Unit]
+Description=Apek-Energo __INSTANCE_NAME__ daemon.
+After=network.target
+
+[Service]
+Type=simple
+User=apek-energo
+ExecStart=__INIT_SCRIPT__ __INSTANCE_NAME__
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target

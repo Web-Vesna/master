@@ -2,6 +2,8 @@
 %define confpath %{homepath}/etc
 %define repodir repo
 %define branch_name apek-energo-test
+%define service_path /usr/lib/systemd/system/
+%define initscript %{confpath}/initscript
 
 %define __g_version 1.2
 %define __g_release %(date +"%Y%m%d%H%M")
@@ -38,20 +40,6 @@ Requires(pre): shadow-utils
 
 Common Apek-Energo scripts, used by all daemons
 
-Execute to install dependencies (via super user).
-Force is not required, but some tests are failed and modules can't be installed from this.
-
-$ cpan
- > force install Time::HiRes
- > force install Mojo::URL Mojo::UserAgent Mojo::Util Mojo::Base Mojo::JSON Mojolicious::Commands Mojo::Base Mojolicious::Commands Mojo::Base Mojolicious::Commands Mojo::Base Mojo::JSON Mojolicious::Commands Mojo::Base Mojolicious::Commands
- > force install Data::Dumper::OneLine
- > force install Excel::Writer::XLSX
- > force install Spreadsheet::ParseExcel
- > force install Spreadsheet::XLSX
- > force install URL::Encode::XS
- > force install Cache::Memcached
- > force install JSON
-
 %package data
 
 Summary:	Apek-Energo data daemon
@@ -60,7 +48,6 @@ Release:	%{__g_release}
 Group:		Applications/Multimedia
 BuildArch:	noarch
 
-Requires:	mysql-server
 Requires:	%{name}-common = %{version}-%{release}
 
 %description data
@@ -75,7 +62,6 @@ Release:	%{__g_release}
 Group:		Applications/Multimedia
 BuildArch:	noarch
 
-Requires:	nginx
 Requires:	%{name}-common = %{version}-%{release}
 
 %description front
@@ -90,7 +76,6 @@ Release:	%{__g_release}
 Group:		Applications/Multimedia
 BuildArch:	noarch
 
-Requires:	memcached
 Requires:	%{name}-common = %{version}-%{release}
 
 %description session
@@ -119,7 +104,6 @@ Release:	%{__g_release}
 Group:		Applications/Multimedia
 BuildArch:	noarch
 
-Requires:	memcached
 Requires:	%{name}-common = %{version}-%{release}
 
 %description files
@@ -136,9 +120,11 @@ git checkout origin/%{branch_name}
 mkdir -p %{buildroot}/%{confpath}
 mkdir -p %{buildroot}/%{_initddir}
 mkdir -p %{buildroot}/tmp
+mkdir -p %{buildroot}/%{service_path}
 
 cp build/%{name}.conf %{buildroot}/%{confpath}
 cp build/nginx.conf %{buildroot}/%{confpath}
+cp build/initscript %{buildroot}/%{initscript}
 cp translation %{buildroot}/%{confpath}/%{name}.translate
 
 # Generate a files list for any package
@@ -153,8 +139,13 @@ for prj in 'data' 'front' 'session' 'logic' 'files' 'lib'; do
 	cat $prj.files | awk '{print "/%{homepath}/"$1}' > %{_builddir}/$prj.files
 
 	if [ "$prj" != "lib" ]; then
-		cp build/initscript %{buildroot}/%{_initddir}/%{name}-$prj
+		cp build/apek-energo.service %{buildroot}/tmp/service
+		perl -pe "s/__INSTANCE_NAME__/$prj; s#__INIT_SCRIPT__#%{initscript}#" %{buildroot}/tmp/service
+		mv %{buildroot}/tmp/service %{buildroot}/%{service_path}/%{name}-$prj.service
 		cp build/post_inst.sh %{buildroot}/tmp/%{name}-%{release}-$prj.sh
+
+		echo "%{initscript}" >> %{_builddir}/$prj.files
+		echo "%{service_path}/%{name}-$prj.sh" >> %{_builddir}/$prj.files
 	fi
 done
 
