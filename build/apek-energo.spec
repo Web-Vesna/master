@@ -140,7 +140,7 @@ for prj in 'data' 'front' 'session' 'logic' 'files' 'lib'; do
 
 	if [ "$prj" != "lib" ]; then
 		cp build/apek-energo.service %{buildroot}/tmp/service
-		perl -pe "s/__INSTANCE_NAME__/$prj/; s#__INIT_SCRIPT__#%{initscript}#" %{buildroot}/tmp/service
+		perl -i -pe "s/__INSTANCE_NAME__/$prj/g; s#__INIT_SCRIPT__#%{initscript}#g" %{buildroot}/tmp/service
 		mv %{buildroot}/tmp/service %{buildroot}/%{service_path}/%{name}-$prj.service
 		cp build/post_inst.sh %{buildroot}/tmp/%{name}-%{release}-$prj.sh
 
