@@ -138,14 +138,15 @@ for prj in 'data' 'front' 'session' 'logic' 'files' 'lib'; do
 	cat $prj.files | xargs -I @ cp @ %{buildroot_impl}/@
 	cat $prj.files | awk '{print "/%{homepath}/"$1}' > %{_builddir}/$prj.files
 
+	echo "%{initscript}" >> %{_builddir}/$prj.files
+
 	if [ "$prj" != "lib" ]; then
 		cp build/apek-energo.service %{buildroot}/tmp/service
 		perl -i -pe "s/__INSTANCE_NAME__/$prj/g; s#__INIT_SCRIPT__#%{initscript}#g" %{buildroot}/tmp/service
 		mv %{buildroot}/tmp/service %{buildroot}/%{service_path}/%{name}-$prj.service
 		cp build/post_inst.sh %{buildroot}/tmp/%{name}-%{release}-$prj.sh
 
-		echo "%{initscript}" >> %{_builddir}/$prj.files
-		echo "%{service_path}/%{name}-$prj.sh" >> %{_builddir}/$prj.files
+		echo "%{service_path}/%{name}-$prj.service" >> %{_builddir}/$prj.files
 	fi
 done
 
@@ -164,31 +165,26 @@ rm -rf %{_builddir}/%{repodir}
 %files data -f data.files
 
 %defattr(644, %{name}, %{name}, -)
-%attr(755,root,root) %{_initddir}/%{name}-data
 %attr(755,root,root) /tmp/%{name}-%{release}-data.sh
 
 %files front -f front.files
 
 %defattr(644, %{name}, %{name}, -)
-%attr(755,root,root) %{_initddir}/%{name}-front
 %attr(755,root,root) /tmp/%{name}-%{release}-front.sh
 
 %files session -f session.files
 
 %defattr(644, %{name}, %{name}, -)
-%attr(755,root,root) %{_initddir}/%{name}-session
 %attr(755,root,root) /tmp/%{name}-%{release}-session.sh
 
 %files logic -f logic.files
 
 %defattr(644, %{name}, %{name}, -)
-%attr(755,root,root) %{_initddir}/%{name}-logic
 %attr(755,root,root) /tmp/%{name}-%{release}-logic.sh
 
 %files files -f files.files
 
 %defattr(644, %{name}, %{name}, -)
-%attr(755,root,root) %{_initddir}/%{name}-files
 %attr(755,root,root) /tmp/%{name}-%{release}-files.sh
 
 %pre common
