@@ -6,7 +6,8 @@ After=network.target
 Type=simple
 User=apek-energo
 ExecStart=__INIT_SCRIPT__ __INSTANCE_NAME__
-Restart=on-abort
+ExecReload=__INIT_SCRIPT__ __INSTANCE_NAME__
+Restart=always
 
 [Install]
 WantedBy=multi-user.target
