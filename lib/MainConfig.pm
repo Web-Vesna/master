@@ -39,7 +39,7 @@ my %PARAMS = (
 
     GENERAL_URL     => '',
     COOKIE_PATH     => '/',
-    COOKIE_DOMAIN   => undef,
+    COOKIE_DOMAIN   => '',
     COOKIE_SECRET   => '',
     MEMC_KEY        => '',
 
