@@ -124,9 +124,7 @@ mkdir -p %{buildroot}/%{service_path}
 
 cp build/%{name}.conf %{buildroot}/%{confpath}
 cp build/nginx.conf %{buildroot}/%{confpath}
-cp build/initscript %{buildroot}/%{initscript_path}/%{name}.run
 cp translation %{buildroot}/%{confpath}/%{name}.translate
-chmod +x %{buildroot}/%{initscript_path}/%{name}.run
 
 # Generate a files list for any package
 # and copy them into required pathes
@@ -140,6 +138,9 @@ for prj in 'data' 'front' 'session' 'logic' 'files' 'lib'; do
 	cat $prj.files | awk '{print "/%{homepath}/"$1}' > %{_builddir}/$prj.files
 
 	if [ "$prj" != "lib" ]; then
+		cp build/initscript %{buildroot}/%{initscript_path}/%{name}.run
+		chmod +x %{buildroot}/%{initscript_path}/%{name}.run
+
 		cp build/apek-energo.service %{buildroot}/tmp/service
 		perl -i -pe "s/__INSTANCE_NAME__/$prj/g; s#__INIT_SCRIPT__#%{initscript_path}/%{name}-$prj.run#g" %{buildroot}/tmp/service
 		mv %{buildroot}/tmp/service %{buildroot}/%{service_path}/%{name}-$prj.service
