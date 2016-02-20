@@ -63,7 +63,7 @@
                                     password: pass,
                                 },
                                 success: function (data) {
-                                    window.location.href = "<%= $return_url %>";
+                                    window.location.pathname = "<%= $return_url %>";
                                 },
                                 error: function (data) {
                                     if (data && data.description) {
