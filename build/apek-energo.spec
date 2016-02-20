@@ -138,8 +138,8 @@ for prj in 'data' 'front' 'session' 'logic' 'files' 'lib'; do
 	cat $prj.files | awk '{print "/%{homepath}/"$1}' > %{_builddir}/$prj.files
 
 	if [ "$prj" != "lib" ]; then
-		cp build/initscript %{buildroot}/%{initscript_path}/%{name}.run
-		chmod +x %{buildroot}/%{initscript_path}/%{name}.run
+		cp build/initscript %{buildroot}/%{initscript_path}/%{name}-$prj.run
+		chmod +x %{buildroot}/%{initscript_path}/%{name}-$prj.run
 
 		cp build/apek-energo.service %{buildroot}/tmp/service
 		perl -i -pe "s/__INSTANCE_NAME__/$prj/g; s#__INIT_SCRIPT__#%{initscript_path}/%{name}-$prj.run#g" %{buildroot}/tmp/service
