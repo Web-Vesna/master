@@ -49,6 +49,10 @@
 }
 */
 
+.object_v1 label{
+    color: #CFD6C2!important;
+}
+
 .closed_building label{
     color: #89c211!important;
 }
