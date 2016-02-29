@@ -624,34 +624,6 @@ sub render_xlsx {
 
     my @fields = (
         {
-            mysql_name => 'contract_id',
-            header_text => contract_id,
-            style => 'integer',
-            col_width => 10,
-            print_in_header => 1,
-            dont_print_in_common => 1,
-        }, {
-            mysql_name => 'company_name',
-            header_text => company_name,
-            style => 'text',
-            col_width => 50,
-            print_in_header => 1,
-            dont_print_in_common => 1,
-        }, {
-            mysql_name => 'address',
-            header_text => address,
-            style => 'text',
-            col_width => 40,
-            print_in_header => 1,
-            dont_print_in_common => 1,
-        }, {
-            mysql_name => 'district',
-            header_text => district,
-            style => 'text',
-            col_width => 10,
-            print_in_header => 1,
-            dont_print_in_common => 1,
-        }, {
             mysql_name => 'object_name',
             header_text => object_name,
             style => 'text',
@@ -667,16 +639,31 @@ sub render_xlsx {
             style => 'text',
             col_width => 30,
         }, {
-            mysql_name => 'building_characteristic',
-            style => 'text',
-            merge_with => 'characteristic',
-            print_in_header => 1,
-            only_in_header => 1,
-        }, {
             mysql_name => 'count',
             header_text => count,
             style => 'float',
             col_width => 10,
+        }, {
+            mysql_name => 'company_name',
+            style => 'text',
+            col_width => 50,
+            print_in_header => 1,
+            only_in_header => 1,
+            merge_with => 'object_name',
+        }, {
+            mysql_name => 'address',
+            style => 'text',
+            col_width => 40,
+            print_in_header => 1,
+            only_in_header => 1,
+            merge_with => 'characteristic',
+        }, {
+            mysql_name => 'district',
+            style => 'text',
+            col_width => 10,
+            print_in_header => 1,
+            only_in_header => 1,
+            merge_with => 'count',
         }, {
             mysql_name => 'size',
             header_text => size,
@@ -715,13 +702,6 @@ sub render_xlsx {
             only_in_header => 1,
             print_in_header => 1,
             merge_with => 'reconstruction_year',
-        }, {
-            mysql_name => 'building_heat_load',
-            style => 'float',
-            col_width => 10,
-            only_in_header => 1,
-            print_in_header => 1,
-            merge_with => 'count',
         }, {
             mysql_name => 'wear',
             header_text => wear,
@@ -943,7 +923,7 @@ sub render_xlsx {
     }
 
     my $worksheet = $workbook->add_worksheet();
-    $worksheet->freeze_panes(3, 4);
+    $worksheet->freeze_panes(3, 1);
     $worksheet->merge_range(0, 0, 0, $i - 1, $title, $title_style);
 
     my $last_building_id = -100500;
@@ -1135,10 +1115,8 @@ sub build {
             o.reconstruction_year as reconstruction_year,
             o.wear as wear,
             o.cost as cost,
-            bm.characteristic as building_characteristic,
             bm.build_date as buiding_build_date,
             bm.reconstruction_date as bm_reconstruction_date,
-            bm.heat_load as building_heat_load,
             o.last_usage_limit as usage_limit
             %s
         from objects o
