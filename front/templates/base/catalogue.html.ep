@@ -431,6 +431,7 @@
                 .append($("<div>", {
                     'class': 'ui radio checkbox'
                         + (val.flags.editable ? '' : ' disabled')
+                        + (val.flags.object_v1 ? ' object_v1' : '')
                         + (val.flags.closed ? ' closed_building' : ''),
                 }).append($("<input>", { 'type': 'radio', 'name': val.id })
                     .attr('org', org)

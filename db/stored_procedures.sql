@@ -1,5 +1,3 @@
-USE `apek-energo`;
-
 DROP PROCEDURE IF EXISTS build_amortization;
 
 DELIMITER $$
