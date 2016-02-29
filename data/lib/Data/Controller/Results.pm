@@ -742,44 +742,25 @@ sub render_xlsx {
             mysql_name => 'usage_limit',
             header_text => usage_limit,
             style => 'integer',
-            col_width => 10,
+            col_width => 50,
         }, {
-            header_text => amortization_norma,
-            mysql_name => 'am_norma',
-            style => 'float',
-            col_width => 30,
-            calc_type => 'amortization',
+            mysql_name => 'am_rate_of_depreciation',
+            header_text => amortization_rate_of_depriciation,
+            style => 'percent',
+            col_width => 50,
         }, {
-            header_text => amortization_value,
-            mysql_name => 'am_calc_amort',
-            style => 'float',
-            col_width => 30,
-            calc_type => 'amortization',
+            mysql_name => 'am_depreciation',
+            header_text => amortization_depriciation,
+            style => 'money',
+            col_width => 50,
         }, {
-            mysql_name => 'amortization_index',
-            mysql_name => 'am_u_norma',
-            header_text => amortization_usage,
-            style => 'integer',
-            col_width => 30,
-            calc_type => 'amortization',
-        }, {
-            header_text => amortization_usage_limit,
-            mysql_name => 'am_usage_limit',
-            style => 'integer',
-            col_width => 30,
-            calc_type => 'amortization',
-        }, {
-            header_text => amortization_total,
-            mysql_name => 'am_year_amort',
-            style => 'float',
-            col_width => 30,
-            calc_type => 'amortization',
-        }, {
-            header_text => amortization_per_year,
-            mysql_name => 'am_amort',
-            style => 'float',
-            col_width => 30,
-            calc_type => 'amortization',
+            mysql_name => 'am_total_depreciation',
+            style => 'money',
+            col_width => 50,
+            only_in_header => 1,
+            print_in_header => 1,
+            merge_with => 'am_depreciation',
+
         }, {
             header_text => diagnostic_diametr,
             mysql_name => 'dia_diametr',
@@ -946,7 +927,11 @@ sub render_xlsx {
     my $i = 0;
 
     if ($calc_type eq 'bux_report') {
-        @fields = grep { $_->{mysql_name} !~ /^(install_year|reconstruction_year|wear|usage_limit)$/ } @fields;
+        @fields = grep { $_->{mysql_name} !~ /^(?:install_year|reconstruction_year|wear|usage_limit)$/ } @fields;
+    }
+
+    if ($calc_type eq 'amortization') {
+        @fields = grep { $_->{mysql_name} !~ /^(?:category_name|wear|install_year|reconstruction_year)$/ } @fields;
     }
 
     for (@fields) {
@@ -1062,10 +1047,16 @@ sub build {
     my %calc_types = (
         # XXX: Hardcoded with calc_types table!!!
         amortization => {
-            select => 'calcs.norma as am_norma, calcs.calculated_amortization as am_calc_amort, ' .
-                      'calcs.usage_norma as am_u_norma, calcs.usage_limit as am_usage_limit, ' .
-                      'calcs.year_amortization as am_year_amort, calcs.amortization as am_amort',
-            join   => 'join amortization_calculations calcs on calcs.object_id = o.id',
+            select => 'am_costs.rate_of_depreciation as am_rate_of_depreciation, ' .
+                      'am_costs.depreciation as am_depreciation, ' .
+                      'am_total_costs.cost as am_total_depreciation',
+            join   => 'left outer join amortization_costs am_costs on am_costs.global_id = o.global_id ' .
+                      'left outer join (' .
+                      '  select js_objs.building as building, sum(js_costs.depreciation) as cost ' .
+                      '  from objects js_objs ' .
+                      '  join amortization_costs js_costs on js_costs.global_id = js_objs.global_id ' .
+                      '  group by js_objs.building' .
+                      ') am_total_costs on am_total_costs.building = o.building',
             title  => amortization_title,
         },
         diagnostic => {
