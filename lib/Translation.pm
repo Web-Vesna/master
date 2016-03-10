@@ -9,7 +9,8 @@ use base qw(Exporter);
 
 my $path = abs_path($0);
 $path =~ s#/\w*$##;
-$path .= '/../../etc/apek-energo.translate';
+$path .= '/../../translation';
+#$path .= '/../../etc/apek-energo.translate';
 
 open my $file, '<:encoding(utf-8)', $path or die "Can't open translation file";
 
