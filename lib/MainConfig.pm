@@ -61,6 +61,9 @@ unless (open $f, '<', 'config') {
 }
 
 while (<$f>) {
+    chomp;
+    s/#.*//;
+
     my ($name, $val) = /(\w*)\s*=\s*(.*)/;
     next unless $name;
     if ($val =~ /,/) {
