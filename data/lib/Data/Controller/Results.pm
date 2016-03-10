@@ -620,10 +620,15 @@ sub render_xlsx {
     my %marked_styles_cache = map { $_ => $workbook->add_format(%general_style, %{$styles{$_}}, %{$styles{marked_building}}) } keys %styles;
     my $general_style = $workbook->add_format(%general_style);
     my $numbers_style = $workbook->add_format(%general_style, valign => 'center', align => 'center', bold => 1);
-    my $title_style = $workbook->add_format(bold => 1, valign => 'center', align => 'center');
+    my $title_style = $workbook->add_format(bold => 1, valign => 'center', align => 'center', bg_color => $marked_bg_color, color => 'white');
 
     my @fields = (
         {
+            mysql_name => 'contract_id',
+            header_text => contract_id,
+            style => 'integer',
+            col_width => 10,
+        }, {
             mysql_name => 'object_name',
             header_text => object_name,
             style => 'text',
