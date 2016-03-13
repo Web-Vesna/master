@@ -136,30 +136,6 @@ my %access_control = (
         roles  => 'user',
     },
 
-    'xls/add_buildings' => {
-        method => 'post',
-        access => 'Authorized',
-        roles => 'manager',
-    },
-
-    'xls/add_content' => {
-        method => 'post',
-        access => 'Authorized',
-        roles => 'manager',
-    },
-
-    'xls/add_buildings_meta' => {
-        method => 'post',
-        access => 'Authorized',
-        roles => 'manager',
-    },
-
-    'xls/add_categories' => {
-        method => 'post',
-        access => 'Authorized',
-        roles => 'manager',
-    },
-
     'geolocation/status' => {
         method => 'get',
         access => 'Authorized',

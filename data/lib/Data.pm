@@ -47,11 +47,6 @@ sub startup {
     $r->get('/laying_method/remove')->to('data#laying_method_remove');
 
     $r->get('/build')->to('results#build');
-    $r->get('/rebuild_cache')->to('results#rebuild_cache');
-    $r->post('/add_buildings')->to('results#add_buildings');
-    $r->post('/add_categories')->to('results#add_categories');
-    $r->post('/add_content')->to('results#add_content');
-    $r->post('/add_buildings_meta')->to('results#add_buildings_meta');
 
     $r->get('/geolocation/objects')->to('geolocation#objects');
     $r->get('/geolocation/status')->to('geolocation#status');
