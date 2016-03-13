@@ -8,7 +8,6 @@ my %access_rules = (
     '/'          => 'user',
     '/report_v2' => 'user',
     '/login'     => 'user',
-    '/upload'    => 'admin',
     '/objects'   => 'manager',
     '/users'     => 'admin',
     '/maps'      => 'user',
@@ -95,7 +94,6 @@ sub startup {
     $auth->get('/')->to("builder#index");
     $auth->get('/objects')->to("builder#objects");
     $auth->get('/main_content')->to("builder#main_content");
-    $auth->get('/upload')->to(cb => sub { shift->render(template => 'base/upload'); });
     $auth->get('/report_v2')->to("builder#report_v2");
     $auth->get('/maps')->to("builder#maps");
     $auth->get('/catalogue')->to("builder#catalogue");
