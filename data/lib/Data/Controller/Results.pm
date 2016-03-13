@@ -754,221 +754,65 @@ sub render_xlsx {
             merge_with => 'am_depreciation',
             calc_type => 'amortization',
         }, {
-            header_text => diagnostic_diametr,
-            mysql_name => 'dia_diametr',
-            style => 'integer',
-            col_width => 30,
-            calc_type => 'diagnostic',
-        }, {
-            header_text => diagnostic_ztr,
-            mysql_name => 'dia_ztr',
-            style => 'float',
-            col_width => 10,
-            calc_type => 'diagnostic',
-        }, {
-            header_text => diagnostic_compensation,
-            mysql_name => 'dia_compensation',
-            style => 'float',
-            col_width => 30,
-            calc_type => 'diagnostic',
-        }, {
-            header_text => diagnostic_expluatation,
-            mysql_name => 'dia_expluatation',
-            style => 'float',
-            col_width => 10,
-            calc_type => 'diagnostic',
-        }, {
-            header_text => diagnostic_materials,
-            mysql_name => 'dia_materials',
-            style => 'float',
-            col_width => 10,
-            calc_type => 'diagnostic',
-        }, {
-            header_text => diagnostic_overhead_cost,
-            mysql_name => 'dia_overhead_cost',
-            style => 'float',
-            col_width => 10,
-            calc_type => 'diagnostic',
-        }, {
-            header_text => diagnostic_profit,
-            mysql_name => 'dia_profit',
-            style => 'float',
-            col_width => 10,
-            calc_type => 'diagnostic',
-        }, {
-            header_text => diagnostic_total,
-            mysql_name => 'dia_total',
-            style => 'money',
-            col_width => 10,
-            calc_type => 'diagnostic',
-        }, {
-            header_text => diagnostic_nds,
-            mysql_name => 'dia_nds',
-            style => 'money',
-            col_width => 10,
-            calc_type => 'diagnostic',
-        }, {
-            header_text => bux_econ_life,
-            mysql_name => 'bux_life_limit',
-            style => 'integer',
-            col_width => 10,
-            calc_type => 'bux_report',
-        }, {
-            header_text => bux_econ_life_limit,
-            mysql_name => 'bux_usage_limit',
-            style => 'integer',
-            col_width => 10,
-            calc_type => 'bux_report',
-        }, {
-            header_text => bux_expluatation_life,
-            mysql_name => 'bux_econ_limit',
-            style => 'integer',
-            col_width => 10,
-            calc_type => 'bux_report',
-        }, {
-            header_text => bux_expluatation_life_limit,
-            mysql_name => 'bux_expl_limit',
-            style => 'integer',
-            col_width => 10,
-            calc_type => 'bux_report',
-        }, {
-            header_text => diagnostic_tatal_nds,
-            mysql_name => 'dia_total_nds',
-            style => 'money',
-            col_width => 10,
-            calc_type => 'diagnostic',
-        }, {
-            header_text => expluatation_heat_load,
-            mysql_name => 'exp_heat_load',
-            style => 'float',
-            col_width => 10,
-            print_in_header => 1,
-            only_in_header => 1,
-            calc_type => 'expluatation',
-        }, {
-            header_text => diagnostic_ztr,
-            mysql_name => 'exp_ztr',
-            style => 'float',
-            col_width => 10,
-            print_in_header => 1,
-            only_in_header => 1,
-            calc_type => 'expluatation',
-        }, {
-            header_text => diagnostic_compensation,
-            mysql_name => 'exp_compensation',
-            style => 'float',
-            col_width => 30,
-            print_in_header => 1,
-            only_in_header => 1,
-            calc_type => 'expluatation',
-        }, {
-            header_text => diagnostic_materials,
-            mysql_name => 'exp_materials',
-            style => 'float',
-            col_width => 10,
-            print_in_header => 1,
-            only_in_header => 1,
-            calc_type => 'expluatation',
-        }, {
-            header_text => diagnostic_overhead_cost,
-            mysql_name => 'exp_overhead_cost',
-            style => 'float',
-            col_width => 10,
-            print_in_header => 1,
-            only_in_header => 1,
-            calc_type => 'expluatation',
-        }, {
-            header_text => diagnostic_profit,
-            mysql_name => 'exp_profit',
-            style => 'float',
-            col_width => 10,
-            print_in_header => 1,
-            only_in_header => 1,
-            calc_type => 'expluatation',
-        }, {
-            header_text => diagnostic_total,
-            mysql_name => 'exp_total',
-            style => 'money',
-            col_width => 10,
-            print_in_header => 1,
-            only_in_header => 1,
-            calc_type => 'expluatation',
-        }, {
-            header_text => diagnostic_nds,
-            mysql_name => 'exp_nds',
-            style => 'money',
-            col_width => 10,
-            print_in_header => 1,
-            only_in_header => 1,
-            calc_type => 'expluatation',
-        }, {
-            header_text => diagnostic_tatal_nds,
-            mysql_name => 'exp_total_nds',
-            style => 'money',
-            col_width => 10,
-            print_in_header => 1,
-            only_in_header => 1,
-            calc_type => 'expluatation',
-        }, {
             header_text => maintenance_costs_of_labor,
             mysql_name => 'maintenance_costs_of_labor',
             style => 'money',
             col_width => 20,
-            calc_type => 'cur_repair',
+            calc_type => 'maintenance',
         }, {
             header_text => maintenance_salary,
             mysql_name => 'maintenance_salary',
             style => 'money',
             col_width => 20,
-            calc_type => 'cur_repair',
+            calc_type => 'maintenance',
         }, {
             header_text => maintenance_operating_machinery,
             mysql_name => 'maintenance_operating_machinery',
             style => 'money',
             col_width => 20,
-            calc_type => 'cur_repair',
+            calc_type => 'maintenance',
         }, {
             header_text => maintenance_material_costs,
             mysql_name => 'maintenance_material_costs',
             style => 'money',
             col_width => 20,
-            calc_type => 'cur_repair',
+            calc_type => 'maintenance',
         }, {
             header_text => maintenance_overhead_costs,
             mysql_name => 'maintenance_overhead_costs',
             style => 'money',
             col_width => 20,
-            calc_type => 'cur_repair',
+            calc_type => 'maintenance',
         }, {
             header_text => maintenance_profit,
             mysql_name => 'maintenance_profit',
             style => 'money',
             col_width => 20,
-            calc_type => 'cur_repair',
+            calc_type => 'maintenance',
         }, {
             header_text => maintenance_total_wo_VAT,
             mysql_name => 'maintenance_total_wo_VAT',
             style => 'money',
             col_width => 20,
-            calc_type => 'cur_repair',
+            calc_type => 'maintenance',
         }, {
             header_text => maintenance_VAT,
             mysql_name => 'maintenance_VAT',
             style => 'money',
             col_width => 20,
-            calc_type => 'cur_repair',
+            calc_type => 'maintenance',
         }, {
             header_text => maintenance_total,
             mysql_name => 'maintenance_total',
             style => 'money',
             col_width => 20,
-            calc_type => 'cur_repair',
+            calc_type => 'maintenance',
         }, {
             merge_with => 'maintenance_costs_of_labor',
             mysql_name => 'maintenance_costs_of_labor_total',
             style => 'money',
             col_width => 20,
-            calc_type => 'cur_repair',
+            calc_type => 'maintenance',
             print_in_header => 1,
             only_in_header => 1,
         }, {
@@ -976,7 +820,7 @@ sub render_xlsx {
             mysql_name => 'maintenance_salary_total',
             style => 'money',
             col_width => 20,
-            calc_type => 'cur_repair',
+            calc_type => 'maintenance',
             print_in_header => 1,
             only_in_header => 1,
         }, {
@@ -984,7 +828,7 @@ sub render_xlsx {
             mysql_name => 'maintenance_operating_machinery_total',
             style => 'money',
             col_width => 20,
-            calc_type => 'cur_repair',
+            calc_type => 'maintenance',
             print_in_header => 1,
             only_in_header => 1,
         }, {
@@ -992,7 +836,7 @@ sub render_xlsx {
             mysql_name => 'maintenance_material_costs_total',
             style => 'money',
             col_width => 20,
-            calc_type => 'cur_repair',
+            calc_type => 'maintenance',
             print_in_header => 1,
             only_in_header => 1,
         }, {
@@ -1000,7 +844,7 @@ sub render_xlsx {
             mysql_name => 'maintenance_overhead_costs_total',
             style => 'money',
             col_width => 20,
-            calc_type => 'cur_repair',
+            calc_type => 'maintenance',
             print_in_header => 1,
             only_in_header => 1,
         }, {
@@ -1008,7 +852,7 @@ sub render_xlsx {
             mysql_name => 'maintenance_profit_total',
             style => 'money',
             col_width => 20,
-            calc_type => 'cur_repair',
+            calc_type => 'maintenance',
             print_in_header => 1,
             only_in_header => 1,
         }, {
@@ -1016,7 +860,7 @@ sub render_xlsx {
             mysql_name => 'maintenance_total_wo_VAT_total',
             style => 'money',
             col_width => 20,
-            calc_type => 'cur_repair',
+            calc_type => 'maintenance',
             print_in_header => 1,
             only_in_header => 1,
         }, {
@@ -1024,7 +868,7 @@ sub render_xlsx {
             mysql_name => 'maintenance_VAT_total',
             style => 'money',
             col_width => 20,
-            calc_type => 'cur_repair',
+            calc_type => 'maintenance',
             print_in_header => 1,
             only_in_header => 1,
         }, {
@@ -1032,7 +876,7 @@ sub render_xlsx {
             mysql_name => 'maintenance_total_total',
             style => 'money',
             col_width => 20,
-            calc_type => 'cur_repair',
+            calc_type => 'maintenance',
             print_in_header => 1,
             only_in_header => 1,
         }
@@ -1045,9 +889,8 @@ sub render_xlsx {
     my $i = 0;
 
     my %to_remove_re = (
-        bux_report => [qw( install_year reconstruction_year wear usage_limit )],
         amortization => [qw( category_name wear install_year reconstruction_year )],
-        cur_repair => [qw( install_year category_name reconstruction_year wear cost building_cost usage_limit )],
+        maintenance => [qw( install_year category_name reconstruction_year wear cost building_cost usage_limit )],
     );
 
     if ($to_remove_re{$calc_type}) {
@@ -1058,10 +901,6 @@ sub render_xlsx {
 
     for (@fields) {
         $_->{index} = $_->{merge_with} ? $merges{$_->{merge_with}}->{index} : $i++;
-    }
-
-    if ($calc_type eq 'expluatation') {
-        map { $_->{only_in_header} = 1 } @fields;
     }
 
     my $worksheet = $workbook->add_worksheet();
@@ -1170,52 +1009,24 @@ sub build {
     my %calc_types = (
         # XXX: Hardcoded with calc_types table!!!
         amortization => {
-            select => 'am_costs.rate_of_depreciation as am_rate_of_depreciation, ' .
-                      'am_costs.depreciation as am_depreciation, ' .
-                      'am_total_costs.cost as am_total_depreciation',
-            join   => 'left outer join amortization_costs am_costs on am_costs.global_id = o.global_id ' .
-                      'left outer join (' .
-                      '  select js_objs.building as building, sum(js_costs.depreciation) as cost ' .
-                      '  from objects js_objs ' .
-                      '  join amortization_costs js_costs on js_costs.global_id = js_objs.global_id ' .
-                      '  group by js_objs.building' .
-                      ') am_total_costs on am_total_costs.building = o.building',
             title  => amortization_title,
+            select => qq#
+                am_costs.rate_of_depreciation as am_rate_of_depreciation,
+                am_costs.depreciation as am_depreciation,
+                am_total_costs.cost as am_total_depreciation
+            #,
+            join   => qq#
+                left outer join amortization_costs am_costs on am_costs.global_id = o.global_id
+                left outer join (
+                    select js_objs.building as building, sum(js_costs.depreciation) as cost
+                    from objects js_objs
+                    join amortization_costs js_costs on js_costs.global_id = js_objs.global_id
+                    group by js_objs.building
+                ) am_total_costs on am_total_costs.building = o.building
+            #,
         },
-        diagnostic => {
-            select => 'calcs.ztr * o.characteristic_value as dia_ztr, ' .
-                      'calcs_r.diametr as dia_diametr, ' .
-                      'calcs.compensation * o.characteristic_value as dia_compensation, ' .
-                      'calcs.expluatation * o.characteristic_value as dia_expluatation, ' .
-                      'calcs.materials * o.characteristic_value as dia_materials, ' .
-                      'calcs.overhead_cost * o.characteristic_value as dia_overhead_cost, ' .
-                      'calcs.profit * o.characteristic_value as dia_profit, ' .
-                      'calcs.total * o.characteristic_value as dia_total, ' .
-                      'calcs.nds * o.characteristic_value as dia_nds,' .
-                      '(calcs.nds + calcs.total) * o.characteristic_value as dia_total_nds',
-            join   => 'left outer join diagnostic_calculations as calcs_r on calcs_r.object_id = o.id ' .
-                      'left outer join diagnostic_indexes as calcs on calcs.id = calcs_r.index_id',
-            title  => diagnostic_title,
-        },
-        expluatation => {
-            select => 'calcs.ztr as exp_ztr, ' .
-                      'calcs.heat_load as exp_heat_load, ' .
-                      'calcs.compensation as exp_compensation, ' .
-                      'calcs.materials as exp_materials, ' .
-                      'calcs.overhead_cost as exp_overhead_cost, ' .
-                      'calcs.profit as exp_profit, ' .
-                      'calcs.total as exp_total, ' .
-                      'calcs.nds as exp_nds,' .
-                      '(calcs.nds + calcs.total) as exp_total_nds',
-            join   => 'join expluatation_calculations calcs_r on calcs_r.building_id = b.id ' .
-                      'left outer join expluatation_indexes as calcs on calcs.id = calcs_r.index_id',
-            title  => expluatation_title,
-        },
-        service => {
-            title  => service_title,
-        },
-        cur_repair => {
-            title  => cur_repair_title,
+        maintenance => {
+            title  => maintenance_title,
             select => qq#
                 ma.costs_of_labor as maintenance_costs_of_labor,
                 ma.salary as maintenance_salary,
@@ -1256,21 +1067,6 @@ sub build {
                     group by js_objs.building
                 ) ma_total_costs on ma_total_costs.building = o.building
               #,
-
-        },
-        glob_repair => {
-            title  => glob_repair_title,
-        },
-        investment => {
-            title  => investment_title,
-        },
-        bux_report => {
-            select => 'calcs.value as bux_econ_limit, ' .
-                      'o.last_usage_limit as bux_usage_limit, ' .
-                      'calcs.bux_value as bux_life_limit, '.
-                      'ROUND((o.last_usage_limit / calcs.bux_value) * calcs.value) as bux_expl_limit',
-            join   => 'left outer join amortization_indexes calcs on calcs.category_id = cat_n.id',
-            title  => bux_report_title,
         },
     );
 
@@ -1278,7 +1074,7 @@ sub build {
         return $self->render(json => { status => 400, error => "calc_type is unknown" });
     }
 
-    my $sql_stat = <<SQL;
+    my $sql_stat = qq#
         select
             b.id as contract_id,
             bm.cost as building_cost,
@@ -1315,7 +1111,7 @@ sub build {
         left outer join buildings_meta bm on bm.building_id = b.id
         %s %s
         order by b.id, o.id
-SQL
+    #;
     my ($calc_stat, $calc_join, $title) = ('', '', general_title);
     if ($calc_type) {
         my $t = $calc_types{$calc_type};
