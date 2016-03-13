@@ -557,9 +557,9 @@ sub rebuild_cache {
 sub render_xlsx {
     my ($self, $content, $workbook, $calc_type, $title) = @_;
 
-    my $header_bg_color = 'white';#$workbook->set_custom_color(9, 116, 141, 67);
     my $splitter_bg_color = $workbook->set_custom_color(10, 116, 141, 67);
     my $marked_bg_color = $workbook->set_custom_color(11, 215, 227, 189);
+    my $header_bg_color = $splitter_bg_color;
 
     # look at http://search.cpan.org/~jmcnamara/Excel-Writer-XLSX-0.15/lib/Excel/Writer/XLSX.pm to edit styles below
     my %general_style = (
@@ -572,7 +572,7 @@ sub render_xlsx {
             bold => 1,
             align => 'center',
             valign => 'vcenter',
-            color => 'black',
+            color => 'white',
             bg_color => $header_bg_color,
         },
         text => {
@@ -615,12 +615,16 @@ sub render_xlsx {
         },
     );
 
+    for (values %styles) {
+        $_->{font} = "Myriad Pro";
+    }
+
     my %styles_cache = map { $_ => $workbook->add_format(%general_style, %{$styles{$_}}) } keys %styles;
     my %splitter_styles_cache = map { $_ => $workbook->add_format(%general_style, %{$styles{$_}}, %{$styles{building_splitter}}) } keys %styles;
     my %marked_styles_cache = map { $_ => $workbook->add_format(%general_style, %{$styles{$_}}, %{$styles{marked_building}}) } keys %styles;
     my $general_style = $workbook->add_format(%general_style);
     my $numbers_style = $workbook->add_format(%general_style, valign => 'center', align => 'center', bold => 1);
-    my $title_style = $workbook->add_format(bold => 1, valign => 'center', align => 'center', bg_color => $marked_bg_color, color => 'white');
+    my $title_style = $workbook->add_format(bold => 1, valign => 'center', align => 'center');
 
     my @fields = (
         {
@@ -930,6 +934,7 @@ sub render_xlsx {
     my $worksheet = $workbook->add_worksheet();
     $worksheet->freeze_panes(3, 1);
     $worksheet->merge_range(0, 0, 0, $i - 1, $title, $title_style);
+    $worksheet->set_zoom(60);
 
     my $last_building_id = -100500;
     my $xls_row = 1;
