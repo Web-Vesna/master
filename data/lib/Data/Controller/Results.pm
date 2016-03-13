@@ -70,7 +70,7 @@ my %styles = (
     },
 );
 
-my @fields = (
+my @global_fields = (
     {
         mysql_name => 'contract_id',
         header_text => contract_id,
@@ -454,6 +454,134 @@ my @fields = (
         calc_type => 'diagnostic',
         print_in_header => 1,
         only_in_header => 1,
+    }, {
+
+        ############ Renovation #######
+        header_text => renovation_costs_of_labor,
+        mysql_name => 'renovation_costs_of_labor',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'renovation',
+    }, {
+        header_text => renovation_salary,
+        mysql_name => 'renovation_salary',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'renovation',
+    }, {
+        header_text => renovation_operating_machinery,
+        mysql_name => 'renovation_operating_machinery',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'renovation',
+    }, {
+        header_text => renovation_material_costs,
+        mysql_name => 'renovation_material_costs',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'renovation',
+    }, {
+        header_text => renovation_overhead_costs,
+        mysql_name => 'renovation_overhead_costs',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'renovation',
+    }, {
+        header_text => renovation_profit,
+        mysql_name => 'renovation_profit',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'renovation',
+    }, {
+        header_text => renovation_total_wo_VAT,
+        mysql_name => 'renovation_total_wo_VAT',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'renovation',
+    }, {
+        header_text => renovation_VAT,
+        mysql_name => 'renovation_VAT',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'renovation',
+    }, {
+        header_text => renovation_total,
+        mysql_name => 'renovation_total',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'renovation',
+    }, {
+        merge_with => 'renovation_costs_of_labor',
+        mysql_name => 'renovation_costs_of_labor_total',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'renovation',
+        print_in_header => 1,
+        only_in_header => 1,
+    }, {
+        merge_with => 'renovation_salary',
+        mysql_name => 'renovation_salary_total',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'renovation',
+        print_in_header => 1,
+        only_in_header => 1,
+    }, {
+        merge_with => 'renovation_operating_machinery',
+        mysql_name => 'renovation_operating_machinery_total',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'renovation',
+        print_in_header => 1,
+        only_in_header => 1,
+    }, {
+        merge_with => 'renovation_material_costs',
+        mysql_name => 'renovation_material_costs_total',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'renovation',
+        print_in_header => 1,
+        only_in_header => 1,
+    }, {
+        merge_with => 'renovation_overhead_costs',
+        mysql_name => 'renovation_overhead_costs_total',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'renovation',
+        print_in_header => 1,
+        only_in_header => 1,
+    }, {
+        merge_with => 'renovation_profit',
+        mysql_name => 'renovation_profit_total',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'renovation',
+        print_in_header => 1,
+        only_in_header => 1,
+    }, {
+        merge_with => 'renovation_total_wo_VAT',
+        mysql_name => 'renovation_total_wo_VAT_total',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'renovation',
+        print_in_header => 1,
+        only_in_header => 1,
+    }, {
+        merge_with => 'renovation_VAT',
+        mysql_name => 'renovation_VAT_total',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'renovation',
+        print_in_header => 1,
+        only_in_header => 1,
+    }, {
+        merge_with => 'renovation_total',
+        mysql_name => 'renovation_total_total',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'renovation',
+        print_in_header => 1,
+        only_in_header => 1,
     }
 );
 
@@ -494,8 +622,7 @@ sub render_xlsx {
     my $title_style = $workbook->add_format(bold => 1, valign => 'center', align => 'center');
 
     $calc_type = "" unless defined $calc_type;
-    @fields = grep { !$_->{calc_type} || $_->{calc_type} eq $calc_type } @fields;
-
+    my @fields = grep { !$_->{calc_type} || $_->{calc_type} eq $calc_type } @global_fields;
     my %merges = map { my $v = $_->{merge_with}; $v => (grep { $_->{mysql_name} eq $v } @fields) } grep { $_->{merge_with} } @fields;
     my $i = 0;
 
@@ -503,6 +630,7 @@ sub render_xlsx {
         amortization => [qw( category_name wear install_year reconstruction_year )],
         maintenance => [qw( install_year category_name reconstruction_year wear cost building_cost usage_limit )],
         diagnostic => [qw( isolation_type laying_method install_year reconstruction_year wear cost usage_limit category_name )],
+        renovation => [qw( category_name install_year reconstruction_year wear cost usage_limit )],
     );
 
     if ($to_remove_re{$calc_type}) {
@@ -512,6 +640,7 @@ sub render_xlsx {
     }
 
     for (@fields) {
+        # XXX: This modification modifies global object. Be careful!
         $_->{index} = $_->{merge_with} ? $merges{$_->{merge_with}}->{index} : $i++;
     }
 
@@ -723,6 +852,50 @@ sub build {
                 ) ma_total_costs on ma_total_costs.building = o.building
               #,
         },
+        renovation => {
+            title  => renovation_title,
+            select => qq#
+                renov.costs_of_labor as renovation_costs_of_labor,
+                renov.salary as renovation_salary,
+                renov.operating_machinery as renovation_operating_machinery,
+                renov.material_costs as renovation_material_costs,
+                renov.overhead_costs as renovation_overhead_costs,
+                renov.profit as renovation_profit,
+                renov.total_wo_VAT as renovation_total_wo_VAT,
+                renov.VAT as renovation_VAT,
+                renov.total as renovation_total,
+
+                renov_total_costs.costs_of_labor as renovation_costs_of_labor_total,
+                renov_total_costs.salary as renovation_salary_total,
+                renov_total_costs.operating_machinery as renovation_operating_machinery_total,
+                renov_total_costs.material_costs as renovation_material_costs_total,
+                renov_total_costs.overhead_costs as renovation_overhead_costs_total,
+                renov_total_costs.profit as renovation_profit_total,
+                renov_total_costs.total_wo_VAT as renovation_total_wo_VAT_total,
+                renov_total_costs.VAT as renovation_VAT_total,
+                renov_total_costs.total as renovation_total_total
+            #,
+            join => qq#
+                left outer join renovation_costs as renov on renov.global_id = o.global_id
+                left outer join (
+                    select
+                        js_objs.building as building,
+                        sum(js_costs.costs_of_labor) as costs_of_labor,
+                        sum(js_costs.salary) as salary,
+                        sum(js_costs.operating_machinery) as operating_machinery,
+                        sum(js_costs.material_costs) as material_costs,
+                        sum(js_costs.overhead_costs) as overhead_costs,
+                        sum(js_costs.profit) as profit,
+                        sum(js_costs.total_wo_VAT) as total_wo_VAT,
+                        sum(js_costs.VAT) as VAT,
+                        sum(js_costs.total) as total
+                    from objects js_objs
+                    join renovation_costs js_costs on js_costs.global_id = js_objs.global_id
+                    group by js_objs.building
+                ) renov_total_costs on renov_total_costs.building = o.building
+              #,
+        },
+
     );
 
     if ($calc_type && !$calc_types{$calc_type}) {
