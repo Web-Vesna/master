@@ -608,6 +608,7 @@ sub render_xlsx {
         building_splitter => {
             bold => 1,
             bg_color => $splitter_bg_color,
+            color => 'white',
         },
         marked_building => {
             bold => 1,
@@ -737,11 +738,13 @@ sub render_xlsx {
             header_text => amortization_rate_of_depriciation,
             style => 'percent',
             col_width => 50,
+            calc_type => 'amortization',
         }, {
             mysql_name => 'am_depreciation',
             header_text => amortization_depriciation,
             style => 'money',
             col_width => 50,
+            calc_type => 'amortization',
         }, {
             mysql_name => 'am_total_depreciation',
             style => 'money',
@@ -749,7 +752,7 @@ sub render_xlsx {
             only_in_header => 1,
             print_in_header => 1,
             merge_with => 'am_depreciation',
-
+            calc_type => 'amortization',
         }, {
             header_text => diagnostic_diametr,
             mysql_name => 'dia_diametr',
@@ -906,6 +909,132 @@ sub render_xlsx {
             print_in_header => 1,
             only_in_header => 1,
             calc_type => 'expluatation',
+        }, {
+            header_text => maintenance_costs_of_labor,
+            mysql_name => 'maintenance_costs_of_labor',
+            style => 'money',
+            col_width => 20,
+            calc_type => 'cur_repair',
+        }, {
+            header_text => maintenance_salary,
+            mysql_name => 'maintenance_salary',
+            style => 'money',
+            col_width => 20,
+            calc_type => 'cur_repair',
+        }, {
+            header_text => maintenance_operating_machinery,
+            mysql_name => 'maintenance_operating_machinery',
+            style => 'money',
+            col_width => 20,
+            calc_type => 'cur_repair',
+        }, {
+            header_text => maintenance_material_costs,
+            mysql_name => 'maintenance_material_costs',
+            style => 'money',
+            col_width => 20,
+            calc_type => 'cur_repair',
+        }, {
+            header_text => maintenance_overhead_costs,
+            mysql_name => 'maintenance_overhead_costs',
+            style => 'money',
+            col_width => 20,
+            calc_type => 'cur_repair',
+        }, {
+            header_text => maintenance_profit,
+            mysql_name => 'maintenance_profit',
+            style => 'money',
+            col_width => 20,
+            calc_type => 'cur_repair',
+        }, {
+            header_text => maintenance_total_wo_VAT,
+            mysql_name => 'maintenance_total_wo_VAT',
+            style => 'money',
+            col_width => 20,
+            calc_type => 'cur_repair',
+        }, {
+            header_text => maintenance_VAT,
+            mysql_name => 'maintenance_VAT',
+            style => 'money',
+            col_width => 20,
+            calc_type => 'cur_repair',
+        }, {
+            header_text => maintenance_total,
+            mysql_name => 'maintenance_total',
+            style => 'money',
+            col_width => 20,
+            calc_type => 'cur_repair',
+        }, {
+            merge_with => 'maintenance_costs_of_labor',
+            mysql_name => 'maintenance_costs_of_labor_total',
+            style => 'money',
+            col_width => 20,
+            calc_type => 'cur_repair',
+            print_in_header => 1,
+            only_in_header => 1,
+        }, {
+            merge_with => 'maintenance_salary',
+            mysql_name => 'maintenance_salary_total',
+            style => 'money',
+            col_width => 20,
+            calc_type => 'cur_repair',
+            print_in_header => 1,
+            only_in_header => 1,
+        }, {
+            merge_with => 'maintenance_operating_machinery',
+            mysql_name => 'maintenance_operating_machinery_total',
+            style => 'money',
+            col_width => 20,
+            calc_type => 'cur_repair',
+            print_in_header => 1,
+            only_in_header => 1,
+        }, {
+            merge_with => 'maintenance_material_costs',
+            mysql_name => 'maintenance_material_costs_total',
+            style => 'money',
+            col_width => 20,
+            calc_type => 'cur_repair',
+            print_in_header => 1,
+            only_in_header => 1,
+        }, {
+            merge_with => 'maintenance_overhead_costs',
+            mysql_name => 'maintenance_overhead_costs_total',
+            style => 'money',
+            col_width => 20,
+            calc_type => 'cur_repair',
+            print_in_header => 1,
+            only_in_header => 1,
+        }, {
+            merge_with => 'maintenance_profit',
+            mysql_name => 'maintenance_profit_total',
+            style => 'money',
+            col_width => 20,
+            calc_type => 'cur_repair',
+            print_in_header => 1,
+            only_in_header => 1,
+        }, {
+            merge_with => 'maintenance_total_wo_VAT',
+            mysql_name => 'maintenance_total_wo_VAT_total',
+            style => 'money',
+            col_width => 20,
+            calc_type => 'cur_repair',
+            print_in_header => 1,
+            only_in_header => 1,
+        }, {
+            merge_with => 'maintenance_VAT',
+            mysql_name => 'maintenance_VAT_total',
+            style => 'money',
+            col_width => 20,
+            calc_type => 'cur_repair',
+            print_in_header => 1,
+            only_in_header => 1,
+        }, {
+            merge_with => 'maintenance_total',
+            mysql_name => 'maintenance_total_total',
+            style => 'money',
+            col_width => 20,
+            calc_type => 'cur_repair',
+            print_in_header => 1,
+            only_in_header => 1,
         }
     );
 
@@ -915,12 +1044,16 @@ sub render_xlsx {
     my %merges = map { my $v = $_->{merge_with}; $v => (grep { $_->{mysql_name} eq $v } @fields) } grep { $_->{merge_with} } @fields;
     my $i = 0;
 
-    if ($calc_type eq 'bux_report') {
-        @fields = grep { $_->{mysql_name} !~ /^(?:install_year|reconstruction_year|wear|usage_limit)$/ } @fields;
-    }
+    my %to_remove_re = (
+        bux_report => [qw( install_year reconstruction_year wear usage_limit )],
+        amortization => [qw( category_name wear install_year reconstruction_year )],
+        cur_repair => [qw( install_year category_name reconstruction_year wear cost building_cost usage_limit )],
+    );
 
-    if ($calc_type eq 'amortization') {
-        @fields = grep { $_->{mysql_name} !~ /^(?:category_name|wear|install_year|reconstruction_year)$/ } @fields;
+    if ($to_remove_re{$calc_type}) {
+        my $fields = join '|', @{$to_remove_re{$calc_type}};
+        my $re = qr/^(?:$fields)$/;
+        @fields = grep { $_->{mysql_name} !~ $re } @fields;
     }
 
     for (@fields) {
@@ -1083,6 +1216,47 @@ sub build {
         },
         cur_repair => {
             title  => cur_repair_title,
+            select => qq#
+                ma.costs_of_labor as maintenance_costs_of_labor,
+                ma.salary as maintenance_salary,
+                ma.operating_machinery as maintenance_operating_machinery,
+                ma.material_costs as maintenance_material_costs,
+                ma.overhead_costs as maintenance_overhead_costs,
+                ma.profit as maintenance_profit,
+                ma.total_wo_VAT as maintenance_total_wo_VAT,
+                ma.VAT as maintenance_VAT,
+                ma.total as maintenance_total,
+
+                ma_total_costs.costs_of_labor as maintenance_costs_of_labor_total,
+                ma_total_costs.salary as maintenance_salary_total,
+                ma_total_costs.operating_machinery as maintenance_operating_machinery_total,
+                ma_total_costs.material_costs as maintenance_material_costs_total,
+                ma_total_costs.overhead_costs as maintenance_overhead_costs_total,
+                ma_total_costs.profit as maintenance_profit_total,
+                ma_total_costs.total_wo_VAT as maintenance_total_wo_VAT_total,
+                ma_total_costs.VAT as maintenance_VAT_total,
+                ma_total_costs.total as maintenance_total_total
+            #,
+            join => qq#
+                left outer join maintenance_costs as ma on ma.global_id = o.global_id
+                left outer join (
+                    select
+                        js_objs.building as building,
+                        sum(js_costs.costs_of_labor) as costs_of_labor,
+                        sum(js_costs.salary) as salary,
+                        sum(js_costs.operating_machinery) as operating_machinery,
+                        sum(js_costs.material_costs) as material_costs,
+                        sum(js_costs.overhead_costs) as overhead_costs,
+                        sum(js_costs.profit) as profit,
+                        sum(js_costs.total_wo_VAT) as total_wo_VAT,
+                        sum(js_costs.VAT) as VAT,
+                        sum(js_costs.total) as total
+                    from objects js_objs
+                    join maintenance_costs js_costs on js_costs.global_id = js_objs.global_id
+                    group by js_objs.building
+                ) ma_total_costs on ma_total_costs.building = o.building
+              #,
+
         },
         glob_repair => {
             title  => glob_repair_title,
