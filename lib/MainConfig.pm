@@ -51,8 +51,7 @@ my %PARAMS = (
 our @EXPORT_OK = keys %PARAMS;
 our %EXPORT_TAGS = ( all => [@EXPORT_OK], );
 
-my $path = "../../config";
-#my $path = "/usr/local/apek-energo/etc/apek-energo.conf";
+my $path = "/usr/local/apek-energo/etc/apek-energo.conf";
 
 my %CFG;
 my $f;
