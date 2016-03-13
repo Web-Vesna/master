@@ -177,6 +177,8 @@ my @fields = (
         style => 'integer',
         col_width => 50,
     }, {
+
+        ######### Amortization #########
         mysql_name => 'am_rate_of_depreciation',
         header_text => amortization_rate_of_depriciation,
         style => 'percent',
@@ -197,6 +199,8 @@ my @fields = (
         merge_with => 'am_depreciation',
         calc_type => 'amortization',
     }, {
+
+        ############ Maintenance ##########
         header_text => maintenance_costs_of_labor,
         mysql_name => 'maintenance_costs_of_labor',
         style => 'money',
@@ -322,6 +326,134 @@ my @fields = (
         calc_type => 'maintenance',
         print_in_header => 1,
         only_in_header => 1,
+    }, {
+
+        ############ Diagnostic #######
+        header_text => diagnostic_costs_of_labor,
+        mysql_name => 'diagnostic_costs_of_labor',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'diagnostic',
+    }, {
+        header_text => diagnostic_salary,
+        mysql_name => 'diagnostic_salary',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'diagnostic',
+    }, {
+        header_text => diagnostic_operating_machinery,
+        mysql_name => 'diagnostic_operating_machinery',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'diagnostic',
+    }, {
+        header_text => diagnostic_material_costs,
+        mysql_name => 'diagnostic_material_costs',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'diagnostic',
+    }, {
+        header_text => diagnostic_overhead_costs,
+        mysql_name => 'diagnostic_overhead_costs',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'diagnostic',
+    }, {
+        header_text => diagnostic_profit,
+        mysql_name => 'diagnostic_profit',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'diagnostic',
+    }, {
+        header_text => diagnostic_total_wo_VAT,
+        mysql_name => 'diagnostic_total_wo_VAT',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'diagnostic',
+    }, {
+        header_text => diagnostic_VAT,
+        mysql_name => 'diagnostic_VAT',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'diagnostic',
+    }, {
+        header_text => diagnostic_total,
+        mysql_name => 'diagnostic_total',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'diagnostic',
+    }, {
+        merge_with => 'diagnostic_costs_of_labor',
+        mysql_name => 'diagnostic_costs_of_labor_total',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'diagnostic',
+        print_in_header => 1,
+        only_in_header => 1,
+    }, {
+        merge_with => 'diagnostic_salary',
+        mysql_name => 'diagnostic_salary_total',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'diagnostic',
+        print_in_header => 1,
+        only_in_header => 1,
+    }, {
+        merge_with => 'diagnostic_operating_machinery',
+        mysql_name => 'diagnostic_operating_machinery_total',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'diagnostic',
+        print_in_header => 1,
+        only_in_header => 1,
+    }, {
+        merge_with => 'diagnostic_material_costs',
+        mysql_name => 'diagnostic_material_costs_total',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'diagnostic',
+        print_in_header => 1,
+        only_in_header => 1,
+    }, {
+        merge_with => 'diagnostic_overhead_costs',
+        mysql_name => 'diagnostic_overhead_costs_total',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'diagnostic',
+        print_in_header => 1,
+        only_in_header => 1,
+    }, {
+        merge_with => 'diagnostic_profit',
+        mysql_name => 'diagnostic_profit_total',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'diagnostic',
+        print_in_header => 1,
+        only_in_header => 1,
+    }, {
+        merge_with => 'diagnostic_total_wo_VAT',
+        mysql_name => 'diagnostic_total_wo_VAT_total',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'diagnostic',
+        print_in_header => 1,
+        only_in_header => 1,
+    }, {
+        merge_with => 'diagnostic_VAT',
+        mysql_name => 'diagnostic_VAT_total',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'diagnostic',
+        print_in_header => 1,
+        only_in_header => 1,
+    }, {
+        merge_with => 'diagnostic_total',
+        mysql_name => 'diagnostic_total_total',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'diagnostic',
+        print_in_header => 1,
+        only_in_header => 1,
     }
 );
 
@@ -370,6 +502,7 @@ sub render_xlsx {
     my %to_remove_re = (
         amortization => [qw( category_name wear install_year reconstruction_year )],
         maintenance => [qw( install_year category_name reconstruction_year wear cost building_cost usage_limit )],
+        diagnostic => [qw( isolation_type laying_method install_year reconstruction_year wear cost usage_limit category_name )],
     );
 
     if ($to_remove_re{$calc_type}) {
@@ -502,6 +635,49 @@ sub build {
                     join amortization_costs js_costs on js_costs.global_id = js_objs.global_id
                     group by js_objs.building
                 ) am_total_costs on am_total_costs.building = o.building
+            #,
+        },
+        diagnostic => {
+            title => diagnostic_title,
+            select => qq#
+                dia_costs.costs_of_labor as diagnostic_costs_of_labor,
+                dia_costs.salary as diagnostic_salary,
+                dia_costs.operating_machinery as diagnostic_operating_machinery,
+                dia_costs.material_costs as diagnostic_material_costs,
+                dia_costs.overhead_costs as diagnostic_overhead_costs,
+                dia_costs.profit as diagnostic_profit,
+                dia_costs.total_wo_VAT as diagnostic_total_wo_VAT,
+                dia_costs.VAT as diagnostic_VAT,
+                dia_costs.total as diagnostic_total,
+
+                dia_total_costs.costs_of_labor as diagnostic_costs_of_labor_total,
+                dia_total_costs.salary as diagnostic_salary_total,
+                dia_total_costs.operating_machinery as diagnostic_operating_machinery_total,
+                dia_total_costs.material_costs as diagnostic_material_costs_total,
+                dia_total_costs.overhead_costs as diagnostic_overhead_costs_total,
+                dia_total_costs.profit as diagnostic_profit_total,
+                dia_total_costs.total_wo_VAT as diagnostic_total_wo_VAT_total,
+                dia_total_costs.VAT as diagnostic_VAT_total,
+                dia_total_costs.total as diagnostic_total_total
+            #,
+            join => qq#
+                left outer join diagnostics_costs dia_costs on dia_costs.global_id = o.global_id
+                left outer join (
+                    select
+                        js_objs.building as building,
+                        sum(js_costs.costs_of_labor) as costs_of_labor,
+                        sum(js_costs.salary) as salary,
+                        sum(js_costs.operating_machinery) as operating_machinery,
+                        sum(js_costs.material_costs) as material_costs,
+                        sum(js_costs.overhead_costs) as overhead_costs,
+                        sum(js_costs.profit) as profit,
+                        sum(js_costs.total_wo_VAT) as total_wo_VAT,
+                        sum(js_costs.VAT) as VAT,
+                        sum(js_costs.total) as total
+                    from objects js_objs
+                    join diagnostics_costs js_costs on js_costs.global_id = js_objs.global_id
+                    group by js_objs.building
+                ) dia_total_costs on dia_total_costs.building = o.building
             #,
         },
         maintenance => {

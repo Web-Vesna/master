@@ -64,7 +64,7 @@ bux_expluatation_life_limit = Расчетный оставшийся срок �
 
 general_title = Рабочий отчет
 amortization_title = Форма амортизационной ведомости
-diagnostic_title = FIXME
+diagnostic_title = Диагностика
 expluatation_title = FIXME
 service_title = FIXME
 maintenance_title = Текущий ремонт
