@@ -76,6 +76,8 @@ my @global_fields = (
         header_text => contract_id,
         style => 'integer',
         col_width => 10,
+        only_in_header => 1,
+        print_in_header => 1,
     }, {
         mysql_name => 'object_name',
         header_text => object_name,
@@ -685,7 +687,9 @@ sub render_xlsx {
                 $worksheet->write($xls_row, $rule->{index}, $val, $splitter_styles_cache{$rule->{style}});
                 $row_printed = 1;
             } elsif ($row->{need_mark}) {
-                unless ($rule->{only_in_header}) {
+                if ($rule->{only_in_header}) {
+                    $worksheet->write($xls_row, $rule->{index}, undef, $marked_styles_cache{$rule->{style}});
+                } else {
                     my $val = $rule->{only_in_header} ? undef : $row->{$rule->{mysql_name}};
                     $worksheet->write($xls_row, $rule->{index}, $val, $marked_styles_cache{$rule->{style}});
                     $row_printed = 1;
