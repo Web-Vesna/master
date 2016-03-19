@@ -750,16 +750,15 @@ sub render_xlsx {
     my %merges = map { my $v = $_->{merge_with}; $v => (grep { $_->{mysql_name} eq $v } @fields) } grep { $_->{merge_with} } @fields;
     my $i = 0;
 
+    my @wo_grouping = map { $_->{mysql_name} } grep { $_->{wo_grouping} } @fields;
     my %to_remove_re = (
-        amortization => [qw( category_name wear install_year reconstruction_year )],
-        maintenance => [qw( install_year category_name reconstruction_year wear cost building_cost usage_limit )],
-        diagnostic => [qw( isolation_type laying_method install_year reconstruction_year wear cost usage_limit category_name )],
-        renovation => [qw( category_name install_year reconstruction_year wear cost usage_limit )],
+        amortization => [qw( category_name wear install_year reconstruction_year ), @wo_grouping ],
+        maintenance => [qw( install_year category_name reconstruction_year wear cost building_cost usage_limit ), @wo_grouping ],
+        diagnostic => [qw( isolation_type laying_method install_year reconstruction_year wear cost usage_limit category_name ), @wo_grouping ],
+        renovation => [qw( category_name install_year reconstruction_year wear cost usage_limit ), @wo_grouping ],
         exploitation => [ map { $_->{mysql_name} } grep { !$_->{wo_grouping} && !$_->{calc_type} } @fields ],
         modernization => [ map { $_->{mysql_name} } grep { !$_->{wo_grouping} && !$_->{calc_type} } @fields ],
     );
-    $self->app->log->debug(
-        join '|', @{$to_remove_re{$calc_type}});
 
     if ($to_remove_re{$calc_type}) {
         my $fields = join '|', @{$to_remove_re{$calc_type}};
@@ -769,7 +768,17 @@ sub render_xlsx {
 
     for (@fields) {
         # XXX: This modification modifies global object. Be careful!
-        $_->{index} = $_->{merge_with} ? $merges{$_->{merge_with}}->{index} : $i++;
+        $_->{index} = $_->{merge_with} ? $merges{$_->{merge_with}}{index} : $i++;
+
+        next unless $_->{merge_with};
+
+        my $x = ($_->{col_width} //= 0);
+        my $y = ($merges{$_->{merge_with}}{col_width} //= 0);
+
+        $x = 20 if $x < 20;
+        $y = 20 if $y < 20;
+
+        $_->{col_width} = $merges{$_->{merge_with}}{col_width} = ($x, $y)[$x < $y];
     }
 
     my $worksheet = $workbook->add_worksheet();
