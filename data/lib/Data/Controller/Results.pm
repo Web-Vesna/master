@@ -585,6 +585,31 @@ my @global_fields = (
         print_in_header => 1,
         only_in_header => 1,
     }, {
+        ################################################
+        mysql_name => 'wo_grouping_contract_id',
+        header_text => contract_id,
+        style => 'integer',
+        col_width => 10,
+        wo_grouping => 1,
+    }, {
+        mysql_name => 'wo_grouping_company_name',
+        header_text => company_name,
+        style => 'text',
+        col_width => 50,
+        wo_grouping => 1,
+    }, {
+        mysql_name => 'wo_grouping_address',
+        header_text => address,
+        style => 'text',
+        col_width => 40,
+        wo_grouping => 1,
+    }, {
+        mysql_name => 'wo_grouping_district',
+        header_text => district,
+        style => 'text',
+        col_width => 10,
+        wo_grouping => 1,
+    }, {
         header_text => expl_costs_of_labor,
         mysql_name => 'expl_costs_of_labor',
         style => 'money',
@@ -659,7 +684,11 @@ sub prepare_styles {
 }
 
 sub render_xlsx {
-    my ($self, $content, $workbook, $calc_type, $title) = @_;
+    my ($self, $content, $workbook, $calc_type, $title, @__opts) = @_;
+    my %opts = (
+        disable_grouping => 0,
+        @__opts,
+    );
 
     $self->prepare_styles($workbook);
 
@@ -681,7 +710,11 @@ sub render_xlsx {
         maintenance => [qw( install_year category_name reconstruction_year wear cost building_cost usage_limit )],
         diagnostic => [qw( isolation_type laying_method install_year reconstruction_year wear cost usage_limit category_name )],
         renovation => [qw( category_name install_year reconstruction_year wear cost usage_limit )],
+        exploitation => [ map { $_->{mysql_name} } grep { !$_->{wo_grouping} && !$_->{calc_type} } @fields ],
+        modernization => [ map { $_->{mysql_name} } grep { !$_->{wo_grouping} && !$_->{calc_type} } @fields ],
     );
+    $self->app->log->debug(
+        join '|', @{$to_remove_re{$calc_type}});
 
     if ($to_remove_re{$calc_type}) {
         my $fields = join '|', @{$to_remove_re{$calc_type}};
@@ -699,7 +732,7 @@ sub render_xlsx {
     $worksheet->merge_range(0, 0, 0, $i - 1, $title, $title_style);
     $worksheet->set_zoom(60);
 
-    my $last_building_id = -100500;
+    my $last_building_id;
     my $xls_row = 1;
 
     for (my $i = -2; $i < @$content;) {
@@ -711,8 +744,8 @@ sub render_xlsx {
         }
 
         my $building_changed = 0;
-        if ($row && $last_building_id != $row->{contract_id}) {
-            $building_changed = 1;
+        if ($row && (!defined($last_building_id) || $last_building_id != $row->{contract_id})) {
+            $building_changed = !$opts{disable_grouping};
             $last_building_id = $row->{contract_id};
         }
 
@@ -730,11 +763,11 @@ sub render_xlsx {
                     $worksheet->write($xls_row, $rule->{index}, $rule->{index} + 1, $numbers_style);
                     $row_printed = 1;
                 }
-            } elsif ($building_changed) {
+            } elsif ($building_changed && !$opts{disable_grouping}) {
                 my $val = $row->{$rule->{mysql_name}} if $rule->{print_in_header};
                 $worksheet->write($xls_row, $rule->{index}, $val, $splitter_styles_cache{$rule->{style}});
                 $row_printed = 1;
-            } elsif ($row->{need_mark}) {
+            } elsif ($row->{need_mark} && !$opts{disable_grouping}) {
                 if ($rule->{only_in_header}) {
                     $worksheet->write($xls_row, $rule->{index}, undef, $marked_styles_cache{$rule->{style}});
                 } else {
@@ -974,10 +1007,10 @@ my @sql_statements = (
         keys => { map { $_ => 1 } qw( exploitation renovation ) },
         main => qq#
             select
-                b.id as contract_id,
-                d.name as district,
-                c.name as company_name,
-                b.name as address
+                b.id as wo_grouping_contract_id,
+                d.name as wo_grouping_district,
+                c.name as wo_grouping_company_name,
+                b.name as wo_grouping_address
                 %s
             from buildings b
             join companies c on c.id = b.company_id
@@ -992,6 +1025,9 @@ my @sql_statements = (
             building => 'where b.id = ?',
             object => 'where b.id = (select building from objects where id = ?)',
             region => 'where d.region = ?',
+        },
+        render_opts => {
+            disable_grouping => 1,
         },
     },
 );
@@ -1011,12 +1047,14 @@ sub build {
     }
 
     my $sql_stat = undef;
+    my $render_opts => undef;
     my $where_statements;
     for (@sql_statements) {
         my $t = $calc_type // "main";
         if ($_->{keys}{$t}) {
             $sql_stat = $_->{main};
             $where_statements = $_->{where};
+            $render_opts = $_->{render_opts};
             last;
         }
     }
@@ -1067,7 +1105,7 @@ sub build {
         # http://search.cpan.org/~jmcnamara/Excel-Writer-XLSX-0.15/lib/Excel/Writer/XLSX.pm#add_format(_%properties_)
     );
 
-    $self->render_xlsx($r, $workbook, $calc_type, $title);
+    $self->render_xlsx($r, $workbook, $calc_type, $title, %{ $render_opts // {} });
     $workbook->close;
 
     $f->unlink_on_destroy(0);
