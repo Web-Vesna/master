@@ -89,3 +89,14 @@ expl_costs_profit = Прибыль предприятия, руб.
 expl_costs_total_wo_VAT = Итого (без НДС), руб.
 expl_costs_VAT = НДС 18%, руб.
 expl_costs_total = Итого (в том числе НДС), руб.
+
+modernization_title = Модернизационный отчет
+modern_costs_salary = Заработная плата, руб.
+modern_costs_operating_machinery = Эксплуатация машин и механизмов, руб.
+modern_costs_material_costs = Материалы, руб.
+modern_costs_overhead_costs = Накладные расходы, руб.
+modern_costs_profit = Прибыль предприятия, руб.
+modern_costs_total_wo_VAT = Итого (без НДС), руб.
+modern_costs_VAT = НДС 18%, руб.
+modern_costs_total = Итого с НДС, руб.
+modern_costs_heat_load = Суммарная тепловая нагрузка, Гкал/час

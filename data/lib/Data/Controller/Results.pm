@@ -179,8 +179,6 @@ my @global_fields = (
         style => 'integer',
         col_width => 50,
     }, {
-
-        ######### Amortization #########
         mysql_name => 'am_rate_of_depreciation',
         header_text => amortization_rate_of_depriciation,
         style => 'percent',
@@ -201,8 +199,6 @@ my @global_fields = (
         merge_with => 'am_depreciation',
         calc_type => 'amortization',
     }, {
-
-        ############ Maintenance ##########
         header_text => maintenance_costs_of_labor,
         mysql_name => 'maintenance_costs_of_labor',
         style => 'money',
@@ -329,8 +325,6 @@ my @global_fields = (
         print_in_header => 1,
         only_in_header => 1,
     }, {
-
-        ############ Diagnostic #######
         header_text => diagnostic_costs_of_labor,
         mysql_name => 'diagnostic_costs_of_labor',
         style => 'money',
@@ -457,8 +451,6 @@ my @global_fields = (
         print_in_header => 1,
         only_in_header => 1,
     }, {
-
-        ############ Renovation #######
         header_text => renovation_costs_of_labor,
         mysql_name => 'renovation_costs_of_labor',
         style => 'money',
@@ -585,7 +577,6 @@ my @global_fields = (
         print_in_header => 1,
         only_in_header => 1,
     }, {
-        ################################################
         mysql_name => 'wo_grouping_contract_id',
         header_text => contract_id,
         style => 'integer',
@@ -657,6 +648,60 @@ my @global_fields = (
         style => 'money',
         col_width => 20,
         calc_type => 'exploitation',
+    }, {
+        header_text => modern_costs_heat_load,
+        mysql_name => 'modern_costs_heat_load',
+        style => 'float',
+        col_width => 20,
+        calc_type => 'modernization',
+    }, {
+        header_text => modern_costs_salary,
+        mysql_name => 'modern_costs_salary',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'modernization',
+    }, {
+        header_text => modern_costs_operating_machinery,
+        mysql_name => 'modern_costs_operating_machinery',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'modernization',
+    }, {
+        header_text => modern_costs_material_costs,
+        mysql_name => 'modern_costs_material_costs',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'modernization',
+    }, {
+        header_text => modern_costs_overhead_costs,
+        mysql_name => 'modern_costs_overhead_costs',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'modernization',
+    }, {
+        header_text => modern_costs_profit,
+        mysql_name => 'modern_costs_profit',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'modernization',
+    }, {
+        header_text => modern_costs_total_wo_VAT,
+        mysql_name => 'modern_costs_total_wo_VAT',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'modernization',
+    }, {
+        header_text => modern_costs_VAT,
+        mysql_name => 'modern_costs_VAT',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'modernization',
+    }, {
+        header_text => modern_costs_total,
+        mysql_name => 'modern_costs_total',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'modernization',
     }
 );
 
@@ -952,6 +997,24 @@ my %calc_types = (
             left outer join exploitation_costs as expl_costs on expl_costs.object_id = b.id
         #,
     },
+    modernization => {
+        title => modernization_title,
+        select => qq#
+            modern_costs.salary as modern_costs_salary,
+            modern_costs.operating_machinery as modern_costs_operating_machinery,
+            modern_costs.material_costs as modern_costs_material_costs,
+            modern_costs.overhead_costs as modern_costs_overhead_costs,
+            modern_costs.profit as modern_costs_profit,
+            modern_costs.total_wo_VAT as modern_costs_total_wo_VAT,
+            modern_costs.VAT as modern_costs_VAT,
+            modern_costs.total as modern_costs_total,
+            bm.heat_load as modern_costs_heat_load
+        #,
+        join => qq#
+            left outer join modernization_costs as modern_costs on modern_costs.object_id = b.id
+            left outer join buildings_meta bm on bm.building_id = b.id
+        #,
+    },
 );
 
 my @sql_statements = (
@@ -1004,7 +1067,7 @@ my @sql_statements = (
             region => 'where d.region = ?',
         },
     }, {
-        keys => { map { $_ => 1 } qw( exploitation renovation ) },
+        keys => { map { $_ => 1 } qw( exploitation modernization ) },
         main => qq#
             select
                 b.id as wo_grouping_contract_id,
