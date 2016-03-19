@@ -80,4 +80,12 @@ diagnostic_title = Диагностика
 maintenance_title = Текущий ремонт
 renovation_title = Капитальный ремонт
 
-
+exploitation_title = Эксплуатационный отчет
+expl_costs_of_labor = Затраты трудовых ресурсов, чел.-ч
+expl_costs_salary = Оплата труда, руб.
+expl_costs_material_costs = Материалы, руб.
+expl_costs_overhead_costs = Накладные расходы, руб.
+expl_costs_profit = Прибыль предприятия, руб.
+expl_costs_total_wo_VAT = Итого (без НДС), руб.
+expl_costs_VAT = НДС 18%, руб.
+expl_costs_total = Итого (в том числе НДС), руб.

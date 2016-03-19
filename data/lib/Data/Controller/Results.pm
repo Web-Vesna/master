@@ -584,6 +584,54 @@ my @global_fields = (
         calc_type => 'renovation',
         print_in_header => 1,
         only_in_header => 1,
+    }, {
+        header_text => expl_costs_of_labor,
+        mysql_name => 'expl_costs_of_labor',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'exploitation',
+    }, {
+        header_text => expl_costs_salary,
+        mysql_name => 'expl_costs_salary',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'exploitation',
+    }, {
+        header_text => expl_costs_material_costs,
+        mysql_name => 'expl_costs_material_costs',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'exploitation',
+    }, {
+        header_text => expl_costs_overhead_costs,
+        mysql_name => 'expl_costs_overhead_costs',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'exploitation',
+    }, {
+        header_text => expl_costs_profit,
+        mysql_name => 'expl_costs_profit',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'exploitation',
+    }, {
+        header_text => expl_costs_total_wo_VAT,
+        mysql_name => 'expl_costs_total_wo_VAT',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'exploitation',
+    }, {
+        header_text => expl_costs_VAT,
+        mysql_name => 'expl_costs_VAT',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'exploitation',
+    }, {
+        header_text => expl_costs_total,
+        mysql_name => 'expl_costs_total',
+        style => 'money',
+        col_width => 20,
+        calc_type => 'exploitation',
     }
 );
 
@@ -707,21 +755,265 @@ sub render_xlsx {
     }
 }
 
+my %calc_types = (
+    # XXX: Hardcoded with calc_types table!!!
+    amortization => {
+        title  => amortization_title,
+        select => qq#
+            am_costs.rate_of_depreciation as am_rate_of_depreciation,
+            am_costs.depreciation as am_depreciation,
+            am_total_costs.cost as am_total_depreciation
+        #,
+        join   => qq#
+            left outer join amortization_costs am_costs on am_costs.global_id = o.global_id
+            left outer join (
+                select js_objs.building as building, sum(js_costs.depreciation) as cost
+                from objects js_objs
+                join amortization_costs js_costs on js_costs.global_id = js_objs.global_id
+                group by js_objs.building
+            ) am_total_costs on am_total_costs.building = o.building
+        #,
+    },
+    diagnostic => {
+        title => diagnostic_title,
+        select => qq#
+            dia_costs.costs_of_labor as diagnostic_costs_of_labor,
+            dia_costs.salary as diagnostic_salary,
+            dia_costs.operating_machinery as diagnostic_operating_machinery,
+            dia_costs.material_costs as diagnostic_material_costs,
+            dia_costs.overhead_costs as diagnostic_overhead_costs,
+            dia_costs.profit as diagnostic_profit,
+            dia_costs.total_wo_VAT as diagnostic_total_wo_VAT,
+            dia_costs.VAT as diagnostic_VAT,
+            dia_costs.total as diagnostic_total,
+
+            dia_total_costs.costs_of_labor as diagnostic_costs_of_labor_total,
+            dia_total_costs.salary as diagnostic_salary_total,
+            dia_total_costs.operating_machinery as diagnostic_operating_machinery_total,
+            dia_total_costs.material_costs as diagnostic_material_costs_total,
+            dia_total_costs.overhead_costs as diagnostic_overhead_costs_total,
+            dia_total_costs.profit as diagnostic_profit_total,
+            dia_total_costs.total_wo_VAT as diagnostic_total_wo_VAT_total,
+            dia_total_costs.VAT as diagnostic_VAT_total,
+            dia_total_costs.total as diagnostic_total_total
+        #,
+        join => qq#
+            left outer join diagnostics_costs dia_costs on dia_costs.global_id = o.global_id
+            left outer join (
+                select
+                    js_objs.building as building,
+                    sum(js_costs.costs_of_labor) as costs_of_labor,
+                    sum(js_costs.salary) as salary,
+                    sum(js_costs.operating_machinery) as operating_machinery,
+                    sum(js_costs.material_costs) as material_costs,
+                    sum(js_costs.overhead_costs) as overhead_costs,
+                    sum(js_costs.profit) as profit,
+                    sum(js_costs.total_wo_VAT) as total_wo_VAT,
+                    sum(js_costs.VAT) as VAT,
+                    sum(js_costs.total) as total
+                from objects js_objs
+                join diagnostics_costs js_costs on js_costs.global_id = js_objs.global_id
+                group by js_objs.building
+            ) dia_total_costs on dia_total_costs.building = o.building
+        #,
+    },
+    maintenance => {
+        title  => maintenance_title,
+        select => qq#
+            ma.costs_of_labor as maintenance_costs_of_labor,
+            ma.salary as maintenance_salary,
+            ma.operating_machinery as maintenance_operating_machinery,
+            ma.material_costs as maintenance_material_costs,
+            ma.overhead_costs as maintenance_overhead_costs,
+            ma.profit as maintenance_profit,
+            ma.total_wo_VAT as maintenance_total_wo_VAT,
+            ma.VAT as maintenance_VAT,
+            ma.total as maintenance_total,
+
+            ma_total_costs.costs_of_labor as maintenance_costs_of_labor_total,
+            ma_total_costs.salary as maintenance_salary_total,
+            ma_total_costs.operating_machinery as maintenance_operating_machinery_total,
+            ma_total_costs.material_costs as maintenance_material_costs_total,
+            ma_total_costs.overhead_costs as maintenance_overhead_costs_total,
+            ma_total_costs.profit as maintenance_profit_total,
+            ma_total_costs.total_wo_VAT as maintenance_total_wo_VAT_total,
+            ma_total_costs.VAT as maintenance_VAT_total,
+            ma_total_costs.total as maintenance_total_total
+        #,
+        join => qq#
+            left outer join maintenance_costs as ma on ma.global_id = o.global_id
+            left outer join (
+                select
+                    js_objs.building as building,
+                    sum(js_costs.costs_of_labor) as costs_of_labor,
+                    sum(js_costs.salary) as salary,
+                    sum(js_costs.operating_machinery) as operating_machinery,
+                    sum(js_costs.material_costs) as material_costs,
+                    sum(js_costs.overhead_costs) as overhead_costs,
+                    sum(js_costs.profit) as profit,
+                    sum(js_costs.total_wo_VAT) as total_wo_VAT,
+                    sum(js_costs.VAT) as VAT,
+                    sum(js_costs.total) as total
+                from objects js_objs
+                join maintenance_costs js_costs on js_costs.global_id = js_objs.global_id
+                group by js_objs.building
+            ) ma_total_costs on ma_total_costs.building = o.building
+        #,
+    },
+    renovation => {
+        title  => renovation_title,
+        select => qq#
+            renov.costs_of_labor as renovation_costs_of_labor,
+            renov.salary as renovation_salary,
+            renov.operating_machinery as renovation_operating_machinery,
+            renov.material_costs as renovation_material_costs,
+            renov.overhead_costs as renovation_overhead_costs,
+            renov.profit as renovation_profit,
+            renov.total_wo_VAT as renovation_total_wo_VAT,
+            renov.VAT as renovation_VAT,
+            renov.total as renovation_total,
+
+            renov_total_costs.costs_of_labor as renovation_costs_of_labor_total,
+            renov_total_costs.salary as renovation_salary_total,
+            renov_total_costs.operating_machinery as renovation_operating_machinery_total,
+            renov_total_costs.material_costs as renovation_material_costs_total,
+            renov_total_costs.overhead_costs as renovation_overhead_costs_total,
+            renov_total_costs.profit as renovation_profit_total,
+            renov_total_costs.total_wo_VAT as renovation_total_wo_VAT_total,
+            renov_total_costs.VAT as renovation_VAT_total,
+            renov_total_costs.total as renovation_total_total
+        #,
+        join => qq#
+            left outer join renovation_costs as renov on renov.global_id = o.global_id
+            left outer join (
+                select
+                    js_objs.building as building,
+                    sum(js_costs.costs_of_labor) as costs_of_labor,
+                    sum(js_costs.salary) as salary,
+                    sum(js_costs.operating_machinery) as operating_machinery,
+                    sum(js_costs.material_costs) as material_costs,
+                    sum(js_costs.overhead_costs) as overhead_costs,
+                    sum(js_costs.profit) as profit,
+                    sum(js_costs.total_wo_VAT) as total_wo_VAT,
+                    sum(js_costs.VAT) as VAT,
+                    sum(js_costs.total) as total
+                from objects js_objs
+                join renovation_costs js_costs on js_costs.global_id = js_objs.global_id
+                group by js_objs.building
+            ) renov_total_costs on renov_total_costs.building = o.building
+        #,
+    },
+    exploitation => {
+        title => exploitation_title,
+        select => qq#
+            expl_costs.costs_of_labor as expl_costs_of_labor,
+            expl_costs.salary as expl_costs_salary,
+            expl_costs.material_costs as expl_costs_material_costs,
+            expl_costs.overhead_costs as expl_costs_overhead_costs,
+            expl_costs.profit as expl_costs_profit,
+            expl_costs.total_wo_VAT as expl_costs_total_wo_VAT,
+            expl_costs.VAT as expl_costs_VAT,
+            expl_costs.total as expl_costs_total
+        #,
+        join => qq#
+            left outer join exploitation_costs as expl_costs on expl_costs.object_id = b.id
+        #,
+    },
+);
+
+my %sql_statements = (
+    { map { $_ => 1 } qw( main amortization diagnostic maintenance renovation ) } => {
+        main => qq#
+            select
+                b.id as contract_id,
+                bm.cost as building_cost,
+                d.name as district,
+                c.name as company_name,
+                b.name as address,
+                cat.object_name as object_name,
+                o_names.name as object_name_new,
+                cat_n.category_type = 'marked' as need_mark,
+                o_names.group_id != 4 as need_mark_new,
+                cat_n.name as category_name,
+                o.characteristic as characteristic,
+                o.size as size,
+                o.characteristic_value as count,
+                i.name as isolation_type,
+                l.name as laying_method,
+                o.install_year as install_year,
+                o.reconstruction_year as reconstruction_year,
+                o.wear as wear,
+                o.cost as cost,
+                bm.build_date as buiding_build_date,
+                bm.reconstruction_date as bm_reconstruction_date,
+                o.last_usage_limit as usage_limit
+                %s
+            from objects o
+            join buildings b on b.id = o.building
+            join companies c on c.id = b.company_id
+            join districts d on d.id = b.district_id
+            left outer join objects_names o_names on o_names.id = o.object_name_new
+            left outer join categories cat on cat.id = o.object_name
+            left outer join categories_names cat_n on cat.category_name = cat_n.id
+            left outer join isolations i on i.id = o.isolation
+            left outer join laying_methods l on l.id = o.laying_method
+            left outer join buildings_meta bm on bm.building_id = b.id
+            %s %s
+            order by b.id, o.id
+        #,
+        where => {
+            district => 'where d.id = ?',
+            company => 'where c.id = ?',
+            company_multy => 'where c.id in ',
+            building => 'where b.id = ?',
+            object => 'where o.id = ?',
+            region => 'where d.region = ?',
+        },
+    },
+    { map { $_ => 1 } qw( exploitation renovation ) } => {
+        main => qq#
+            select
+                b.id as contract_id,
+                d.name as district,
+                c.name as company_name,
+                b.name as address
+                %s
+            from buildings b
+            join companies c on c.id = b.company_id
+            join districts d on d.id = b.district_id
+            %s %s
+            order by b.id
+        #,
+        where => {
+            district => 'where d.id = ?',
+            company => 'where c.id = ?',
+            company_multy => 'where c.id in ',
+            building => 'where b.id = ?',
+            object => 'where b.id = (select building from objects where id = ?)',
+            region => 'where d.region = ?',
+        },
+    },
+);
+
 sub build {
     my $self = shift;
 
     my $f = File::Temp->new(UNLINK => 1);
-
     my $workbook = Excel::Writer::XLSX->new($f->filename);
 
-    my %sql_statements = (
-        district => 'where d.id = ?',
-        company => 'where c.id = ?',
-        company_multy => 'where c.id in ',
-        building => 'where b.id = ?',
-        object => 'where o.id = ?',
-        region => 'where d.region = ?',
-    );
+    my $sql_stat = undef;
+    my $where_statements;
+    for (keys %sql_statements) {
+        my $t = $calc_type // "main";
+        if ($_->{$t}) {
+            $sql_stat = $sql_statements{$_}{main};
+            $where_statements = $sql_statements{$_}{where};
+            last;
+        }
+    }
+
+    return $self->render(json => { status => 500, error => "Can't fetch data for given report type" })
+        unless $sql_stat && $where_statements;
 
     my @order = qw( object building company district region );
     my $args = $self->req->params->to_hash;
@@ -732,218 +1024,30 @@ sub build {
     for (@order) {
         if (defined $args->{$_}) {
             my $v = $args->{$_};
-            if ($v =~ /,/ && $sql_statements{$_ . "_multy"}) {
+            if ($v =~ /,/ && $where_statements->{$_ . "_multy"}) {
                 @sql_arg = split ',', $v;
-                $sql_part = $sql_statements{$_ . "_multy"};
+                $sql_part = $where_statements->{$_ . "_multy"};
                 $sql_part .= "(" . join(',', ('?') x (scalar @sql_arg)) . ")";
                 last;
             }
-            $sql_part = $sql_statements{$_};
+            $sql_part = $where_statements->{$_};
             @sql_arg = ($v);
             last;
         }
     }
 
     unless (@sql_arg) {
-        return $self->render(json => { status => 400, error => join(' or ', keys %sql_statements) . " not empty argument is required" });
+        return $self->render(json => { status => 400, error => join(' or ', keys %$where_statements) . " not empty argument is required" });
     }
 
     my $calc_type = $args->{calc_type};
     $calc_type = undef if $calc_type && $calc_type eq "undef";
 
-    my %calc_types = (
-        # XXX: Hardcoded with calc_types table!!!
-        amortization => {
-            title  => amortization_title,
-            select => qq#
-                am_costs.rate_of_depreciation as am_rate_of_depreciation,
-                am_costs.depreciation as am_depreciation,
-                am_total_costs.cost as am_total_depreciation
-            #,
-            join   => qq#
-                left outer join amortization_costs am_costs on am_costs.global_id = o.global_id
-                left outer join (
-                    select js_objs.building as building, sum(js_costs.depreciation) as cost
-                    from objects js_objs
-                    join amortization_costs js_costs on js_costs.global_id = js_objs.global_id
-                    group by js_objs.building
-                ) am_total_costs on am_total_costs.building = o.building
-            #,
-        },
-        diagnostic => {
-            title => diagnostic_title,
-            select => qq#
-                dia_costs.costs_of_labor as diagnostic_costs_of_labor,
-                dia_costs.salary as diagnostic_salary,
-                dia_costs.operating_machinery as diagnostic_operating_machinery,
-                dia_costs.material_costs as diagnostic_material_costs,
-                dia_costs.overhead_costs as diagnostic_overhead_costs,
-                dia_costs.profit as diagnostic_profit,
-                dia_costs.total_wo_VAT as diagnostic_total_wo_VAT,
-                dia_costs.VAT as diagnostic_VAT,
-                dia_costs.total as diagnostic_total,
-
-                dia_total_costs.costs_of_labor as diagnostic_costs_of_labor_total,
-                dia_total_costs.salary as diagnostic_salary_total,
-                dia_total_costs.operating_machinery as diagnostic_operating_machinery_total,
-                dia_total_costs.material_costs as diagnostic_material_costs_total,
-                dia_total_costs.overhead_costs as diagnostic_overhead_costs_total,
-                dia_total_costs.profit as diagnostic_profit_total,
-                dia_total_costs.total_wo_VAT as diagnostic_total_wo_VAT_total,
-                dia_total_costs.VAT as diagnostic_VAT_total,
-                dia_total_costs.total as diagnostic_total_total
-            #,
-            join => qq#
-                left outer join diagnostics_costs dia_costs on dia_costs.global_id = o.global_id
-                left outer join (
-                    select
-                        js_objs.building as building,
-                        sum(js_costs.costs_of_labor) as costs_of_labor,
-                        sum(js_costs.salary) as salary,
-                        sum(js_costs.operating_machinery) as operating_machinery,
-                        sum(js_costs.material_costs) as material_costs,
-                        sum(js_costs.overhead_costs) as overhead_costs,
-                        sum(js_costs.profit) as profit,
-                        sum(js_costs.total_wo_VAT) as total_wo_VAT,
-                        sum(js_costs.VAT) as VAT,
-                        sum(js_costs.total) as total
-                    from objects js_objs
-                    join diagnostics_costs js_costs on js_costs.global_id = js_objs.global_id
-                    group by js_objs.building
-                ) dia_total_costs on dia_total_costs.building = o.building
-            #,
-        },
-        maintenance => {
-            title  => maintenance_title,
-            select => qq#
-                ma.costs_of_labor as maintenance_costs_of_labor,
-                ma.salary as maintenance_salary,
-                ma.operating_machinery as maintenance_operating_machinery,
-                ma.material_costs as maintenance_material_costs,
-                ma.overhead_costs as maintenance_overhead_costs,
-                ma.profit as maintenance_profit,
-                ma.total_wo_VAT as maintenance_total_wo_VAT,
-                ma.VAT as maintenance_VAT,
-                ma.total as maintenance_total,
-
-                ma_total_costs.costs_of_labor as maintenance_costs_of_labor_total,
-                ma_total_costs.salary as maintenance_salary_total,
-                ma_total_costs.operating_machinery as maintenance_operating_machinery_total,
-                ma_total_costs.material_costs as maintenance_material_costs_total,
-                ma_total_costs.overhead_costs as maintenance_overhead_costs_total,
-                ma_total_costs.profit as maintenance_profit_total,
-                ma_total_costs.total_wo_VAT as maintenance_total_wo_VAT_total,
-                ma_total_costs.VAT as maintenance_VAT_total,
-                ma_total_costs.total as maintenance_total_total
-            #,
-            join => qq#
-                left outer join maintenance_costs as ma on ma.global_id = o.global_id
-                left outer join (
-                    select
-                        js_objs.building as building,
-                        sum(js_costs.costs_of_labor) as costs_of_labor,
-                        sum(js_costs.salary) as salary,
-                        sum(js_costs.operating_machinery) as operating_machinery,
-                        sum(js_costs.material_costs) as material_costs,
-                        sum(js_costs.overhead_costs) as overhead_costs,
-                        sum(js_costs.profit) as profit,
-                        sum(js_costs.total_wo_VAT) as total_wo_VAT,
-                        sum(js_costs.VAT) as VAT,
-                        sum(js_costs.total) as total
-                    from objects js_objs
-                    join maintenance_costs js_costs on js_costs.global_id = js_objs.global_id
-                    group by js_objs.building
-                ) ma_total_costs on ma_total_costs.building = o.building
-              #,
-        },
-        renovation => {
-            title  => renovation_title,
-            select => qq#
-                renov.costs_of_labor as renovation_costs_of_labor,
-                renov.salary as renovation_salary,
-                renov.operating_machinery as renovation_operating_machinery,
-                renov.material_costs as renovation_material_costs,
-                renov.overhead_costs as renovation_overhead_costs,
-                renov.profit as renovation_profit,
-                renov.total_wo_VAT as renovation_total_wo_VAT,
-                renov.VAT as renovation_VAT,
-                renov.total as renovation_total,
-
-                renov_total_costs.costs_of_labor as renovation_costs_of_labor_total,
-                renov_total_costs.salary as renovation_salary_total,
-                renov_total_costs.operating_machinery as renovation_operating_machinery_total,
-                renov_total_costs.material_costs as renovation_material_costs_total,
-                renov_total_costs.overhead_costs as renovation_overhead_costs_total,
-                renov_total_costs.profit as renovation_profit_total,
-                renov_total_costs.total_wo_VAT as renovation_total_wo_VAT_total,
-                renov_total_costs.VAT as renovation_VAT_total,
-                renov_total_costs.total as renovation_total_total
-            #,
-            join => qq#
-                left outer join renovation_costs as renov on renov.global_id = o.global_id
-                left outer join (
-                    select
-                        js_objs.building as building,
-                        sum(js_costs.costs_of_labor) as costs_of_labor,
-                        sum(js_costs.salary) as salary,
-                        sum(js_costs.operating_machinery) as operating_machinery,
-                        sum(js_costs.material_costs) as material_costs,
-                        sum(js_costs.overhead_costs) as overhead_costs,
-                        sum(js_costs.profit) as profit,
-                        sum(js_costs.total_wo_VAT) as total_wo_VAT,
-                        sum(js_costs.VAT) as VAT,
-                        sum(js_costs.total) as total
-                    from objects js_objs
-                    join renovation_costs js_costs on js_costs.global_id = js_objs.global_id
-                    group by js_objs.building
-                ) renov_total_costs on renov_total_costs.building = o.building
-              #,
-        },
-
-    );
 
     if ($calc_type && !$calc_types{$calc_type}) {
         return $self->render(json => { status => 400, error => "calc_type is unknown" });
     }
 
-    my $sql_stat = qq#
-        select
-            b.id as contract_id,
-            bm.cost as building_cost,
-            d.name as district,
-            c.name as company_name,
-            b.name as address,
-            cat.object_name as object_name,
-            o_names.name as object_name_new,
-            cat_n.category_type = 'marked' as need_mark,
-            o_names.group_id != 4 as need_mark_new,
-            cat_n.name as category_name,
-            o.characteristic as characteristic,
-            o.size as size,
-            o.characteristic_value as count,
-            i.name as isolation_type,
-            l.name as laying_method,
-            o.install_year as install_year,
-            o.reconstruction_year as reconstruction_year,
-            o.wear as wear,
-            o.cost as cost,
-            bm.build_date as buiding_build_date,
-            bm.reconstruction_date as bm_reconstruction_date,
-            o.last_usage_limit as usage_limit
-            %s
-        from objects o
-        join buildings b on b.id = o.building
-        join companies c on c.id = b.company_id
-        join districts d on d.id = b.district_id
-        left outer join objects_names o_names on o_names.id = o.object_name_new
-        left outer join categories cat on cat.id = o.object_name
-        left outer join categories_names cat_n on cat.category_name = cat_n.id
-        left outer join isolations i on i.id = o.isolation
-        left outer join laying_methods l on l.id = o.laying_method
-        left outer join buildings_meta bm on bm.building_id = b.id
-        %s %s
-        order by b.id, o.id
-    #;
     my ($calc_stat, $calc_join, $title) = ('', '', general_title);
     if ($calc_type) {
         my $t = $calc_types{$calc_type};
