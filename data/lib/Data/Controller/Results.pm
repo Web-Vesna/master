@@ -921,8 +921,9 @@ my %calc_types = (
     },
 );
 
-my %sql_statements = (
-    { map { $_ => 1 } qw( main amortization diagnostic maintenance renovation ) } => {
+my @sql_statements = (
+    {
+        keys => { map { $_ => 1 } qw( main amortization diagnostic maintenance renovation ) },
         main => qq#
             select
                 b.id as contract_id,
@@ -969,8 +970,8 @@ my %sql_statements = (
             object => 'where o.id = ?',
             region => 'where d.region = ?',
         },
-    },
-    { map { $_ => 1 } qw( exploitation renovation ) } => {
+    }, {
+        keys => { map { $_ => 1 } qw( exploitation renovation ) },
         main => qq#
             select
                 b.id as contract_id,
@@ -997,17 +998,25 @@ my %sql_statements = (
 
 sub build {
     my $self = shift;
+    my $args = $self->req->params->to_hash;
 
     my $f = File::Temp->new(UNLINK => 1);
     my $workbook = Excel::Writer::XLSX->new($f->filename);
 
+    my $calc_type = $args->{calc_type};
+    $calc_type = undef if $calc_type && $calc_type eq "undef";
+
+    if ($calc_type && !$calc_types{$calc_type}) {
+        return $self->render(json => { status => 400, error => "calc_type is unknown" });
+    }
+
     my $sql_stat = undef;
     my $where_statements;
-    for (keys %sql_statements) {
+    for (@sql_statements) {
         my $t = $calc_type // "main";
-        if ($_->{$t}) {
-            $sql_stat = $sql_statements{$_}{main};
-            $where_statements = $sql_statements{$_}{where};
+        if ($_->{keys}{$t}) {
+            $sql_stat = $_->{main};
+            $where_statements = $_->{where};
             last;
         }
     }
@@ -1016,7 +1025,6 @@ sub build {
         unless $sql_stat && $where_statements;
 
     my @order = qw( object building company district region );
-    my $args = $self->req->params->to_hash;
 
     my $sql_part;
     my @sql_arg;
@@ -1038,14 +1046,6 @@ sub build {
 
     unless (@sql_arg) {
         return $self->render(json => { status => 400, error => join(' or ', keys %$where_statements) . " not empty argument is required" });
-    }
-
-    my $calc_type = $args->{calc_type};
-    $calc_type = undef if $calc_type && $calc_type eq "undef";
-
-
-    if ($calc_type && !$calc_types{$calc_type}) {
-        return $self->render(json => { status => 400, error => "calc_type is unknown" });
     }
 
     my ($calc_stat, $calc_join, $title) = ('', '', general_title);

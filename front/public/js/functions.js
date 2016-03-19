@@ -65,7 +65,7 @@ function select_change_controller(elements, base_url, content_filter, args_proce
                                     data[key] = content_filter(this_id, data[key]);
                                 $.each(data[key], function (index, item) {
                                     $next_elem.append('<option value="' + item.id + '">'
-                                            + (item.name ? item.name : item.name_new) + '</option>');
+                                            + (item.name ? item.name : item.new_name) + '</option>');
                                 });
                                 $next_elem.trigger('refresh');
                             } else {
