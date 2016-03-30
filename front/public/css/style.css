@@ -2303,3 +2303,8 @@ table.address-table tr td:nth-child(4){
 #filter-types-styler{
      margin-top: 1.83em;
 }
+.disclaimer{
+    font-size: 0.9em;
+    margin-top: 50px;
+    text-align: justify;
+}

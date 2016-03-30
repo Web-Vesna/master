@@ -320,9 +320,10 @@ sub objects {
             left outer join laying_methods l on l.id = o.laying_method
             left outer join objects oo on oo.id = o.parent_object
             left outer join objects_names new_o on new_o.id = o.object_name_new
-            left outer join categories cat on o.object_name = cat.id %s
+            left outer join categories cat on o.object_name = cat.id
+            where (o.is_virtual = 0) %s
             order by oo.id asc/,
-        (defined $args->{building} ? "where o.building = ?" : "")),
+        (defined $args->{building} ? "and o.building = ?" : "")),
     );
 
     push @args, $args->{building} if defined $args->{building};

@@ -803,6 +803,11 @@ sub render_xlsx {
             $last_building_id = $row->{contract_id};
         }
 
+        if (!$building_changed && $row && $row->{is_virtual}) {
+            ++$i;
+            next;
+        }
+
         my $row_printed = 0;
         for my $col (0 .. @fields - 1) {
             my $rule = $fields[$col];
@@ -823,7 +828,8 @@ sub render_xlsx {
                 $row_printed = 1;
             } elsif ($row->{need_mark} && !$opts{disable_grouping}) {
                 if ($rule->{only_in_header}) {
-                    $worksheet->write($xls_row, $rule->{index}, undef, $marked_styles_cache{$rule->{style}});
+                    # TODO: remove me
+                    #$worksheet->write($xls_row, $rule->{index}, undef, $marked_styles_cache{$rule->{style}});
                 } else {
                     my $val = $rule->{only_in_header} ? undef : $row->{$rule->{mysql_name}};
                     $worksheet->write($xls_row, $rule->{index}, $val, $marked_styles_cache{$rule->{style}});
@@ -1050,6 +1056,7 @@ my @sql_statements = (
                 o.reconstruction_year as reconstruction_year,
                 o.wear as wear,
                 o.cost as cost,
+                o.is_virtual as is_virtual,
                 bm.build_date as buiding_build_date,
                 bm.reconstruction_date as bm_reconstruction_date,
                 o.last_usage_limit as usage_limit
