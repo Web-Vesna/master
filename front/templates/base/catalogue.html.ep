@@ -89,7 +89,8 @@
                                 </div>
                         </div>
                     </div>
-                    <div class="field required">
+                    <div class="field">
+                    <!-- <div class="field required"> -->
                         <label>Нагрузка, кВт:</label>
                         <input type="text" placeholder="кВт" id="edt-heat_load" key="heat_load" class="numbers_only float_numbers">
                     </div>
@@ -850,7 +851,7 @@
     }
 
     function toggle_next_btn() {
-        if (current_object.conn_type && current_object.heat_load
+        if (current_object.conn_type /* && current_object.heat_load */
                 % if (stash('role') eq 'admin') {
                 && current_object.address && current_object.company
                 % }
