@@ -11,7 +11,7 @@
 % my @_menu_impl = (
 %   { url => '/', role => 'user', img => 'em_main', name => 'Форма запроса', },
 %   { url => '/maps', role => 'user', img => 'em_maps', name => 'На карте',
-%       js => [{ external => 1, url => 'http://api-maps.yandex.ru/2.1/?lang=ru_RU', }], },
+%       js => [{ external => 1, url => 'https://api-maps.yandex.ru/2.1/?lang=ru_RU', }], },
 %   { url => '/catalogue', role => 'manager', img => 'em_catalogue', name => 'Адреса',
 %       js => [{ url => 'semantic.min.js', }],
 %       css => [{ url => 'catalogue.css', }, { url => 'semantic.min.css' }], },
