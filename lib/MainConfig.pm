@@ -25,6 +25,7 @@ my %PARAMS = (
     FILES_URL       => 'unknown',
 
     ROOT_FILES_PATH => '.',
+    PHOTOS_PATH     => '.',
     URL_404         => '/404.html',
     URL_401         => '/login.html',
 
