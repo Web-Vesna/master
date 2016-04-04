@@ -134,7 +134,7 @@ sub list {
             my $s = stat "$path/$fname";
 
             my $data = encode_base64url pack "iiiiii", $district_id, $company_id, $i, $s->size, $s->mtime, $id;
-            push @res, "http://" . FILES_URL . "/file?p=$data";
+            push @res, { href => "http://" . FILES_URL . "/file?p=$data", title => $fname };
             $i++;
         }
 
