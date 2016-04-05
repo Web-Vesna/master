@@ -11,7 +11,20 @@
 % my @_menu_impl = (
 %   { url => '/', role => 'user', img => 'em_main', name => 'Форма запроса', },
 %   { url => '/maps', role => 'user', img => 'em_maps', name => 'На карте',
-%       js => [{ external => 1, url => 'https://api-maps.yandex.ru/2.1/?lang=ru_RU', }], },
+%       js => [
+%           { external => 1, url => 'https://api-maps.yandex.ru/2.1/?lang=ru_RU', },
+%           { url => 'fancybox/lib/jquery.mousewheel-3.0.6.pack.js' },
+%           { url => 'fancybox/source/jquery.fancybox.pack.js?v=2.1.5' },
+%           { url => 'fancybox/source/helpers/jquery.fancybox-buttons.js?v=1.0.5' },
+%           { url => 'fancybox/source/helpers/jquery.fancybox-media.js?v=1.0.6' },
+%           { url => 'fancybox/source/helpers/jquery.fancybox-thumbs.js?v=1.0.7' },
+%       ],
+%       css => [
+%           { url => 'fancybox/source/jquery.fancybox.css?v=2.1.5', },
+%           { url => 'fancybox/source/helpers/jquery.fancybox-buttons.css?v=1.0.5', },
+%           { url => 'fancybox/source/helpers/jquery.fancybox-thumbs.css?v=1.0.7', },
+%       ],
+%   },
 %   { url => '/catalogue', role => 'manager', img => 'em_catalogue', name => 'Адреса',
 %       js => [{ url => 'semantic.min.js', }],
 %       css => [{ url => 'catalogue.css', }, { url => 'semantic.min.css' }], },

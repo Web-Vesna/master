@@ -86,6 +86,29 @@ function open_in_new_tab(url) {
     win.focus();
 }
 
+function show_gallery(data) {
+    $.fancybox(data, {
+        //'padding': 0,
+        //'transitionIn': 'none',
+        //'transitionOut': 'none',
+        type : 'image',
+        //'changeFade': 0
+        prevEffect : 'none',
+        nextEffect : 'none',
+
+        closeBtn  : false,
+        arrows    : false,
+        nextClick : true,
+
+        helpers : {
+            thumbs : {
+                width  : 50,
+                height : 50
+            }
+        }
+    });
+}
+
 var last_balloon;
 function on_balloon_open(balloon_id, need_change_pos) {
     if (last_balloon == balloon_id)
@@ -148,7 +171,7 @@ function on_balloon_open(balloon_id, need_change_pos) {
                 $("<tr>", {
                     class: i ? "" : "head-class",
                 })
-                .append($("<td>").text(b.addr))
+                .append($("<td>").text(b.addr).on('click', (function (files, b) { return function () { show_gallery(files.photos[b.id]); }; })(files, b)))
                 .append($("<td>").text(b.type))
                 .append($("<td>").text(b.heat_load))
                 .append($("<td>").text(b.cost.replace(/(\d)(?=(\d\d\d)+([^\d]|$))/g, '$1 ')))
