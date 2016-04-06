@@ -48,7 +48,7 @@ if [ "$1" != "" ]; then
     exit 0
 fi
 
-for var in 'session' 'logic' 'data' 'front'
+for var in 'files'
 do
     path=$(echo -n $var | perl -ne '$_ = uc $_;  printf "\"http://\$$_%s:\$$_%s\"", "_HOST", "_PORT"')
     path=$(eval "echo $path")
