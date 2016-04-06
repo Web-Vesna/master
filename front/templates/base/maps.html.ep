@@ -97,10 +97,11 @@ function show_gallery(data) {
         nextEffect : 'none',
 
         closeBtn  : false,
-        arrows    : false,
+        arrows    : true,
         nextClick : true,
 
         helpers : {
+            title : null ,
             thumbs : {
                 width  : 50,
                 height : 50
