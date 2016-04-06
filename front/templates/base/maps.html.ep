@@ -125,7 +125,7 @@ function on_balloon_open(balloon_id, need_change_pos) {
     $.when(
         $.get('<%= $general_url %>/cgi-bin/company?obj_id=' + balloon_id),
         $.ajax({
-            url: 'http://<%= $files_url %>/files', // FIXME: remove hardcoded 'http'
+            url: '<%= $general_url %>/files',
             data: {
                 company: companies[balloon_id][0],
                 district: companies[balloon_id][1],

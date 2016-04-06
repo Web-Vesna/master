@@ -110,7 +110,7 @@ sub list {
         push @content, {
             name => $fname,
             size => $s->size,
-            url => "http://" . FILES_URL . "/file?f=$data",
+            url => GENERAL_URL . "/file?f=$data",
         };
         $i++;
     }
@@ -134,7 +134,7 @@ sub list {
             my $s = stat "$path/$fname";
 
             my $data = encode_base64url pack "iiiiii", $district_id, $company_id, $i, $s->size, $s->mtime, $id;
-            push @res, { href => "http://" . FILES_URL . "/file?p=$data", title => $fname };
+            push @res, { href => GENERAL_URL . "/file?p=$data", title => $fname };
             $i++;
         }
 
