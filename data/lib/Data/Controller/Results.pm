@@ -1142,6 +1142,11 @@ sub build {
         unless $sql_stat && $where_statements;
 
     my @order = qw( object building company district region );
+    my $report_name_suffix = "";
+    if ($args->{company}) {
+        # Simple hack for report name
+        $report_name_suffix = report_name_suffix() . " $args->{company}";
+    }
 
     my $sql_part;
     my @sql_arg;
@@ -1178,7 +1183,7 @@ sub build {
     my $r = select_all($self, sprintf($sql_stat, $calc_stat, $calc_join, $sql_part), @sql_arg);
 
     $workbook->set_properties(
-        title => xlsx_default_title,
+        title => $title,
         author => ($args->{name} || "") . " " . ($args->{lastname} || ""),
         # TODO: add other properties
         # http://search.cpan.org/~jmcnamara/Excel-Writer-XLSX-0.15/lib/Excel/Writer/XLSX.pm#add_format(_%properties_)
@@ -1187,8 +1192,15 @@ sub build {
     $self->render_xlsx($r, $workbook, $calc_type, $title, %{ $render_opts // {} });
     $workbook->close;
 
+    my $file_name = $title;
+    if ($report_name_suffix) {
+        $file_name .= "_$report_name_suffix";
+    }
+
+    $file_name =~ s/\s+/_/g;
+
     $f->unlink_on_destroy(0);
-    return $self->render(json => { filename => $f->filename });
+    return $self->render(json => { title => $file_name, filename => $f->filename });
 }
 
 1;

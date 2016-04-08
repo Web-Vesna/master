@@ -161,7 +161,8 @@ sub startup {
         delete $response->{status};
 
         if ($page_name eq 'build' && $response->{filename}) {
-            $self->render_file(filepath => $response->{filename}, filename => 'report.xlsx', format => 'xlsx');
+            $self->render_file(filepath => $response->{filename},
+                filename => $response->{title} . '.xlsx', format => 'xlsx');
             $self->rendered(200);
             unlink $response->{filename};
             return 1;
