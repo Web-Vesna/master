@@ -809,6 +809,7 @@ sub render_xlsx {
         }
 
         my $row_printed = 0;
+        my %marked_cols_printed;
         for my $col (0 .. @fields - 1) {
             my $rule = $fields[$col];
             if ($i == -2) {
@@ -828,11 +829,13 @@ sub render_xlsx {
                 $row_printed = 1;
             } elsif ($row->{need_mark} && !$opts{disable_grouping}) {
                 if ($rule->{only_in_header}) {
-                    # TODO: remove me
-                    #$worksheet->write($xls_row, $rule->{index}, undef, $marked_styles_cache{$rule->{style}});
+                    # just add a style for this cell
+                    $worksheet->write($xls_row, $rule->{index}, undef, $marked_styles_cache{$rule->{style}})
+                        unless $marked_cols_printed{$rule->{index}};
                 } else {
                     my $val = $rule->{only_in_header} ? undef : $row->{$rule->{mysql_name}};
                     $worksheet->write($xls_row, $rule->{index}, $val, $marked_styles_cache{$rule->{style}});
+                    $marked_cols_printed{$rule->{index}} = 1;
                     $row_printed = 1;
                 }
             } elsif ((not $rule->{only_in_header}) && not $rule->{dont_print_in_common}) {
