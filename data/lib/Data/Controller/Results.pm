@@ -1202,7 +1202,7 @@ sub build {
             limit 1
         /, @sql_arg);
     if ($r && @$r) {
-        $file_name .= report_name_suffix() . "_$r->[0]{contract_id}";
+        $file_name .= "_" . report_name_suffix() . "_$r->[0]{contract_id}";
     }
     $file_name =~ s/\s+/_/g;
 
