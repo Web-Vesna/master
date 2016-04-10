@@ -752,6 +752,7 @@ sub render_xlsx {
 
     my @wo_grouping = map { $_->{mysql_name} } grep { $_->{wo_grouping} } @fields;
     my %to_remove_re = (
+        "" => \@wo_grouping,
         amortization => [qw( category_name wear install_year reconstruction_year ), @wo_grouping ],
         maintenance => [qw( install_year category_name reconstruction_year wear cost building_cost usage_limit ), @wo_grouping ],
         diagnostic => [qw( isolation_type laying_method install_year reconstruction_year wear cost usage_limit category_name ), @wo_grouping ],

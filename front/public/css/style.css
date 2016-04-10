@@ -1442,7 +1442,6 @@ footer a:hover img{
 	}
 .modal-upload .close-reveal-modal:hover{background-position:left bottom;}
 
-
 /*/close*/
 
 
@@ -2187,7 +2186,16 @@ y-axis
 }
 /* /box-vert-scroll */
 
+.photos-popup-link {
+    cursor: pointer;
+    -moz-transition: all 0.2s 0.2s ease;
+    -o-transition: all 0.2s 0.2s ease;
+    -webkit-transition: all 0.2s 0.2s ease;
+}
 
+.photos-popup-link:hover {
+    background-color: #e0e1dd;
+}
 
 
 /* list-info */

@@ -168,11 +168,18 @@ function on_balloon_open(balloon_id, need_change_pos) {
         for (var i = 0; i < data.count; ++i) {
             var b = data.buildings[i];
 
+            var $photos_frame = $("<td>").text(b.addr),
+                photos = files.photos[b.id];
+            if (photos) {
+                $photos_frame.addClass("photos-popup-link")
+                    .on('click', (function (photos) { return function () { show_gallery(photos); } })(photos));
+            }
+
             $tbl.append(
                 $("<tr>", {
                     class: i ? "" : "head-class",
                 })
-                .append($("<td>").text(b.addr).on('click', (function (files, b) { return function () { show_gallery(files.photos[b.id]); }; })(files, b)))
+                .append($photos_frame)
                 .append($("<td>").text(b.type))
                 .append($("<td>").text(b.heat_load))
                 .append($("<td>").text(b.cost.replace(/(\d)(?=(\d\d\d)+([^\d]|$))/g, '$1 ')))
