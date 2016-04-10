@@ -88,11 +88,7 @@ function open_in_new_tab(url) {
 
 function show_gallery(data) {
     $.fancybox(data, {
-        //'padding': 0,
-        //'transitionIn': 'none',
-        //'transitionOut': 'none',
         type : 'image',
-        //'changeFade': 0
         prevEffect : 'none',
         nextEffect : 'none',
 
@@ -101,12 +97,14 @@ function show_gallery(data) {
         nextClick : true,
 
         helpers : {
-            title : null ,
             thumbs : {
                 width  : 50,
                 height : 50
-            }
-        }
+            },
+            overlay : {
+                locked : false
+           },
+        },
     });
 }
 
@@ -172,7 +170,11 @@ function on_balloon_open(balloon_id, need_change_pos) {
                 photos = files.photos[b.id];
             if (photos) {
                 $photos_frame.addClass("photos-popup-link")
-                    .on('click', (function (photos) { return function () { show_gallery(photos); } })(photos));
+                    .on('click', (function (photos, $obj) { return function () {
+                        $tbl.find(".photos-poped-up").removeClass(".photos-poped-up");
+                        $obj.addClass("photos-poped-up");
+                        show_gallery(photos);
+                    } })(photos, $photos));
             }
 
             $tbl.append(

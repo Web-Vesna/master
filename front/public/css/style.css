@@ -2193,7 +2193,7 @@ y-axis
     -webkit-transition: all 0.2s 0.2s ease;
 }
 
-.photos-popup-link:hover {
+.photos-popup-link:hover, .photos-poped-up {
     background-color: #e0e1dd;
 }
 
