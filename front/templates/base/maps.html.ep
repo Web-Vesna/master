@@ -98,6 +98,7 @@ function show_gallery(data) {
 
         helpers : {
             thumbs : {
+                title : null,
                 width  : 50,
                 height : 50
             },
