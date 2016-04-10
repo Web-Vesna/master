@@ -174,7 +174,7 @@ function on_balloon_open(balloon_id, need_change_pos) {
                         $tbl.find(".photos-poped-up").removeClass(".photos-poped-up");
                         $obj.addClass("photos-poped-up");
                         show_gallery(photos);
-                    } })(photos, $photos));
+                    } })(photos, $photos_frame));
             }
 
             $tbl.append(
