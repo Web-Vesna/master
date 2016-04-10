@@ -1146,12 +1146,6 @@ sub build {
         unless $sql_stat && $where_statements;
 
     my @order = qw( object building company district region );
-    my $report_name_suffix = "";
-    if ($args->{company}) {
-        # Simple hack for report name
-        $report_name_suffix = report_name_suffix() . " $args->{company}";
-    }
-
     my $sql_part;
     my @sql_arg;
 
@@ -1197,10 +1191,19 @@ sub build {
     $workbook->close;
 
     my $file_name = $title;
-    if ($report_name_suffix) {
-        $file_name .= "_$report_name_suffix";
+    $r = select_all($self, qq/
+        select
+            b.id as contract_id
+            from objects o
+            join buildings b on b.id = o.building
+            join companies c on c.id = b.company_id
+            join districts d on d.id = b.district_id
+            $sql_part
+            limit 1
+        /, @sql_arg);
+    if ($r && @$r) {
+        $file_name .= report_name_suffix() . "_$r->[0]{contract_id}";
     }
-
     $file_name =~ s/\s+/_/g;
 
     $f->unlink_on_destroy(0);
