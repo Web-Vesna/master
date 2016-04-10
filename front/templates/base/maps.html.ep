@@ -171,7 +171,7 @@ function on_balloon_open(balloon_id, need_change_pos) {
             if (photos) {
                 $photos_frame.addClass("photos-popup-link")
                     .on('click', (function (photos, $obj) { return function () {
-                        $tbl.find(".photos-poped-up").removeClass(".photos-poped-up");
+                        $tbl.find(".photos-poped-up").removeClass("photos-poped-up");
                         $obj.addClass("photos-poped-up");
                         show_gallery(photos);
                     } })(photos, $photos_frame));
