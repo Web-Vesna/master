@@ -8,7 +8,7 @@
 %define __g_version 1.2
 %define __g_release %(date +"%Y%m%d%H%M")
 
-%define __latest_commit Unknown
+%global last_commit %include __last_commit
 
 Name:		apek-energo
 License:	Redistributable, no modification permitted
@@ -24,7 +24,8 @@ BuildArch:	noarch
 %description
 
 Latest commit:
-%{__latest_commit}
+
+%last_commit
 
 %package common
 
@@ -46,7 +47,8 @@ Requires(pre): shadow-utils
 Common Apek-Energo scripts, used by all daemons
 
 Latest commit:
-%{__latest_commit}
+
+%last_commit
 
 %package data
 
@@ -63,7 +65,8 @@ Requires:	%{name}-common = %{version}-%{release}
 Daemon works with database engine and provides an access to low-level logic.
 
 Latest commit:
-%{__latest_commit}
+
+%last_commit
 
 %package front
 
@@ -80,7 +83,8 @@ Requires:	%{name}-common = %{version}-%{release}
 Apek-Energo project frontend part
 
 Latest commit:
-%{__latest_commit}
+
+%last_commit
 
 %package session
 
@@ -97,7 +101,8 @@ Requires:	%{name}-common = %{version}-%{release}
 Daemon enables a session mechanism for Apek-Energo project
 
 Latest commit:
-%{__latest_commit}
+
+%last_commit
 
 %package logic
 
@@ -114,7 +119,8 @@ Requires:	%{name}-common = %{version}-%{release}
 Daemon implements a proxy between frontend and data
 
 Latest commit:
-%{__latest_commit}
+
+%last_commit
 
 %package files
 
@@ -131,7 +137,8 @@ Requires:	%{name}-common = %{version}-%{release}
 Daemon implements a files interface for Apek-Energo project
 
 Latest commit:
-%{__latest_commit}
+
+%last_commit
 
 %prep
 

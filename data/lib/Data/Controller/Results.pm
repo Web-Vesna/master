@@ -752,6 +752,7 @@ sub render_xlsx {
 
     my @wo_grouping = map { $_->{mysql_name} } grep { $_->{wo_grouping} } @fields;
     my %to_remove_re = (
+        "" => \@wo_grouping,
         amortization => [qw( category_name wear install_year reconstruction_year ), @wo_grouping ],
         maintenance => [qw( install_year category_name reconstruction_year wear cost building_cost usage_limit ), @wo_grouping ],
         diagnostic => [qw( isolation_type laying_method install_year reconstruction_year wear cost usage_limit category_name ), @wo_grouping ],
@@ -809,6 +810,7 @@ sub render_xlsx {
         }
 
         my $row_printed = 0;
+        my %marked_cols_printed;
         for my $col (0 .. @fields - 1) {
             my $rule = $fields[$col];
             if ($i == -2) {
@@ -828,11 +830,13 @@ sub render_xlsx {
                 $row_printed = 1;
             } elsif ($row->{need_mark} && !$opts{disable_grouping}) {
                 if ($rule->{only_in_header}) {
-                    # TODO: remove me
-                    #$worksheet->write($xls_row, $rule->{index}, undef, $marked_styles_cache{$rule->{style}});
+                    # just add a style for this cell
+                    $worksheet->write($xls_row, $rule->{index}, undef, $marked_styles_cache{$rule->{style}})
+                        unless $marked_cols_printed{$rule->{index}};
                 } else {
                     my $val = $rule->{only_in_header} ? undef : $row->{$rule->{mysql_name}};
                     $worksheet->write($xls_row, $rule->{index}, $val, $marked_styles_cache{$rule->{style}});
+                    $marked_cols_printed{$rule->{index}} = 1;
                     $row_printed = 1;
                 }
             } elsif ((not $rule->{only_in_header}) && not $rule->{dont_print_in_common}) {
@@ -1142,7 +1146,6 @@ sub build {
         unless $sql_stat && $where_statements;
 
     my @order = qw( object building company district region );
-
     my $sql_part;
     my @sql_arg;
 
@@ -1178,7 +1181,7 @@ sub build {
     my $r = select_all($self, sprintf($sql_stat, $calc_stat, $calc_join, $sql_part), @sql_arg);
 
     $workbook->set_properties(
-        title => xlsx_default_title,
+        title => $title,
         author => ($args->{name} || "") . " " . ($args->{lastname} || ""),
         # TODO: add other properties
         # http://search.cpan.org/~jmcnamara/Excel-Writer-XLSX-0.15/lib/Excel/Writer/XLSX.pm#add_format(_%properties_)
@@ -1187,8 +1190,24 @@ sub build {
     $self->render_xlsx($r, $workbook, $calc_type, $title, %{ $render_opts // {} });
     $workbook->close;
 
+    my $file_name = $title;
+    $r = select_all($self, qq/
+        select
+            b.id as contract_id
+            from objects o
+            join buildings b on b.id = o.building
+            join companies c on c.id = b.company_id
+            join districts d on d.id = b.district_id
+            $sql_part
+            limit 1
+        /, @sql_arg);
+    if ($r && @$r) {
+        $file_name .= "_" . report_name_suffix() . "_$r->[0]{contract_id}";
+    }
+    $file_name =~ s/\s+/_/g;
+
     $f->unlink_on_destroy(0);
-    return $self->render(json => { filename => $f->filename });
+    return $self->render(json => { title => $file_name, filename => $f->filename });
 }
 
 1;

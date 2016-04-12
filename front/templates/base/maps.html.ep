@@ -88,11 +88,7 @@ function open_in_new_tab(url) {
 
 function show_gallery(data) {
     $.fancybox(data, {
-        //'padding': 0,
-        //'transitionIn': 'none',
-        //'transitionOut': 'none',
         type : 'image',
-        //'changeFade': 0
         prevEffect : 'none',
         nextEffect : 'none',
 
@@ -101,12 +97,15 @@ function show_gallery(data) {
         nextClick : true,
 
         helpers : {
-            title : null ,
+            title : null,
             thumbs : {
                 width  : 50,
                 height : 50
-            }
-        }
+            },
+            overlay : {
+                locked : false
+           },
+        },
     });
 }
 
@@ -168,11 +167,22 @@ function on_balloon_open(balloon_id, need_change_pos) {
         for (var i = 0; i < data.count; ++i) {
             var b = data.buildings[i];
 
+            var $photos_frame = $("<td>").text(b.addr),
+                photos = files.photos[b.id];
+            if (photos) {
+                $photos_frame.addClass("photos-popup-link")
+                    .on('click', (function (photos, $obj) { return function () {
+                        $tbl.find(".photos-poped-up").removeClass("photos-poped-up");
+                        $obj.addClass("photos-poped-up");
+                        show_gallery(photos);
+                    } })(photos, $photos_frame));
+            }
+
             $tbl.append(
                 $("<tr>", {
                     class: i ? "" : "head-class",
                 })
-                .append($("<td>").text(b.addr).on('click', (function (files, b) { return function () { show_gallery(files.photos[b.id]); }; })(files, b)))
+                .append($photos_frame)
                 .append($("<td>").text(b.type))
                 .append($("<td>").text(b.heat_load))
                 .append($("<td>").text(b.cost.replace(/(\d)(?=(\d\d\d)+([^\d]|$))/g, '$1 ')))
