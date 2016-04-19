@@ -1190,19 +1190,30 @@ sub build {
     $self->render_xlsx($r, $workbook, $calc_type, $title, %{ $render_opts // {} });
     $workbook->close;
 
-    my $file_name = $title;
-    $r = select_all($self, qq/
-        select
-            b.id as contract_id
-            from objects o
-            join buildings b on b.id = o.building
-            join companies c on c.id = b.company_id
-            join districts d on d.id = b.district_id
-            $sql_part
-            limit 1
-        /, @sql_arg);
-    if ($r && @$r) {
-        $file_name .= "_" . report_name_suffix() . "_$r->[0]{contract_id}";
+    my $file_name = $title . "_" . report_name_suffix();
+    if ($args->{region}) {
+        $file_name .= "_$args->{region}";
+    } elsif ($args->{district}) {
+        $r = select_all($self, qq/
+            select name from districts where id = ?
+        /, $args->{district});
+        if ($r && @$r) {
+            $file_name .= "_$r->[0]{name}";
+        }
+    } else {
+        $r = select_all($self, qq/
+            select
+                f.path as name
+                from files f
+                join companies c on c.id = f.company_id
+                join buildings b on b.company_id = f.company_id
+                join objects o on o.building = b.id
+                $sql_part
+                limit 1
+            /, @sql_arg);
+        if ($r && @$r) {
+            $file_name .=  "_$r->[0]{name}";
+        }
     }
     $file_name =~ s/\s+/_/g;
 
