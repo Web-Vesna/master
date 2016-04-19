@@ -100,5 +100,3 @@ modern_costs_total_wo_VAT = Итого (без НДС), руб.
 modern_costs_VAT = НДС 18%, руб.
 modern_costs_total = Итого с НДС, руб.
 modern_costs_heat_load = Суммарная тепловая нагрузка, Гкал/час
-
-report_name_suffix = ИНО

@@ -1190,7 +1190,7 @@ sub build {
     $self->render_xlsx($r, $workbook, $calc_type, $title, %{ $render_opts // {} });
     $workbook->close;
 
-    my $file_name = $title . "_" . report_name_suffix();
+    my $file_name = $title;
     if ($args->{region}) {
         $file_name .= "_$args->{region}";
     } elsif ($args->{district}) {
